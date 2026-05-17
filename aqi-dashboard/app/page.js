@@ -1,22 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from "chart.js";
-import { Line } from "react-chartjs-2";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
-
-ChartJS.defaults.font.family = "Outfit, sans-serif";
 
 function getAQIConfig(aqi) {
   if (aqi == null) return { label: "Đang tải...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
@@ -107,42 +92,7 @@ export default function Dashboard() {
       }) 
     : "--";
 
-  const chartData = {
-    labels: history.map(d => {
-      const date = new Date(d.timestamp);
-      return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
-    }),
-    datasets: [
-      {
-        label: "PM 2.5 (µg/m³)",
-        data: history.map(d => d.pm2_5),
-        borderColor: "#3b82f6",
-        backgroundColor: "rgba(59,130,246,0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 2
-      },
-      {
-        label: "Nhiệt độ (°C)",
-        data: history.map(d => d.temperature),
-        borderColor: "#10b981",
-        backgroundColor: "rgba(16,185,129,0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 2
-      }
-    ]
-  };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { position: "top" } },
-    scales: {
-      y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } },
-      x: { grid: { display: false } }
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans text-gray-800"
@@ -273,20 +223,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* History Chart */}
-        <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 md:p-8 h-[400px]">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            📊 Biểu Đồ Biến Thiên Lịch Sử
-          </h2>
-          {history.length > 0 ? (
-            <Line data={chartData} options={chartOptions} />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 pb-10">
-              <span className="text-4xl mb-3">📈</span>
-              <span>Đang tải biểu đồ...</span>
-            </div>
-          )}
-        </div>
+
 
       </div>
     </div>
