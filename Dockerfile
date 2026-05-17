@@ -7,20 +7,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Cài đặt các thư viện cần thiết
 RUN apt-get update && apt-get install -y wget gnupg2 software-properties-common supervisor curl apt-transport-https
 
-# 1. Cài đặt InfluxDB
-RUN wget -q https://repos.influxdata.com/influxdata-archive_compat.key
-RUN echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c influxdata-archive_compat.key' | sha256sum -c && cat influxdata-archive_compat.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg > /dev/null
-RUN echo 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main' | tee /etc/apt/sources.list.d/influxdata.list
-RUN apt-get update && apt-get install -y influxdb2
+# 1. Cài đặt InfluxDB bằng file .deb (Tránh lỗi GPG Key)
+RUN wget -q https://dl.influxdata.com/influxdb/releases/influxdb2-2.7.4-amd64.deb && \
+    dpkg -i influxdb2-2.7.4-amd64.deb && rm influxdb2-2.7.4-amd64.deb
 
-# 2. Cài đặt Telegraf
-RUN apt-get install -y telegraf
+# 2. Cài đặt Telegraf bằng file .deb
+RUN wget -q https://dl.influxdata.com/telegraf/releases/telegraf_1.28.3-1_amd64.deb && \
+    dpkg -i telegraf_1.28.3-1_amd64.deb && rm telegraf_1.28.3-1_amd64.deb
 
-# 3. Cài đặt Grafana
-RUN mkdir -p /etc/apt/keyrings/
-RUN wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | tee /etc/apt/keyrings/grafana.gpg > /dev/null
-RUN echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | tee /etc/apt/sources.list.d/grafana.list
-RUN apt-get update && apt-get install -y grafana
+# 3. Cài đặt Grafana bằng file .deb
+RUN apt-get update && apt-get install -y adduser libfontconfig1 musl && \
+    wget -q https://dl.grafana.com/oss/release/grafana_10.2.2_amd64.deb && \
+    dpkg -i grafana_10.2.2_amd64.deb && rm grafana_10.2.2_amd64.deb
 
 # Copy file telegraf.conf của bạn vào container
 # Trên Github, file telegraf.conf của bạn đang nằm ở thư mục gốc (ngang hàng với README)
