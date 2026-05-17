@@ -34,14 +34,18 @@ export default function Dashboard() {
 
   const fetchData = async () => {
     try {
-      const [resLatest, resHistory] = await Promise.all([
-        fetch("/api/data/latest").then(res => res.json()),
-        fetch("/api/data?limit=15").then(res => res.json())
-      ]);
-      setLatest(resLatest);
+      const res = await fetch("/api/data?limit=15");
+      if (!res.ok) throw new Error("Lỗi mạng khi tải dữ liệu");
+      
+      const resHistory = await res.json();
       setHistory(resHistory);
+      
+      if (resHistory && resHistory.length > 0) {
+        // Bản ghi mới nhất nằm ở cuối mảng (vì API đã reverse)
+        setLatest(resHistory[resHistory.length - 1]);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Lỗi Fetch Data:", e);
     }
   };
 
