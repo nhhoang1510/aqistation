@@ -6,13 +6,15 @@ import { useEffect, useState } from "react";
 function getAQIConfig(aqi) {
   if (aqi == null) return { label: "Loading...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
   
+  const step = 100 / 6; // Vì có 6 dải màu bằng nhau (mỗi dải chiếm 16.66% chiều rộng)
+  
   if (aqi <= 50) return { 
     label: "Good", 
     color: "text-emerald-500", 
     bg: "bg-emerald-500", 
     gradient: "from-emerald-50 via-white to-emerald-100/40",
     emoji: "😊",
-    percent: (aqi / 500) * 100
+    percent: (aqi / 50) * step
   };
   if (aqi <= 100) return { 
     label: "Moderate", 
@@ -20,7 +22,7 @@ function getAQIConfig(aqi) {
     bg: "bg-yellow-500", 
     gradient: "from-yellow-50 via-white to-yellow-100/40",
     emoji: "😐",
-    percent: (aqi / 500) * 100
+    percent: step + ((aqi - 50) / 50) * step
   };
   if (aqi <= 150) return { 
     label: "Poor", 
@@ -28,7 +30,7 @@ function getAQIConfig(aqi) {
     bg: "bg-orange-500", 
     gradient: "from-orange-50 via-white to-orange-100/40",
     emoji: "😷",
-    percent: (aqi / 500) * 100
+    percent: step * 2 + ((aqi - 100) / 50) * step
   };
   if (aqi <= 200) return { 
     label: "Unhealthy", 
@@ -36,7 +38,7 @@ function getAQIConfig(aqi) {
     bg: "bg-red-500", 
     gradient: "from-red-50 via-white to-red-100/40",
     emoji: "🤢",
-    percent: (aqi / 500) * 100
+    percent: step * 3 + ((aqi - 150) / 50) * step
   };
   if (aqi <= 300) return { 
     label: "Severe", 
@@ -44,7 +46,7 @@ function getAQIConfig(aqi) {
     bg: "bg-purple-500", 
     gradient: "from-purple-50 via-white to-purple-100/40",
     emoji: "🤮",
-    percent: (aqi / 500) * 100
+    percent: step * 4 + ((aqi - 200) / 100) * step
   };
   return { 
     label: "Hazardous", 
@@ -52,7 +54,7 @@ function getAQIConfig(aqi) {
     bg: "bg-rose-800", 
     gradient: "from-rose-50 via-white to-rose-200/40",
     emoji: "☠️",
-    percent: Math.min((aqi / 500) * 100, 100)
+    percent: step * 5 + ((Math.min(aqi, 500) - 300) / 200) * step
   };
 }
 
