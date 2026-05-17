@@ -1,5 +1,5 @@
 #include <WiFi.h>
-#include <PubSubClient.h>
+#include <HTTPClient.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
@@ -8,12 +8,11 @@
 #include <HardwareSerial.h>
 #include <ArduinoJson.h>
 
-// --- WiFi & MQTT config ---
-const char* mqtt_server = "broker.hivemq.com";
-const int mqtt_port = 1883;
+// --- WiFi & HTTP config ---
+// Thay bằng link Vercel của bạn sau khi deploy (Ví dụ: https://aqi-station-web.vercel.app/api/upload)
+const char* serverName = "http://<IP_MAY_TINH_CUA_BAN>:3000/api/upload"; 
 
 WiFiClient espClient;
-PubSubClient client(espClient);
 
 // --- BME680 config ---
 Adafruit_BME680 bme; // Sử dụng giao tiếp I2C (SCL, SDA)
@@ -41,7 +40,6 @@ void setup() {
   pmsSerial.begin(9600, SERIAL_8N1, RXD1, TXD1);
 
   setup_wifi();
-  client.setServer(mqtt_server, mqtt_port);
 
   // Khởi tạo BME680
   if (!bme.begin()) {
@@ -100,19 +98,7 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-void reconnect() {
-  while (!client.connected()) {
-    Serial.print("Đang kết nối MQTT...");
-    if (client.connect("ESP32_AirQuality_Client")) {
-      Serial.println("Thành công");
-    } else {
-      Serial.print("Thất bại, rc=");
-      Serial.print(client.state());
-      Serial.println(" Thử lại sau 5s");
-      delay(5000);
-    }
-  }
-}
+// Xoá hàm reconnect MQTT vì đã dùng HTTP
 
 // Tính toán AQI đơn giản dựa trên PM2.5 theo chuẩn EPA
 int calculateAQI(uint16_t pm25) {
@@ -162,11 +148,6 @@ void logToSD() {
 }
 
 void loop() {
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-
   static unsigned long lastMsg = 0;
   unsigned long now = millis();
   
@@ -203,11 +184,27 @@ void loop() {
     doc["mq135"] = mq135_value;
     doc["aqi"] = aqi;
 
-    char out_buffer[256];
+    String out_buffer;
     serializeJson(doc, out_buffer);
     
-    // Publish MQTT
-    client.publish("sensor/airquality/hoang1510", out_buffer);
+    // Publish HTTP POST
+    if (WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+      http.begin(serverName);
+      http.addHeader("Content-Type", "application/json");
+      
+      int httpResponseCode = http.POST(out_buffer);
+      if (httpResponseCode > 0) {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+      } else {
+        Serial.print("Lỗi khi gửi HTTP POST: ");
+        Serial.println(httpResponseCode);
+      }
+      http.end();
+    } else {
+      Serial.println("Mất kết nối WiFi");
+    }
 
     // Lưu SD Card
     logToSD();
