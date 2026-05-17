@@ -68,12 +68,7 @@ Hệ thống Backend (Server) gồm các thành phần sau, bạn cần tải v�
 
 ### Hướng dẫn cài đặt và chạy:
 
-1. **Cài đặt Mosquitto:**
-   - Tải file cài đặt từ [mosquitto.org/download](https://mosquitto.org/download/).
-   - Chạy file cài đặt, chọn cài đặt như một Service (dịch vụ của Windows).
-   - Đảm bảo service `Mosquitto Broker` đang chạy trong Service Manager của Windows (hoặc mở Command Prompt chạy `mosquitto -v` để chạy thủ công).
-
-2. **Cài đặt InfluxDB (v2.x):**
+1. **Cài đặt InfluxDB (v2.x):**
    - Tải InfluxDB cho Windows từ trang chủ InfluxData.
    - Giải nén vào một thư mục (VD: `C:\influxdb`).
    - Mở Command Prompt (CMD) tại thư mục đó và chạy: `influxd.exe`. (Giữ cửa sổ này mở).
