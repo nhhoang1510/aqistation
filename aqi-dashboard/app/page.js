@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 
 
 function getAQIConfig(aqi) {
-  if (aqi == null) return { label: "Đang tải...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
+  if (aqi == null) return { label: "Loading...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
   
   if (aqi <= 50) return { 
-    label: "Tốt (Good)", 
+    label: "Good", 
     color: "text-emerald-500", 
     bg: "bg-emerald-500", 
     gradient: "from-emerald-50 via-white to-emerald-100/40",
@@ -15,7 +15,7 @@ function getAQIConfig(aqi) {
     percent: (aqi / 500) * 100
   };
   if (aqi <= 100) return { 
-    label: "Trung bình (Moderate)", 
+    label: "Moderate", 
     color: "text-yellow-500", 
     bg: "bg-yellow-500", 
     gradient: "from-yellow-50 via-white to-yellow-100/40",
@@ -23,7 +23,7 @@ function getAQIConfig(aqi) {
     percent: (aqi / 500) * 100
   };
   if (aqi <= 150) return { 
-    label: "Kém (Poor)", 
+    label: "Poor", 
     color: "text-orange-500", 
     bg: "bg-orange-500", 
     gradient: "from-orange-50 via-white to-orange-100/40",
@@ -31,7 +31,7 @@ function getAQIConfig(aqi) {
     percent: (aqi / 500) * 100
   };
   if (aqi <= 200) return { 
-    label: "Xấu (Unhealthy)", 
+    label: "Unhealthy", 
     color: "text-red-500", 
     bg: "bg-red-500", 
     gradient: "from-red-50 via-white to-red-100/40",
@@ -39,7 +39,7 @@ function getAQIConfig(aqi) {
     percent: (aqi / 500) * 100
   };
   if (aqi <= 300) return { 
-    label: "Rất xấu (Severe)", 
+    label: "Severe", 
     color: "text-purple-500", 
     bg: "bg-purple-500", 
     gradient: "from-purple-50 via-white to-purple-100/40",
@@ -47,7 +47,7 @@ function getAQIConfig(aqi) {
     percent: (aqi / 500) * 100
   };
   return { 
-    label: "Nguy hại (Hazardous)", 
+    label: "Hazardous", 
     color: "text-rose-800", 
     bg: "bg-rose-800", 
     gradient: "from-rose-50 via-white to-rose-200/40",
@@ -108,7 +108,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">AQI STATION</h1>
-                <p className="text-gray-400 text-sm italic mt-1">Cập nhật lần cuối: {lastUpdated} (Local Time)</p>
+                <p className="text-gray-400 text-sm italic mt-1">Last Updated: {lastUpdated} (Local Time)</p>
               </div>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function Dashboard() {
                     <div className="text-3xl font-bold text-gray-800 flex items-start">
                       {latest?.temperature?.toFixed(1) || "--"} <span className="text-lg mt-1">°C</span>
                     </div>
-                    <div className="text-sm font-medium text-gray-600">Trời Nhiều Mây</div>
+                    <div className="text-sm font-medium text-gray-600">Cloudy</div>
                   </div>
                 </div>
                 <button className="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center hover:bg-gray-700 shadow-md">
@@ -200,15 +200,15 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-3 gap-4 border-t border-gray-300/30 pt-4">
                 <div className="text-center">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">💧 Độ ẩm</div>
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">💧 Humidity</div>
                   <div className="font-bold text-gray-800 text-sm">{latest?.humidity?.toFixed(1) || "--"} %</div>
                 </div>
                 <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">⏱️ Áp suất</div>
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">⏱️ Pressure</div>
                   <div className="font-bold text-gray-800 text-sm">{latest?.pressure?.toFixed(0) || "--"} hPa</div>
                 </div>
                 <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">☣️ Khí Gas</div>
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">☣️ Gas</div>
                   <div className="font-bold text-gray-800 text-sm">{latest?.gas_resistance?.toFixed(0) || "--"} kΩ</div>
                 </div>
               </div>
