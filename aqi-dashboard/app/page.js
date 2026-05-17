@@ -107,14 +107,8 @@ export default function Dashboard() {
           <div className="p-6 md:p-8 pb-4 border-b border-gray-100">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Real-time Air Quality Index (AQI)</h1>
-                <p className="text-blue-600 font-medium text-lg mt-1 cursor-pointer hover:underline">Trạm Quan Trắc ĐH Bách Khoa, Hà Nội</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">AQI STATION</h1>
                 <p className="text-gray-400 text-sm italic mt-1">Cập nhật lần cuối: {lastUpdated} (Local Time)</p>
-              </div>
-              <div className="hidden md:flex gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-blue-200 text-blue-600 rounded-full text-sm font-medium hover:bg-blue-50 transition">
-                  📍 Locate me
-                </button>
               </div>
             </div>
           </div>
