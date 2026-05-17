@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AQI Station Dashboard</title>
+    <!-- Modern Font: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16,185,129,0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header { text-align: center; margin-bottom: 3rem; }
+        h1 { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            background: linear-gradient(to right, #60a5fa, #34d399); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        p.subtitle { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem; }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .card-header { 
+            font-size: 1rem; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 1rem; 
+        }
+        .card-value { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: baseline; 
+            gap: 0.5rem; 
+        }
+        .unit { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
+        
+        .aqi-indicator {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: auto;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-container {
+            width: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* Animation chấm xanh nhấp nháy (Pulse) báo hiệu Live Data */
+        .live-dot {
+            display: inline-block; 
+            width: 10px; height: 10px; 
+            background: var(--accent);
+            border-radius: 50%; 
+            margin-right: 8px;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AQI Station</h1>
+        <p class="subtitle"><span class="live-dot"></span>Live Data Dashboard</p>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="card" style="border-left: 4px solid var(--primary);">
+            <div class="card-header">Chỉ số AQI</div>
+            <div class="card-value">
+                <span id="val-aqi">--</span> 
+                <div id="aqi-badge" class="aqi-indicator" style="background: var(--text-muted); color: white;">Đang tải</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Bụi mịn PM 2.5</div>
+            <div class="card-value"><span id="val-pm25">--</span> <span class="unit">µg/m³</span></div>
+        </div>
+        <div class="card">
+            <div class="card-header">Nhiệt độ</div>
+            <div class="card-value"><span id="val-temp">--</span> <span class="unit">°C</span></div>
+        </div>
+        <div class="card">
+            <div class="card-header">Độ ẩm</div>
+            <div class="card-value"><span id="val-hum">--</span> <span class="unit">%</span></div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="historyChart" height="80"></canvas>
+    </div>
+
+    <script>
+        // Cấu hình phong cách chung cho Chart.js
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = 'Outfit';
+        
+        const ctx = document.getElementById('historyChart').getContext('2d');
+        const historyChart = new Chart(ctx, {
+            type: 'line',
+            data: { 
+                labels: [], 
+                datasets: [
+                    { 
+                        label: 'PM 2.5 (µg/m³)', 
+                        data: [], 
+                        borderColor: '#3b82f6', 
+                        backgroundColor: 'rgba(59,130,246,0.1)', 
+                        fill: true, 
+                        tension: 0.4,
+                        borderWidth: 2
+                    },
+                    { 
+                        label: 'Nhiệt độ (°C)', 
+                        data: [], 
+                        borderColor: '#10b981', 
+                        backgroundColor: 'rgba(16,185,129,0.1)', 
+                        fill: true, 
+                        tension: 0.4,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { position: 'top' } }, 
+                scales: { 
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } }, 
+                    x: { grid: { display: false } } 
+                } 
+            }
+        });
+
+        // Hàm tính toán màu sắc dựa trên chuẩn AQI
+        function getAQIColor(aqi) {
+            if (aqi <= 50) return { bg: '#10b981', text: 'Tốt' }; // Xanh lá
+            if (aqi <= 100) return { bg: '#fbbf24', text: 'Trung bình' }; // Vàng
+            if (aqi <= 150) return { bg: '#f97316', text: 'Kém' }; // Cam
+            if (aqi <= 200) return { bg: '#ef4444', text: 'Xấu' }; // Đỏ
+            if (aqi <= 300) return { bg: '#8b5cf6', text: 'Rất xấu' }; // Tím
+            return { bg: '#7f1d1d', text: 'Nguy hại' }; // Nâu
+        }
+
+        async function fetchLatest() {
+            try {
+                const res = await fetch('/api/data/latest');
+                const data = await res.json();
+                if(data && Object.keys(data).length > 0) {
+                    document.getElementById('val-aqi').innerText = data.aqi || 0;
+                    document.getElementById('val-pm25').innerText = data.pm2_5 || 0;
+                    document.getElementById('val-temp').innerText = data.temperature ? data.temperature.toFixed(1) : 0;
+                    document.getElementById('val-hum').innerText = data.humidity ? data.humidity.toFixed(1) : 0;
+                    
+                    const aqiInfo = getAQIColor(data.aqi || 0);
+                    const badge = document.getElementById('aqi-badge');
+                    badge.style.background = aqiInfo.bg;
+                    badge.innerText = aqiInfo.text;
+                }
+            } catch (e) { console.error('Lỗi khi tải dữ liệu mới nhất', e); }
+        }
+
+        async function fetchHistory() {
+            try {
+                const res = await fetch('/api/data/history?limit=15');
+                const data = await res.json();
+                if(data && data.length > 0) {
+                    historyChart.data.labels = data.map(d => {
+                        const date = new Date(d.timestamp);
+                        return date.getHours() + ':' + String(date.getMinutes()).padStart(2, '0') + ':' + String(date.getSeconds()).padStart(2, '0');
+                    });
+                    historyChart.data.datasets[0].data = data.map(d => d.pm2_5);
+                    historyChart.data.datasets[1].data = data.map(d => d.temperature);
+                    historyChart.update();
+                }
+            } catch (e) { console.error('Lỗi khi tải lịch sử biểu đồ', e); }
+        }
+
+        // Khởi chạy lấy dữ liệu lần đầu
+        fetchLatest(); 
+        fetchHistory();
+        
+        // Tự động làm mới dữ liệu sau mỗi 5 giây
+        setInterval(() => { 
+            fetchLatest(); 
+            fetchHistory(); 
+        }, 5000);
+    </script>
+</body>
+</html>
