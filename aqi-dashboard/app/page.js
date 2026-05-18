@@ -337,8 +337,7 @@ export default function Dashboard() {
         {/* Major Air Pollutants Header with Time Selector */}
         <div className="mt-8 mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Major Air Pollutants</h2>
-            <p className="text-blue-600 font-medium">Hanoi Station</p>
+            <h2 className="text-2xl font-bold text-slate-800">Key Metrics</h2>
           </div>
 
           <div className="flex items-center gap-2 bg-slate-800 text-slate-200 px-4 py-2 rounded-xl shadow-md text-sm font-medium hover:bg-slate-700 transition cursor-pointer">
