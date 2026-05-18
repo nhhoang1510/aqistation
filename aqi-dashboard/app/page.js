@@ -298,9 +298,9 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">MQ135 Analog (Raw)</h3>
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">PM 2.5 (µg/m³)</h3>
             <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("MQ135", "mq135", "#64748b", "rgba(100,116,139,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+              {history.length > 0 ? <Line data={createChartData("PM 2.5", "pm2_5", "#ec4899", "rgba(236,72,153,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
             </div>
           </div>
         </div>
