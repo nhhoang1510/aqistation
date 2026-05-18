@@ -1,7 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+ChartJS.defaults.font.family = "Outfit, sans-serif";
 
 function getAQIConfig(aqi) {
   if (aqi == null) return { label: "Loading...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
@@ -93,7 +107,34 @@ export default function Dashboard() {
         hour: '2-digit', minute:'2-digit', second:'2-digit' 
       }) 
     : "--";
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: false, grid: { color: "rgba(0,0,0,0.05)" } },
+      x: { grid: { display: false } }
+    }
+  };
 
+  const labels = history.map(d => {
+    const date = new Date(d.timestamp);
+    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+  });
+
+  const createChartData = (label, dataKey, color, bgColor) => ({
+    labels,
+    datasets: [{
+      label,
+      data: history.map(d => d[dataKey]),
+      borderColor: color,
+      backgroundColor: bgColor,
+      fill: true,
+      tension: 0.4,
+      borderWidth: 2,
+      pointRadius: 2
+    }]
+  });
 
 
   return (
@@ -219,7 +260,50 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Detailed Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Temperature (°C)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("Temperature", "temperature", "#ef4444", "rgba(239,68,68,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Humidity (%RH)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("Humidity", "humidity", "#3b82f6", "rgba(59,130,246,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
 
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Pressure (hPa)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("Pressure", "pressure", "#8b5cf6", "rgba(139,92,246,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">PM 10 (µg/m³)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("PM 10", "pm10", "#f59e0b", "rgba(245,158,11,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Gas Resistance (kΩ)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("Gas", "gas_resistance", "#10b981", "rgba(16,185,129,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
+            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">MQ135 Analog (Raw)</h3>
+            <div className="flex-1 min-h-0">
+              {history.length > 0 ? <Line data={createChartData("MQ135", "mq135", "#64748b", "rgba(100,116,139,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
