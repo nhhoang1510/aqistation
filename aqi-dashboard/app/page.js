@@ -136,7 +136,80 @@ export default function Dashboard() {
     }]
   });
 
-
+  const metrics = [
+    {
+      id: "pm25",
+      title: "Particulate Matter",
+      subtitle: "(PM2.5)",
+      value: latest?.pm2_5,
+      unit: "µg/m³",
+      icon: "🌫️",
+      color: "#ec4899",
+      bgColor: "rgba(236,72,153,0.1)",
+      dataKey: "pm2_5",
+      borderClass: "border-l-pink-500"
+    },
+    {
+      id: "pm10",
+      title: "Particulate Matter",
+      subtitle: "(PM10)",
+      value: latest?.pm10,
+      unit: "µg/m³",
+      icon: "🌫️",
+      color: "#f59e0b",
+      bgColor: "rgba(245,158,11,0.1)",
+      dataKey: "pm10",
+      borderClass: "border-l-amber-500"
+    },
+    {
+      id: "temp",
+      title: "Temperature",
+      subtitle: "",
+      value: latest?.temperature?.toFixed(1),
+      unit: "°C",
+      icon: "🌡️",
+      color: "#ef4444",
+      bgColor: "rgba(239,68,68,0.1)",
+      dataKey: "temperature",
+      borderClass: "border-l-red-500"
+    },
+    {
+      id: "hum",
+      title: "Relative Humidity",
+      subtitle: "",
+      value: latest?.humidity?.toFixed(1),
+      unit: "%RH",
+      icon: "💧",
+      color: "#3b82f6",
+      bgColor: "rgba(59,130,246,0.1)",
+      dataKey: "humidity",
+      borderClass: "border-l-blue-500"
+    },
+    {
+      id: "press",
+      title: "Atmospheric Pressure",
+      subtitle: "",
+      value: latest?.pressure?.toFixed(0),
+      unit: "hPa",
+      icon: "⏱️",
+      color: "#8b5cf6",
+      bgColor: "rgba(139,92,246,0.1)",
+      dataKey: "pressure",
+      borderClass: "border-l-purple-500"
+    },
+    {
+      id: "gas",
+      title: "Gas Resistance",
+      subtitle: "",
+      value: latest?.gas_resistance?.toFixed(0),
+      unit: "kΩ",
+      icon: "☣️",
+      color: "#10b981",
+      bgColor: "rgba(16,185,129,0.1)",
+      dataKey: "gas_resistance",
+      borderClass: "border-l-emerald-500"
+    }
+  ];
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans text-gray-800"
          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }}>
@@ -260,49 +333,43 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Major Air Pollutants Header */}
+        <div className="mt-8 mb-4">
+          <h2 className="text-2xl font-bold text-slate-800">Major Air Pollutants</h2>
+          <p className="text-blue-600 font-medium">Hanoi Station</p>
+        </div>
+
         {/* Detailed Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Temperature (°C)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("Temperature", "temperature", "#ef4444", "rgba(239,68,68,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Humidity (%RH)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("Humidity", "humidity", "#3b82f6", "rgba(59,130,246,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
-            </div>
-          </div>
+          {metrics.map(metric => (
+            <div key={metric.id} className={`bg-slate-50 rounded-2xl shadow-sm border border-gray-100 border-l-[6px] ${metric.borderClass} p-5 h-[280px] flex flex-col hover:shadow-md transition-shadow`}>
+              
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="text-3xl bg-white p-2 rounded-xl shadow-sm">{metric.icon}</div>
+                  <div>
+                    <div className="font-semibold text-slate-800 leading-tight">{metric.title}</div>
+                    {metric.subtitle && <div className="text-sm text-slate-600">{metric.subtitle}</div>}
+                  </div>
+                </div>
+                <div className="text-right flex items-center gap-2">
+                  <div className="flex flex-col items-end">
+                    <div className="text-3xl font-black text-slate-800 leading-none">{metric.value || "--"}</div>
+                    <div className="text-xs font-bold text-slate-500 mt-1">{metric.unit}</div>
+                  </div>
+                  <div className="text-slate-400 text-2xl font-light ml-1">›</div>
+                </div>
+              </div>
 
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Pressure (hPa)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("Pressure", "pressure", "#8b5cf6", "rgba(139,92,246,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
+              <div className="flex-1 min-h-0 mt-2">
+                {history.length > 0 ? (
+                  <Line data={createChartData(metric.title, metric.dataKey, metric.color, metric.bgColor)} options={chartOptions} />
+                ) : (
+                  <div className="text-gray-400 text-center text-sm mt-10">Loading...</div>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">PM 10 (µg/m³)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("PM 10", "pm10", "#f59e0b", "rgba(245,158,11,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">Gas Resistance (kΩ)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("Gas", "gas_resistance", "#10b981", "rgba(16,185,129,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-6 h-[300px] flex flex-col">
-            <h3 className="font-bold text-gray-700 mb-4 text-sm uppercase">PM 2.5 (µg/m³)</h3>
-            <div className="flex-1 min-h-0">
-              {history.length > 0 ? <Line data={createChartData("PM 2.5", "pm2_5", "#ec4899", "rgba(236,72,153,0.1)")} options={chartOptions} /> : <div className="text-gray-400 text-center">Loading...</div>}
-            </div>
-          </div>
+          ))}
         </div>
 
       </div>
