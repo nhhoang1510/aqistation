@@ -75,10 +75,11 @@ function getAQIConfig(aqi) {
 export default function Dashboard() {
   const [latest, setLatest] = useState(null);
   const [history, setHistory] = useState([]);
+  const [timeLimit, setTimeLimit] = useState(60); // Mặc định 5 phút (60 * 5s)
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/data?limit=15");
+      const res = await fetch(`/api/data?limit=${timeLimit}`);
       if (!res.ok) throw new Error("Lỗi mạng khi tải dữ liệu");
       
       const resHistory = await res.json();
@@ -96,7 +97,7 @@ export default function Dashboard() {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [timeLimit]);
 
   const aqiConfig = getAQIConfig(latest?.aqi);
   
@@ -132,7 +133,7 @@ export default function Dashboard() {
       fill: true,
       tension: 0.4,
       borderWidth: 2,
-      pointRadius: 2
+      pointRadius: history.length > 100 ? 0 : 2
     }]
   });
 
@@ -333,10 +334,29 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Major Air Pollutants Header */}
-        <div className="mt-8 mb-4">
-          <h2 className="text-2xl font-bold text-slate-800">Major Air Pollutants</h2>
-          <p className="text-blue-600 font-medium">Hanoi Station</p>
+        {/* Major Air Pollutants Header with Time Selector */}
+        <div className="mt-8 mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800">Major Air Pollutants</h2>
+            <p className="text-blue-600 font-medium">Hanoi Station</p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-800 text-slate-200 px-4 py-2 rounded-xl shadow-md text-sm font-medium hover:bg-slate-700 transition cursor-pointer">
+            <span className="text-lg">🕒</span>
+            <select 
+              className="bg-transparent border-none outline-none cursor-pointer text-white appearance-none pr-4"
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(Number(e.target.value))}
+            >
+              <option value="15" className="text-black">Last 1 minute</option>
+              <option value="60" className="text-black">Last 5 minutes</option>
+              <option value="360" className="text-black">Last 30 minutes</option>
+              <option value="720" className="text-black">Last 1 hour</option>
+              <option value="4320" className="text-black">Last 6 hours</option>
+              <option value="17280" className="text-black">Last 24 hours</option>
+            </select>
+            <span className="text-slate-400 pointer-events-none -ml-6">▼</span>
+          </div>
         </div>
 
         {/* Detailed Metrics Grid */}
