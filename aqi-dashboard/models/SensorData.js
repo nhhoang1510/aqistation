@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 const SensorDataSchema = new mongoose.Schema({
-  pm1_0: Number,
   pm2_5: Number,
   pm10: Number,
   temperature: Number,
