@@ -1,178 +1,64 @@
-# 🌍 TÀI LIỆU ONBOARDING TOÀN DIỆN DỰ ÁN AQI IOT (BTL VXL)
+# Hướng Dẫn Kết Nối Database và Deploy Vercel (Dự Án AQI)
 
-Chào mừng bạn đến với tài liệu hướng dẫn kỹ thuật chuyên sâu của dự án **Hệ Thống Quan Trắc Không Khí Đa Thông Số (AQI IoT System)**. Tài liệu này được biên soạn để cung cấp cho bạn bức tranh toàn cảnh từ phần cứng vi điều khiển cấp thấp (Low-level Hardware) cho tới giao diện Web hiện đại cấp cao (High-level Frontend), cùng cách thức chúng giao tiếp với nhau theo **Kiến trúc IoT 4 Tầng chuẩn mực**.
-
-Bất kể bạn tham gia vào khâu thiết kế phần cứng, viết script server hay làm frontend UI, tài liệu này sẽ là "kim chỉ nam" giúp bạn nắm vững mọi ngóc ngách của dự án.
+Tài liệu này tập trung hướng dẫn người mới tham gia dự án cách thiết lập kết nối cơ sở dữ liệu (MongoDB) và đưa ứng dụng (Next.js Dashboard) lên môi trường mạng thực tế (Vercel).
 
 ---
 
-## 🏗️ PHẦN 1: TỔNG QUAN KIẾN TRÚC 4 TẦNG (4-LAYER IOT ARCHITECTURE)
+## 🗄️ Phần 1: Kết nối Cơ Sở Dữ Liệu (MongoDB Atlas)
 
-Dự án này là minh chứng rõ nét cho một hệ thống IoT hoàn chỉnh, bao gồm 4 tầng (Layer) được phân tách chức năng rõ ràng:
+Dự án sử dụng **MongoDB Atlas** (Cloud Database) để lưu trữ các bản ghi đo đạc từ trạm quan trắc không khí. Next.js Dashboard sẽ kết nối trực tiếp vào Database này để lấy dữ liệu vẽ biểu đồ.
 
-1. **Tầng 1: Perception Layer (Thiết bị & Cảm biến):** Xử lý tín hiệu điện, thu thập dữ liệu thô từ môi trường, lọc nhiễu thuật toán.
-2. **Tầng 2: Network Layer (Mạng lưới truyền dẫn):** Bọc dữ liệu thành gói tin JSON và bắn lên đám mây thông qua Wi-Fi & MQTT Protocol.
-3. **Tầng 3: Processing Layer (Xử lý & Lưu trữ):** Trạm Server Node.js hứng gói tin MQTT, lưu cục bộ làm backup (CSV) và đẩy lên Cloud Database (MongoDB).
-4. **Tầng 4: Application Layer (Ứng dụng người dùng):** Giao diện Next.js Web Dashboard trực quan, tương tác trực tiếp với Database để vẽ biểu đồ Real-time.
+### 1. Cấu trúc Schema (Mongoose)
+Trong file `models/SensorData.js`, dữ liệu được định nghĩa với các trường:
+- Bụi mịn: `pm2_5`, `pm10`
+- Khí hậu: `temperature`, `humidity`, `pressure`
+- Khí gas: `gas_resistance`, `mq135`
+- Chỉ số tổng hợp: `aqi`
+- Thời gian: `timestamp` (tự động tạo)
 
-Dưới đây, chúng ta sẽ đi sâu vào từng tầng.
+### 2. File kết nối Database
+Kết nối được quản lý trong file `lib/mongodb.js`. 
+- Trong môi trường phát triển (Development), kết nối sẽ được "cache" lại trong biến toàn cục `global.mongoose` để tránh việc tạo quá nhiều kết nối rác mỗi khi Next.js reload lại code.
+- Trong môi trường sản phẩm (Production), kết nối sẽ được mở trực tiếp.
 
-### 🔄 Sơ Đồ Luồng Dữ Liệu (Data Flow)
-
-```mermaid
-sequenceDiagram
-    participant S as Cảm Biến (PMS, BME, MQ)
-    participant E as Vi Điều Khiển (ESP32)
-    participant V_API as Vercel (Next.js API)
-    participant DB as MongoDB Atlas (Cloud)
-    participant V_WEB as Vercel (Web Dashboard)
-
-    S->>E: Đo đạc chỉ số (PM2.5, Nhiệt độ...)
-    E->>V_API: Gửi JSON qua HTTP POST (Mỗi 5s)
-    V_API->>DB: Xác thực & Lưu bản ghi mới
-    V_WEB->>V_API: Trình duyệt gọi HTTP GET định kỳ
-    V_API->>DB: Truy vấn 15 bản ghi mới nhất
-    DB-->>V_API: Trả về dữ liệu NoSQL
-    V_API-->>V_WEB: Cập nhật biểu đồ & giao diện
-```
+### 3. API Lấy Dữ Liệu (`app/api/data/route.js`)
+Trình duyệt không kết nối thẳng vào database mà gọi qua một API trung gian (REST API).
+Khi trình duyệt gọi `GET /api/data?limit=30`:
+1. Mở kết nối đến MongoDB.
+2. Dùng lệnh `SensorData.find().sort({ timestamp: -1 }).limit(30)` để lấy 30 bản ghi mới nhất.
+3. Trả về mảng dữ liệu định dạng JSON cho Frontend xử lý.
 
 ---
 
-## ⚡ PHẦN 2: TẦNG THIẾT BỊ & CẢM BIẾN (`/esp32_air_quality`)
+## 🚀 Phần 2: Hướng dẫn Deploy lên Vercel
 
-Bộ não của phần cứng là vi điều khiển **ESP32**. Code được viết bằng C++ (Arduino IDE) và được thiết kế rất tối ưu với các thuật toán lọc số (Digital Filtering) để đảm bảo dữ liệu không bị sai lệch do nhiễu vật lý.
+Vercel là nền tảng tối ưu nhất để chạy các ứng dụng Next.js. Khi deploy, thư mục `app/api` sẽ tự động biến thành **Serverless Functions** (chỉ chạy khi có người truy cập web, giúp tiết kiệm chi phí).
 
-### 2.1 Các Thành Phần Cảm Biến
+**Quy trình đưa dự án lên Vercel:**
 
-*   **BME680 (Giao tiếp I2C - SDA:21, SCL:22):** 
-    *   Đo 4 thông số: Nhiệt độ (°C), Độ ẩm (%), Áp suất khí quyển (hPa) và Điện trở Khí gas (Gas Resistance - kΩ).
-    *   Sử dụng cơ chế **Oversampling** và **IIR Filter** tích hợp sẵn của thư viện Adafruit để tăng độ chính xác.
-*   **PMS5003 (Giao tiếp UART - RX:16, TX:17):** 
-    *   Cảm biến bụi mịn Laser chuyên dụng. Nó bắn luồng dữ liệu 32-byte liên tục về ESP32.
-    *   ESP32 parse luồng byte này để lấy nồng độ hạt **PM2.5** và **PM10** (đơn vị: µg/m³).
-*   **MQ-135 (Giao tiếp Analog - Pin 34):**
-    *   Cảm biến đo khí độc hại (CO, NH3, CO2, v.v.). Trả về giá trị điện áp từ 0-4095 (do ESP32 có ADC 12-bit).
-*   **Module MicroSD (Giao tiếp SPI - CS:5):**
-    *   Bảo vệ dữ liệu khỏi mất mát khi rớt mạng bằng cách ghi nối tiếp (append) trực tiếp vào thẻ nhớ vật lý gắn trên board.
+### Bước 1: Chuẩn bị Code trên GitHub
+1. Đảm bảo bạn đã đẩy (push) toàn bộ thư mục code lên một kho lưu trữ (Repository) trên tài khoản GitHub cá nhân.
 
-### 2.2 Thuật Toán Xử Lý Tín Hiệu (DSP Algorithms)
+### Bước 2: Khởi tạo Project trên Vercel
+1. Đăng nhập vào trang quản trị [Vercel.com](https://vercel.com/) bằng chính tài khoản GitHub của bạn.
+2. Nhấn nút **Add New Project**.
+3. Vercel sẽ hiện ra danh sách các repository của bạn trên GitHub. Chọn nút **Import** ở repository chứa code dự án này.
 
-ESP32 không gửi dữ liệu thô ngay lập tức mà áp dụng 3 bộ lọc khác nhau:
-1.  **Moving Average (Trung bình động) cho Bụi mịn (PMS5003):** Tạo một mảng (buffer) lưu 5 giá trị gần nhất. Giá trị gửi đi là trung bình cộng của mảng này. Giúp làm phẳng các gai nhọn (spikes) do bụi bay lướt qua.
-2.  **EMA (Exponential Moving Average) cho BME680:** Bộ lọc hàm mũ (Hệ số Alpha = 0.1). Giúp nhiệt độ và độ ẩm biến thiên mượt mà, bám sát xu hướng thay đổi chậm của thời tiết thay vì nhảy số liên tục.
-3.  **Median Filter (Bộ lọc trung vị) cho MQ135:** Lấy 11 mẫu, sắp xếp (Insertion Sort) và lấy giá trị đứng ở giữa (Median). Đây là bộ lọc "vô địch" trong việc triệt tiêu nhiễu xung (impulse noise) đặc trưng của cảm biến điện hóa.
+### Bước 3: Cấu hình Thư mục gốc (Root Directory)
+*Lưu ý cực kỳ quan trọng:* Dự án này chứa cả code C++ (Arduino) và Node.js server. Vercel không thể build toàn bộ.
+1. Ở giao diện cấu hình của Vercel, tìm mục **Root Directory**.
+2. Nhấn **Edit** và chọn đúng thư mục `aqi-dashboard` (đây là thư mục chứa mã nguồn của Web Next.js).
 
-### 2.3 Thuật Toán Tính AQI (Theo chuẩn EPA Hoa Kỳ)
+### Bước 4: Khai báo Biến môi trường (Environment Variables)
+Mã nguồn trên GitHub sẽ không chứa file `.env` để bảo mật thông tin database. Bạn phải khai báo thủ công trên Vercel:
+1. Mở rộng phần **Environment Variables**.
+2. Nhập ô **Key**: `MONGODB_URI`
+3. Nhập ô **Value**: Dán chuỗi kết nối MongoDB Atlas của bạn vào (Ví dụ: `mongodb+srv://<username>:<password>@cluster.mongodb.net/dbname`).
+4. Nhấn **Add**.
 
-*   Sử dụng bảng Piecewise Linear (Hàm tuyến tính từng khúc) dựa trên tiêu chuẩn EPA của Mỹ.
-*   Hệ thống tính `AQI_PM25`, `AQI_PM10`, `AQI_GAS`. Sau đó, chỉ số AQI tổng quát được quyết định bởi giá trị **tồi tệ nhất (Max)** trong 3 thông số này.
+### Bước 5: Build và Tận hưởng
+1. Nhấn nút **Deploy**. 
+2. Vercel sẽ tự động tải các gói NPM, tiến hành Build Next.js và khởi tạo Serverless Functions. Quá trình này mất khoảng 1-2 phút.
+3. Sau khi thành công, Vercel sẽ cấp cho bạn một đường link HTTPS miễn phí (ví dụ: `aqi-dashboard.vercel.app`). Bạn có thể gửi link này cho bất kỳ ai để xem chỉ số không khí theo thời gian thực!
 
----
-
-## 🌐 PHẦN 3: TẦNG TRUYỀN DẪN MQTT
-
-Hệ thống **không dùng HTTP** ở thiết bị IoT vì HTTP quá nặng nề và tốn pin. Thay vào đó, nó dùng **MQTT** (Message Queuing Telemetry Transport).
-
-*   **Broker:** Đang sử dụng server công cộng `broker.emqx.io` ở port 1883.
-*   **Topic:** `aqistation/data`.
-*   **Cơ chế:** ESP32 đóng vai trò là *Publisher* (Người xuất bản), cứ mỗi 10 giây (SEND_INTERVAL_MS), nó gộp 8 thông số lại thành 1 chuỗi JSON và bắn vào Topic.
-
-**Ví dụ gói tin JSON từ ESP32:**
-```json
-{
-  "pm2_5": 15.2,
-  "pm10": 20.4,
-  "temperature": 28.5,
-  "humidity": 65.2,
-  "pressure": 1012.3,
-  "gas_resistance": 45.6,
-  "mq135": 1200,
-  "aqi": 58
-}
-```
-
----
-
-## ⚙️ PHẦN 4: TRẠM XỬ LÝ TRUNG TÂM (LOCAL SERVER)
-
-Thư mục `local_server/server.js` là một script Node.js đóng vai trò là "Nhà ga trung chuyển" (*Subscriber*).
-
-*   **Kết nối MQTT:** Nó túc trực 24/7, lắng nghe Topic `aqistation/data`. Khi ESP32 bắn JSON lên, server này lập tức chộp lấy.
-*   **Chiến lược Dual Storage (Lưu trữ Kép Vững Chắc):**
-    1.  **Ổ cứng (Local CSV):** Mở file `database.csv` trên ổ cứng và ghi đè thêm 1 dòng. Đây là bước để giữ liệu an toàn tuyệt đối. Các nhà nghiên cứu Data Science rất chuộng format này.
-    2.  **Đám Mây (MongoDB Atlas):** Dùng thư viện `Mongoose` định nghĩa Schema kiểu dáng dữ liệu. Sau đó, nó bọc gói JSON kia thành Document và thực hiện `await newRecord.save()` để đẩy thẳng lên Cloud Database. Nhờ vậy, Web Dashboard mới có thể lấy dữ liệu để vẽ biểu đồ!
-
----
-
-## 🎨 PHẦN 5: WEB DASHBOARD VÀ HIỂN THỊ (NEXT.JS)
-
-Nằm trong thư mục `aqi-dashboard`, đây là phần tương tác với người dùng cuối, được xây dựng cực kỳ công phu.
-
-### 5.1 Công Nghệ Lõi
-*   **Next.js (App Router):** Xử lý từ UI đến Server API.
-*   **Tailwind CSS:** Thiết kế giao diện (Styling) theo phong cách hiện đại.
-*   **Chart.js & react-chartjs-2:** Thư viện chịu trách nhiệm vẽ 6 biểu đồ đường (Line Chart) mượt mà cho 6 loại thông số.
-
-### 5.2 Giao Diện Glassmorphism & Động Lực Học (Dynamic UI)
-
-Giao diện không cứng nhắc mà phản ứng hoàn toàn theo chỉ số AQI:
-*   Hàm `getAQIConfig(aqi)` kiểm tra mức độ ô nhiễm và trả về một bộ thiết lập giao diện (Config).
-*   **Cấp độ màu (6 dải EPA):** Good (Xanh lá) ➔ Moderate (Vàng) ➔ Poor (Cam) ➔ Unhealthy (Đỏ) ➔ Severe (Tím) ➔ Hazardous (Đỏ sậm).
-*   **Hiệu ứng:** 
-    *   Màu gradient của khối hiển thị chính sẽ chuyển màu tương ứng.
-    *   Emoji biểu cảm của nhân vật thay đổi (từ 😊 sang 😷, 🤮, ☠️).
-    *   Thanh trượt mức độ ô nhiễm (AQI Scale Bar) sẽ di chuyển mũi tên đến đúng phần trăm (%) nguy hiểm hiện tại.
-*   Các thẻ (Cards) bên dưới sử dụng kỹ thuật Glassmorphism (Kính mờ - `backdrop-blur-xl`) để tạo chiều sâu giao diện.
-
-### 5.3 Backend API của Dashboard (`app/api/data/route.js`)
-
-Đây là nơi cung cấp dữ liệu cho biểu đồ vẽ.
-*   **Cải tiến đột phá:** Ban đầu file này đọc trực tiếp file `.csv` ở ổ cứng (C:\...). Nhưng để đưa lên môi trường Đám mây (Vercel), chúng ta đã viết lại hoàn toàn. 
-*   **Cách hoạt động hiện tại:** Nó gọi module `lib/mongodb.js` để kết nối vào MongoDB Atlas. Sau đó dùng `SensorData.find().sort({ timestamp: -1 }).limit(limit)` để lấy N bản ghi mới nhất. Trả về mảng dữ liệu cho Frontend thông qua API chuẩn REST.
-
-> [!TIP]
-> Việc cho phép Client truyền param `?limit=...` kết hợp với Menu Dropdown "🕒 Time Selector" trên giao diện giúp người dùng có thể linh hoạt chuyển đổi xem dữ liệu 5 phút trước hay 24 giờ qua.
-
----
-
-## 🚀 PHẦN 6: HƯỚNG DẪN DEPLOY LÊN VERCEL
-
-Dự án này sinh ra là để chạy trên hệ sinh thái **Vercel** (nhà đẻ của Next.js). Khi Deploy, toàn bộ thư mục `app/api` sẽ được Vercel tự động biến thành **Serverless Functions**. Điều này có nghĩa là server không chạy ngầm tốn tiền 24/7, mà khi nào trình duyệt web request, server mới "tỉnh giấc" trong phần nghìn giây để móc dữ liệu từ MongoDB và trả về.
-
-**Để deploy dự án lên Internet toàn cầu:**
-1.  Đảm bảo code hiện tại đã push hết lên một kho lưu trữ (Repository) trên GitHub (như `nhhoang1510/aqistation`).
-2.  Đăng nhập trang quản trị Vercel bằng tài khoản GitHub đó.
-3.  Bấm **Add New Project**, chọn Repo `aqistation`.
-4.  Ở phần Root Directory, nhớ chọn đúng thư mục `aqi-dashboard` (vì thư mục gốc chứa cả code Arduino và Node.js).
-5.  Mở phần **Environment Variables** ra, nhập vào biến tên là `MONGODB_URI` và dán chuỗi kết nối (như trong file `.env`) vào.
-6.  Bấm **Deploy** và tận hưởng! Vercel sẽ cấp cho bạn một domain HTTPS miễn phí mãi mãi.
-
----
-
-## 💻 PHẦN 7: HƯỚNG DẪN CHẠY LOCAL KHI PHÁT TRIỂN
-
-Nếu bạn là Developer mới tham gia, đây là quy trình để bạn chạy toàn bộ dự án trên máy tính của mình để fix bug:
-
-**Bước 1: Nạp Code cho Mạch (Chỉ người làm phần cứng)**
-*   Mở Arduino IDE, sửa `WIFI_SSID` và `PASSWORD` cho đúng mạng nhà bạn. Cắm cáp nạp code vào ESP32.
-
-**Bước 2: Khởi động Trạm Trung Chuyển MQTT**
-*   Mở Terminal thứ 1, gõ:
-    ```bash
-    cd "btl vxl/local_server"
-    npm install
-    node server.js
-    ```
-*   *(Nhìn màn hình báo "Đã kết nối MQTT Broker thành công" là yên tâm).*
-
-**Bước 3: Chạy Web Dashboard**
-*   Mở Terminal thứ 2, gõ:
-    ```bash
-    cd "btl vxl/aqi-dashboard"
-    npm install
-    npm run dev
-    ```
-*   Trình duyệt sẽ mở ra ở `http://localhost:3000`. Dashboard sẽ bắt đầu tự động refresh 5 giây một lần để kéo dữ liệu mới nhất.
-
----
-*Chúc bạn có khoảng thời gian phát triển dự án vui vẻ và học hỏi được nhiều kiến thức!*
+> 💡 **Mẹo:** Từ bây giờ trở đi, mỗi khi bạn gõ lệnh `git push` code mới lên GitHub, Vercel sẽ tự động phát hiện và Build lại giao diện mới nhất ngay lập tức mà bạn không cần phải thao tác lại các bước trên.
