@@ -50,6 +50,11 @@ Khi trình duyệt gọi `GET /api/data?limit=30`:
 2. Dùng lệnh `SensorData.find().sort({ timestamp: -1 }).limit(30)` để lấy 30 bản ghi mới nhất.
 3. Trả về mảng dữ liệu định dạng JSON cho Frontend xử lý.
 
+**❓ Tại sao Trình duyệt (Frontend) không chọc thẳng vào Database mà phải gọi vòng qua Vercel API?**
+1. **Bảo mật tuyệt đối (Security):** Nếu trình duyệt gọi thẳng, ta sẽ phải để lộ chuỗi mật khẩu Database ngay trong code web. Bất kỳ ai vào web bấm F12 cũng có thể lấy được mật khẩu và xóa sạch data. Khi đi qua Vercel API, mật khẩu được giấu an toàn tuyệt đối trên server ẩn.
+2. **Tránh "Sập" Database (Connection pooling):** Nếu 1.000 người vào web cùng lúc, Database sẽ phải gánh 1.000 kết nối trực tiếp và dễ dàng bị crash. Khi dùng Vercel API làm trạm thu phí, hệ thống gom lại thành rất ít kết nối, lấy data rồi mới phát lại cho 1.000 người.
+3. **Sàng lọc dữ liệu tối ưu:** API cho phép đưa lệnh để Database chỉ trả về đúng 30 dòng dữ liệu mới nhất (vài Kilobyte), thay vì bắt điện thoại người dùng phải gánh toàn bộ hàng chục Megabyte lịch sử từ xưa đến nay làm giật lag web.
+
 ---
 
 ## 🚀 Phần 2: Hướng dẫn Deploy lên Vercel
