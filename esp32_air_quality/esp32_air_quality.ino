@@ -18,7 +18,7 @@ const char* WIFI_SSID     = "TP-Link_4DDC";
 const char* WIFI_PASSWORD = "00000000";
 
 // ─── Server ───────────────────────────────────────────────────────────────────
-const char* SERVER_URL = "https://aqistation.vercel.app/api/upload";
+const char* SERVER_URL = "http://192.168.0.105:3000/api/upload"; // Trỏ về Local Server trên Laptop
 
 // ─── Pins ─────────────────────────────────────────────────────────────────────
 #define SDA_PIN    21
