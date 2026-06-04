@@ -17,6 +17,25 @@ Dự án này là minh chứng rõ nét cho một hệ thống IoT hoàn chỉnh
 
 Dưới đây, chúng ta sẽ đi sâu vào từng tầng.
 
+### 🔄 Sơ Đồ Luồng Dữ Liệu (Data Flow)
+
+```mermaid
+sequenceDiagram
+    participant S as Cảm Biến (PMS, BME, MQ)
+    participant E as Vi Điều Khiển (ESP32)
+    participant V_API as Vercel (Next.js API)
+    participant DB as MongoDB Atlas (Cloud)
+    participant V_WEB as Vercel (Web Dashboard)
+
+    S->>E: Đo đạc chỉ số (PM2.5, Nhiệt độ...)
+    E->>V_API: Gửi JSON qua HTTP POST (Mỗi 5s)
+    V_API->>DB: Xác thực & Lưu bản ghi mới
+    V_WEB->>V_API: Trình duyệt gọi HTTP GET định kỳ
+    V_API->>DB: Truy vấn 15 bản ghi mới nhất
+    DB-->>V_API: Trả về dữ liệu NoSQL
+    V_API-->>V_WEB: Cập nhật biểu đồ & giao diện
+```
+
 ---
 
 ## ⚡ PHẦN 2: TẦNG THIẾT BỊ & CẢM BIẾN (`/esp32_air_quality`)
