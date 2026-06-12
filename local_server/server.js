@@ -1,47 +1,95 @@
-const express = require('express');
-const cors = require('cors');
+require('dotenv').config();
+const mqtt = require('mqtt');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-const app = express();
-const PORT = 3000;
+// Mongoose Schema cho MongoDB
+const sensorDataSchema = new mongoose.Schema({
+  pm2_5: Number,
+  pm10: Number,
+  temperature: Number,
+  humidity: Number,
+  pressure: Number,
+  gas_resistance: Number,
+  mq135: Number,
+  aqi: Number,
+  timestamp: { type: Date, default: Date.now }
+});
+const SensorData = mongoose.models.SensorData || mongoose.model('SensorData', sensorDataSchema);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Tên file Database (CSV)
+// File CSV lưu trữ cục bộ
 const dbFile = path.join(__dirname, 'database.csv');
-
-// Tạo header cho file CSV nếu file chưa tồn tại
 if (!fs.existsSync(dbFile)) {
     fs.writeFileSync(dbFile, "timestamp,pm2_5,pm10,temperature,humidity,pressure,gas_resistance,mq135,aqi\n");
     console.log("Đã tạo file database.csv mới.");
 }
 
-// API nhận dữ liệu từ ESP32
-app.post('/api/upload', (req, res) => {
-    const data = req.body;
-    
-    // Lấy thời gian hiện tại
-    const timestamp = new Date().toISOString();
-    
-    // Tạo 1 dòng dữ liệu CSV
-    const csvLine = `${timestamp},${data.pm2_5},${data.pm10},${data.temperature},${data.humidity},${data.pressure},${data.gas_resistance},${data.mq135},${data.aqi}\n`;
-    
-    // Ghi nối tiếp (append) vào file
-    fs.appendFileSync(dbFile, csvLine);
-    
-    console.log(`[${timestamp}] Đã lưu dữ liệu: T=${data.temperature}°C, H=${data.humidity}%`);
-    
-    res.status(200).json({ message: "Lưu dữ liệu thành công!" });
-});
+// Cấu hình MQTT (Đồng bộ với cấu hình trên ESP32)
+const MQTT_SERVER = "mqtt://broker.emqx.io";
+const MQTT_TOPIC = "aqistation/data";
 
-// Chạy Server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`===========================================`);
-    console.log(`🚀 LOCAL SERVER ĐANG CHẠY!`);
-    console.log(`👉 API Endpoint: http://localhost:${PORT}/api/upload`);
-    console.log(`👉 ESP32 Endpoint: http://192.168.0.105:${PORT}/api/upload`);
-    console.log(`===========================================`);
-});
+async function main() {
+  console.log(`===========================================`);
+  console.log(`🚀 LOCAL SERVER & MQTT SUBSCRIBER ĐANG CHẠY`);
+  console.log(`===========================================`);
+
+  // 1. Kết nối MongoDB
+  try {
+    if(process.env.MONGODB_URI) {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('✅ Đã kết nối MongoDB Atlas thành công.');
+    } else {
+        console.log('⚠️ Không tìm thấy MONGODB_URI trong file .env, bỏ qua lưu trữ Đám mây.');
+    }
+  } catch (err) {
+    console.error('❌ Lỗi kết nối MongoDB:', err);
+  }
+
+  // 2. Kết nối MQTT Broker
+  console.log(`⏳ Đang kết nối MQTT Broker tại ${MQTT_SERVER}...`);
+  const client = mqtt.connect(MQTT_SERVER);
+
+  client.on('connect', () => {
+    console.log('✅ Đã kết nối MQTT Broker thành công.');
+    client.subscribe(MQTT_TOPIC, (err) => {
+      if (!err) {
+        console.log(`📡 Đang lắng nghe dữ liệu từ topic: ${MQTT_TOPIC}`);
+        console.log(`===========================================`);
+      } else {
+        console.error('❌ Lỗi Subscribe:', err);
+      }
+    });
+  });
+
+  client.on('message', async (topic, message) => {
+    try {
+      const payload = message.toString();
+      console.log(`\n[${new Date().toISOString()}] Nhận dữ liệu từ ${topic}: ${payload}`);
+      
+      const data = JSON.parse(payload);
+      
+      // Ghi vào file CSV
+      const timestamp = new Date().toISOString();
+      const csvLine = `${timestamp},${data.pm2_5},${data.pm10},${data.temperature},${data.humidity},${data.pressure},${data.gas_resistance},${data.mq135},${data.aqi}\n`;
+      fs.appendFileSync(dbFile, csvLine);
+      console.log('📝 Đã lưu cục bộ vào file database.csv');
+
+      // Lưu lên MongoDB
+      if (mongoose.connection.readyState === 1) {
+        const newRecord = new SensorData(data);
+        await newRecord.save();
+        console.log('☁️ Đã lưu bản ghi lên MongoDB Atlas để Dashboard hiển thị');
+      }
+
+    } catch (error) {
+      console.error('❌ Lỗi xử lý dữ liệu:', error);
+    }
+  });
+
+  client.on('error', (err) => {
+    console.error('❌ MQTT Error:', err);
+  });
+}
+
+main();
