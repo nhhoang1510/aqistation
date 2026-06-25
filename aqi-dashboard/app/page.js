@@ -76,6 +76,7 @@ export default function Dashboard() {
   const [latest, setLatest] = useState(null);
   const [history, setHistory] = useState([]);
   const [timeLimit, setTimeLimit] = useState(60); // Mặc định 5 phút (60 * 5s)
+  const [isLive, setIsLive] = useState(null); // null = chưa biết, true = live, false = offline
 
   const fetchData = async () => {
     try {
@@ -86,10 +87,17 @@ export default function Dashboard() {
       setHistory(resHistory);
       
       if (resHistory && resHistory.length > 0) {
-        setLatest(resHistory[resHistory.length - 1]);
+        const newLatest = resHistory[resHistory.length - 1];
+        setLatest(newLatest);
+        // Kiểm tra bản ghi mới nhất có trong vòng 30 giây không
+        const age = Date.now() - new Date(newLatest.timestamp).getTime();
+        setIsLive(age < 30000);
+      } else {
+        setIsLive(false);
       }
     } catch (e) {
       console.error("Lỗi Fetch Data:", e);
+      setIsLive(false);
     }
   };
 
@@ -222,10 +230,25 @@ export default function Dashboard() {
           
           {/* Header Section */}
           <div className="p-6 md:p-8 pb-4 border-b border-gray-100">
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">AQI STATION</h1>
                 <p className="text-gray-400 text-sm italic mt-1">Last Updated: {lastUpdated} (Local Time)</p>
+              </div>
+              {/* Live / Offline Badge */}
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${
+                isLive === null
+                  ? 'bg-gray-100 border-gray-200 text-gray-400'
+                  : isLive
+                  ? 'bg-green-50 border-green-200 text-green-600'
+                  : 'bg-red-50 border-red-200 text-red-500'
+              }`}>
+                <span className={`w-2.5 h-2.5 rounded-full ${
+                  isLive === null ? 'bg-gray-300'
+                  : isLive ? 'bg-green-500 animate-pulse'
+                  : 'bg-red-500'
+                }`} />
+                {isLive === null ? 'Connecting...' : isLive ? 'LIVE' : 'Offline'}
               </div>
             </div>
           </div>

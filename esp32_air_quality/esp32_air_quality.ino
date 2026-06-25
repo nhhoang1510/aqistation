@@ -1,15 +1,4 @@
-/*
- * HỆ THỐNG GIÁM SÁT CHẤT LƯỢNG KHÔNG KHÍ - ESP32 FreeRTOS v2.0
- * 
- * Kiến trúc Task:
- *   Core 1: taskPMS (ưu tiên 3) - Đọc UART PMS5003
- *   Core 1: taskSensors (ưu tiên 2) - Đọc BME680 + MQ135 mỗi 10s
- *   Core 1: taskSDCard (ưu tiên 1) - Lưu CSV lên thẻ SD
- *   Core 0: taskNetwork (ưu tiên 1) - WiFi + MQTT publish
- * 
- * Đồng bộ: Mutex bảo vệ SharedData + EventGroup thông báo data mới
- * An toàn: Task Watchdog Timer (TWDT) 30 giây
- */
+
 
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -23,9 +12,14 @@
 #include <SPI.h>
 #include <esp_task_wdt.h>
 
-// Cấu hình mạng
+// Cấu hình WiFi (hardcode)
 const char* WIFI_SSID     = "TP-Link_4DDC";
 const char* WIFI_PASSWORD = "00000000";
+
+// Cấu hình AP (fallback khi không kết nối được WiFi)
+const char* AP_SSID = "AQI_Station";
+const char* AP_PASS = "12345678";  // Để trống "" nếu muốn AP không có mật khẩu
+
 const char* MQTT_SERVER   = "broker.emqx.io"; 
 const int   MQTT_PORT     = 1883;
 const char* MQTT_USER     = "";
@@ -60,6 +54,8 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 Adafruit_BME680 bme(&Wire);
 HardwareSerial  pmsSerial(1);
+
+volatile bool wifi_connected = false;  // Trạng thái WiFi
 
 volatile bool sd_ok  = false;
 volatile bool bme_ok = false;
@@ -228,25 +224,70 @@ void initBME680() {
   if (!bme_ok) Serial.println("[BME680] KHONG TIM THAY CAM BIEN!");
 }
 
-// Kết nối WiFi với timeout, trả về true/false
-bool connectWiFiWithTimeout() {
-  Serial.printf("[Network] Kết nối WiFi: %s\n", WIFI_SSID);
-  WiFi.disconnect(true);
-  vTaskDelay(pdMS_TO_TICKS(100));
+// Kết nối WiFi - BLOCK cho đến khi thành công
+// 1. Thử hardcode WiFi (15s)
+// 2. Nếu thất bại → bật AP + thử lại WiFi liên tục cho đến khi được
+void initWiFi() {
+  Serial.printf("[WiFi] Đang kết nối: %s\n", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   
+  // Lần thử đầu tiên
   unsigned long startAttempt = millis();
   while (WiFi.status() != WL_CONNECTED) {
-    if (millis() - startAttempt >= WIFI_CONNECT_TIMEOUT_MS) {
-      Serial.println("\n[Network] WiFi timeout!");
-      return false;
-    }
-    vTaskDelay(pdMS_TO_TICKS(500));
+    if (millis() - startAttempt >= WIFI_CONNECT_TIMEOUT_MS) break;
+    delay(500);
     Serial.print(".");
   }
   
-  Serial.printf("\n[Network] WiFi OK! IP: %s\n", WiFi.localIP().toString().c_str());
-  return true;
+  // Nếu kết nối được ngay → xong
+  if (WiFi.status() == WL_CONNECTED) {
+    wifi_connected = true;
+    Serial.printf("\n[WiFi] Kết nối thành công! IP: %s\n", WiFi.localIP().toString().c_str());
+    return;
+  }
+  
+  // Không kết nối được → bật AP + tiếp tục thử WiFi
+  Serial.println("\n[WiFi] Không kết nối được! Bật AP và thử lại...");
+  WiFi.disconnect(true);
+  delay(200);  // Đợi status WiFi reset hoàn toàn
+  WiFi.mode(WIFI_AP_STA);  // Vừa làm AP vừa thử kết nối STA
+  WiFi.softAP(AP_SSID, strlen(AP_PASS) > 0 ? AP_PASS : NULL);
+  
+  Serial.println("============================================");
+  Serial.println("[AP] CHẾ ĐỘ ACCESS POINT");
+  Serial.printf( "[AP] Tên WiFi: %s\n", AP_SSID);
+  if (strlen(AP_PASS) > 0) Serial.printf("[AP] Mật khẩu: %s\n", AP_PASS);
+  Serial.printf( "[AP] IP: %s\n", WiFi.softAPIP().toString().c_str());
+  Serial.println("[WiFi] Đang thử kết nối lại liên tục...");
+  Serial.println("============================================");
+  
+  // Block ở đây - thử lại WiFi cho đến khi STA thực sự kết nối
+  // KHÔNG dùng WiFi.status() cho vòng ngoài vì ở chế độ AP_STA,
+  // nó có thể trả về WL_CONNECTED sai do AP đang hoạt động.
+  while (true) {
+    WiFi.disconnect(true);  // Ngắt STA cũ trước khi thử lại
+    delay(200);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    startAttempt = millis();
+    while (WiFi.status() != WL_CONNECTED) {
+      if (millis() - startAttempt >= WIFI_CONNECT_TIMEOUT_MS) break;
+      delay(500);
+    }
+    // Kiểm tra kỹ: STA phải có IP hợp lệ (không phải 0.0.0.0)
+    if (WiFi.status() == WL_CONNECTED && WiFi.localIP() != IPAddress(0, 0, 0, 0)) {
+      Serial.printf("\n[WiFi] STA đã có IP: %s\n", WiFi.localIP().toString().c_str());
+      break;
+    }
+    Serial.println("[WiFi] Vẫn chưa kết nối được, thử lại sau 10 giây...");
+    delay(10000);
+  }
+  
+  // Kết nối thành công! Tắt AP
+  wifi_connected = true;
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
+  Serial.printf("[WiFi] Kết nối thành công! IP: %s\n", WiFi.localIP().toString().c_str());
 }
 
 
@@ -406,24 +447,18 @@ void taskNetwork(void *pvParameters) {
   esp_task_wdt_add(NULL);
   Serial.println("[Network] Task khởi động - Core " + String(xPortGetCoreID()));
   
-  WiFi.mode(WIFI_STA);
-  WiFi.setAutoReconnect(true);
-  connectWiFiWithTimeout();
-  
   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
   mqttClient.setBufferSize(512);
 
   for (;;) {
     esp_task_wdt_reset();
     
-    // Duy trì WiFi
+    // Kiểm tra WiFi
     if (WiFi.status() != WL_CONNECTED) {
-      Serial.println("[Network] WiFi mat ket noi, dang thu lai...");
-      connectWiFiWithTimeout();
-      if (WiFi.status() != WL_CONNECTED) {
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        continue;
-      }
+      Serial.println("[Network] Mất WiFi, đang thử kết nối lại...");
+      WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+      vTaskDelay(pdMS_TO_TICKS(15000));
+      continue;
     }
 
     // Duy trì MQTT
@@ -497,8 +532,16 @@ void setup() {
   initBME680();
   pmsSerial.begin(9600, SERIAL_8N1, RXD1, TXD1);
 
-  // Watchdog Timer
-  esp_task_wdt_init(WDT_TIMEOUT_S, true);
+  // Kết nối WiFi (hardcode) hoặc chuyển sang AP mode
+  initWiFi();
+
+  // Watchdog Timer - cấu hình lại (Arduino Core v3.x đã tự init rồi)
+  esp_task_wdt_config_t wdt_config = {
+    .timeout_ms = WDT_TIMEOUT_S * 1000,
+    .idle_core_mask = 0,
+    .trigger_panic = true
+  };
+  esp_task_wdt_reconfigure(&wdt_config);
 
   // Tạo Tasks - Core 1: Sensors, Core 0: Network
   xTaskCreatePinnedToCore(taskPMS,     "PMS_UART",  3072, NULL, 3, NULL, 1);
