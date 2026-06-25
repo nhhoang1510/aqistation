@@ -321,38 +321,42 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right: Weather Widget Glassmorphism */}
-            <div className="w-full md:w-80 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-xl relative z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <span className="text-4xl drop-shadow-sm">⛅</span>
+            {/* Right: Weather Widget */}
+            <div className="w-full md:w-80 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-5 shadow-xl relative z-10">
+              <div className="grid grid-cols-2 gap-3">
+                {/* Temperature */}
+                <div className="col-span-2 bg-white/60 rounded-2xl p-4 flex items-center gap-3">
+                  <span className="text-3xl">🌡️</span>
                   <div>
-                    <div className="text-3xl font-bold text-gray-800 flex items-start">
-                      {latest?.temperature?.toFixed(1) || "--"} <span className="text-lg mt-1">°C</span>
+                    <div className="text-2xl font-black text-gray-800">
+                      {latest?.temperature?.toFixed(1) || "--"}<span className="text-sm font-medium text-gray-500 ml-1">°C</span>
                     </div>
-                    <div className="text-sm font-medium text-gray-600">Cloudy</div>
+                    <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">Temperature</div>
                   </div>
                 </div>
-                <button className="w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center hover:bg-gray-700 shadow-md">
-                  ↗
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4 border-t border-gray-300/30 pt-4">
-                <div className="text-center">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">💧 Humidity</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.humidity?.toFixed(1) || "--"} %</div>
+                {/* Humidity */}
+                <div className="bg-blue-50/80 rounded-2xl p-3 flex flex-col gap-1">
+                  <span className="text-xl">💧</span>
+                  <div className="text-lg font-black text-blue-600">{latest?.humidity?.toFixed(1) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">%</span></div>
+                  <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Humidity</div>
                 </div>
-                <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">⏱️ Pressure</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.pressure?.toFixed(0) || "--"} hPa</div>
+                {/* Pressure */}
+                <div className="bg-purple-50/80 rounded-2xl p-3 flex flex-col gap-1">
+                  <span className="text-xl">⏱️</span>
+                  <div className="text-lg font-black text-purple-600">{latest?.pressure?.toFixed(0) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">hPa</span></div>
+                  <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Pressure</div>
                 </div>
-                <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">☣️ Gas</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.gas_resistance?.toFixed(0) || "--"} kΩ</div>
+                {/* Gas */}
+                <div className="col-span-2 bg-emerald-50/80 rounded-2xl p-3 flex items-center gap-3">
+                  <span className="text-xl">☣️</span>
+                  <div>
+                    <div className="text-lg font-black text-emerald-600">{latest?.gas_resistance?.toFixed(0) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">kΩ</span></div>
+                    <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Gas Resistance</div>
+                  </div>
                 </div>
               </div>
             </div>
+
 
           </div>
         </div>
