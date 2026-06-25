@@ -19,53 +19,53 @@ ChartJS.defaults.font.family = "Outfit, sans-serif";
 
 function getAQIConfig(aqi) {
   if (aqi == null) return { label: "Loading...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
-  
+
   const step = 100 / 6; // Vì có 6 dải màu bằng nhau (mỗi dải chiếm 16.66% chiều rộng)
-  
-  if (aqi <= 50) return { 
-    label: "Good", 
-    color: "text-emerald-500", 
-    bg: "bg-emerald-500", 
+
+  if (aqi <= 50) return {
+    label: "Good",
+    color: "text-emerald-500",
+    bg: "bg-emerald-500",
     gradient: "from-emerald-50 via-white to-emerald-100/40",
     emoji: "😊",
     percent: (aqi / 50) * step
   };
-  if (aqi <= 100) return { 
-    label: "Moderate", 
-    color: "text-yellow-500", 
-    bg: "bg-yellow-500", 
+  if (aqi <= 100) return {
+    label: "Moderate",
+    color: "text-yellow-500",
+    bg: "bg-yellow-500",
     gradient: "from-yellow-50 via-white to-yellow-100/40",
     emoji: "😐",
     percent: step + ((aqi - 50) / 50) * step
   };
-  if (aqi <= 150) return { 
-    label: "Poor", 
-    color: "text-orange-500", 
-    bg: "bg-orange-500", 
+  if (aqi <= 150) return {
+    label: "Poor",
+    color: "text-orange-500",
+    bg: "bg-orange-500",
     gradient: "from-orange-50 via-white to-orange-100/40",
     emoji: "😷",
     percent: step * 2 + ((aqi - 100) / 50) * step
   };
-  if (aqi <= 200) return { 
-    label: "Unhealthy", 
-    color: "text-red-500", 
-    bg: "bg-red-500", 
+  if (aqi <= 200) return {
+    label: "Unhealthy",
+    color: "text-red-500",
+    bg: "bg-red-500",
     gradient: "from-red-50 via-white to-red-100/40",
     emoji: "🤢",
     percent: step * 3 + ((aqi - 150) / 50) * step
   };
-  if (aqi <= 300) return { 
-    label: "Severe", 
-    color: "text-purple-500", 
-    bg: "bg-purple-500", 
+  if (aqi <= 300) return {
+    label: "Severe",
+    color: "text-purple-500",
+    bg: "bg-purple-500",
     gradient: "from-purple-50 via-white to-purple-100/40",
     emoji: "🤮",
     percent: step * 4 + ((aqi - 200) / 100) * step
   };
-  return { 
-    label: "Hazardous", 
-    color: "text-rose-800", 
-    bg: "bg-rose-800", 
+  return {
+    label: "Hazardous",
+    color: "text-rose-800",
+    bg: "bg-rose-800",
     gradient: "from-rose-50 via-white to-rose-200/40",
     emoji: "☠️",
     percent: step * 5 + ((Math.min(aqi, 500) - 300) / 200) * step
@@ -82,10 +82,10 @@ export default function Dashboard() {
     try {
       const res = await fetch(`/api/data?limit=${timeLimit}`);
       if (!res.ok) throw new Error("Lỗi mạng khi tải dữ liệu");
-      
+
       const resHistory = await res.json();
       setHistory(resHistory);
-      
+
       if (resHistory && resHistory.length > 0) {
         const newLatest = resHistory[resHistory.length - 1];
         setLatest(newLatest);
@@ -108,13 +108,13 @@ export default function Dashboard() {
   }, [timeLimit]);
 
   const aqiConfig = getAQIConfig(latest?.aqi);
-  
+
   // Format thời gian
-  const lastUpdated = latest?.timestamp 
-    ? new Date(latest.timestamp).toLocaleString('vi-VN', { 
-        year: 'numeric', month: '2-digit', day: '2-digit', 
-        hour: '2-digit', minute:'2-digit', second:'2-digit' 
-      }) 
+  const lastUpdated = latest?.timestamp
+    ? new Date(latest.timestamp).toLocaleString('vi-VN', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    })
     : "--";
   const chartOptions = {
     responsive: true,
@@ -221,13 +221,13 @@ export default function Dashboard() {
   ];
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans text-gray-800"
-         style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }}>
-      
+      style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }}>
+
       <div className="max-w-6xl mx-auto space-y-6">
-        
+
         {/* Main AQI Card */}
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-          
+
           {/* Header Section */}
           <div className="p-6 md:p-8 pb-4 border-b border-gray-100">
             <div className="flex justify-between items-center">
@@ -236,18 +236,16 @@ export default function Dashboard() {
                 <p className="text-gray-400 text-sm italic mt-1">Last Updated: {lastUpdated} (Local Time)</p>
               </div>
               {/* Live / Offline Badge */}
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${
-                isLive === null
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${isLive === null
                   ? 'bg-gray-100 border-gray-200 text-gray-400'
                   : isLive
-                  ? 'bg-green-50 border-green-200 text-green-600'
-                  : 'bg-red-50 border-red-200 text-red-500'
-              }`}>
-                <span className={`w-2.5 h-2.5 rounded-full ${
-                  isLive === null ? 'bg-gray-300'
-                  : isLive ? 'bg-green-500 animate-pulse'
-                  : 'bg-red-500'
-                }`} />
+                    ? 'bg-green-50 border-green-200 text-green-600'
+                    : 'bg-red-50 border-red-200 text-red-500'
+                }`}>
+                <span className={`w-2.5 h-2.5 rounded-full ${isLive === null ? 'bg-gray-300'
+                    : isLive ? 'bg-green-500 animate-pulse'
+                      : 'bg-red-500'
+                  }`} />
                 {isLive === null ? 'Connecting...' : isLive ? 'LIVE' : 'Offline'}
               </div>
             </div>
@@ -255,18 +253,18 @@ export default function Dashboard() {
 
           {/* Dashboard Gradient Area */}
           <div className={`p-6 md:p-8 bg-gradient-to-b ${aqiConfig.gradient} relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8`}>
-            
+
             {/* Background Decorations (Mây mờ) */}
             <div className="absolute top-0 right-10 w-64 h-32 bg-white/30 rounded-full blur-3xl mix-blend-overlay pointer-events-none"></div>
             <div className="absolute bottom-0 left-10 w-64 h-32 bg-white/40 rounded-full blur-3xl mix-blend-overlay pointer-events-none"></div>
-            
+
             {/* Left: AQI Values */}
             <div className="flex-1 w-full relative z-10">
               <div className="flex items-center gap-2 mb-2">
                 <span className={`w-3 h-3 rounded-full ${aqiConfig.bg} animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.2)]`}></span>
                 <span className="text-gray-600 font-semibold text-sm uppercase tracking-wide">Live AQI</span>
               </div>
-              
+
               <div className="flex items-baseline gap-4 mb-6">
                 <span className={`text-7xl md:text-9xl font-black ${aqiConfig.color} drop-shadow-md`}>
                   {latest?.aqi || "--"}
@@ -281,11 +279,11 @@ export default function Dashboard() {
 
               <div className="flex gap-8 mb-8 text-gray-700">
                 <div className="text-lg">
-                  <span className="font-bold">PM2.5 : </span> 
+                  <span className="font-bold">PM2.5 : </span>
                   <span className="text-2xl font-bold">{latest?.pm2_5 || "--"}</span> <span className="text-sm">µg/m³</span>
                 </div>
                 <div className="text-lg">
-                  <span className="font-bold">PM10 : </span> 
+                  <span className="font-bold">PM10 : </span>
                   <span className="text-2xl font-bold">{latest?.pm10 || "--"}</span> <span className="text-sm">µg/m³</span>
                 </div>
               </div>
@@ -307,7 +305,7 @@ export default function Dashboard() {
                   <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300</span><span>301+</span>
                 </div>
                 {/* Indicator Triangle */}
-                <div 
+                <div
                   className="absolute w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-gray-800 transition-all duration-500"
                   style={{ left: `calc(${aqiConfig.percent}% - 6px)`, bottom: '22px' }}
                 ></div>
@@ -320,44 +318,35 @@ export default function Dashboard() {
                 {aqiConfig.emoji}
               </div>
             </div>
-
-            {/* Right: Weather Widget */}
-            <div className="w-full md:w-80 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-5 shadow-xl relative z-10">
-              <div className="grid grid-cols-2 gap-3">
-                {/* Temperature */}
-                <div className="col-span-2 bg-white/60 rounded-2xl p-4 flex items-center gap-3">
-                  <span className="text-3xl">🌡️</span>
-                  <div>
-                    <div className="text-2xl font-black text-gray-800">
-                      {latest?.temperature?.toFixed(1) || "--"}<span className="text-sm font-medium text-gray-500 ml-1">°C</span>
+            <div className="w-full md:w-80 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-xl relative z-10">
+              {/* Top: centered icon + temperature */}
+              <div className="flex flex-col items-center justify-center mb-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl drop-shadow-sm">🌡️</span>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-800 flex items-start">
+                      {latest?.temperature?.toFixed(1) || "--"} <span className="text-lg mt-1">°C</span>
                     </div>
-                    <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">Temperature</div>
-                  </div>
-                </div>
-                {/* Humidity */}
-                <div className="bg-blue-50/80 rounded-2xl p-3 flex flex-col gap-1">
-                  <span className="text-xl">💧</span>
-                  <div className="text-lg font-black text-blue-600">{latest?.humidity?.toFixed(1) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">%</span></div>
-                  <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Humidity</div>
-                </div>
-                {/* Pressure */}
-                <div className="bg-purple-50/80 rounded-2xl p-3 flex flex-col gap-1">
-                  <span className="text-xl">⏱️</span>
-                  <div className="text-lg font-black text-purple-600">{latest?.pressure?.toFixed(0) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">hPa</span></div>
-                  <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Pressure</div>
-                </div>
-                {/* Gas */}
-                <div className="col-span-2 bg-emerald-50/80 rounded-2xl p-3 flex items-center gap-3">
-                  <span className="text-xl">☣️</span>
-                  <div>
-                    <div className="text-lg font-black text-emerald-600">{latest?.gas_resistance?.toFixed(0) || "--"}<span className="text-xs font-medium text-gray-400 ml-1">kΩ</span></div>
-                    <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">Gas Resistance</div>
                   </div>
                 </div>
               </div>
+
+              {/* Bottom: 3-col metrics */}
+              <div className="grid grid-cols-3 gap-4 border-t border-gray-300/30 pt-4">
+                <div className="text-center">
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">💧 Humidity</div>
+                  <div className="font-bold text-gray-800 text-sm">{latest?.humidity?.toFixed(1) || "--"} %</div>
+                </div>
+                <div className="text-center border-l border-gray-300/30">
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">⏱️ Pressure</div>
+                  <div className="font-bold text-gray-800 text-sm">{latest?.pressure?.toFixed(0) || "--"} hPa</div>
+                </div>
+                <div className="text-center border-l border-gray-300/30">
+                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">☣️ Gas</div>
+                  <div className="font-bold text-gray-800 text-sm">{latest?.gas_resistance?.toFixed(0) || "--"} kΩ</div>
+                </div>
+              </div>
             </div>
-
-
           </div>
         </div>
 
@@ -369,7 +358,7 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-2 bg-slate-800 text-slate-200 px-4 py-2 rounded-xl shadow-md text-sm font-medium hover:bg-slate-700 transition cursor-pointer">
             <span className="text-lg">🕒</span>
-            <select 
+            <select
               className="bg-transparent border-none outline-none cursor-pointer text-white appearance-none pr-4"
               value={timeLimit}
               onChange={(e) => setTimeLimit(Number(e.target.value))}
@@ -389,7 +378,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {metrics.map(metric => (
             <div key={metric.id} className={`bg-slate-50 rounded-2xl shadow-sm border border-gray-100 border-l-[6px] ${metric.borderClass} p-5 h-[280px] flex flex-col hover:shadow-md transition-shadow`}>
-              
+
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <div className="text-3xl bg-white p-2 rounded-xl shadow-sm">{metric.icon}</div>

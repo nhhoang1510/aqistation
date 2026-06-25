@@ -1,6 +1,6 @@
 
+#include "wifiConfig.h"      // WiFi Manager + Captive Portal (NVS -> hardcode -> portal)
 
-#include <WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -12,13 +12,9 @@
 #include <SPI.h>
 #include <esp_task_wdt.h>
 
-// Cấu hình WiFi (hardcode)
+// Cấu hình WiFi (hardcode – fallback nếu NVS trống)
 const char* WIFI_SSID     = "TP-Link_4DDC";
 const char* WIFI_PASSWORD = "00000000";
-
-// Cấu hình AP (fallback khi không kết nối được WiFi)
-const char* AP_SSID = "AQI_Station";
-const char* AP_PASS = "12345678";  // Để trống "" nếu muốn AP không có mật khẩu
 
 const char* MQTT_SERVER   = "broker.emqx.io"; 
 const int   MQTT_PORT     = 1883;
@@ -42,7 +38,6 @@ const char* MQTT_TOPIC    = "aqistation/data";
 // Cấu hình FreeRTOS
 #define SENSOR_READ_INTERVAL_MS  10000
 #define WDT_TIMEOUT_S            30
-#define WIFI_CONNECT_TIMEOUT_MS  15000
 
 // Event Group bits: thông báo data mới cho từng consumer
 #define BIT_SD_READY    (1 << 0)
@@ -54,8 +49,6 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 Adafruit_BME680 bme(&Wire);
 HardwareSerial  pmsSerial(1);
-
-volatile bool wifi_connected = false;  // Trạng thái WiFi
 
 volatile bool sd_ok  = false;
 volatile bool bme_ok = false;
@@ -224,72 +217,6 @@ void initBME680() {
   if (!bme_ok) Serial.println("[BME680] KHONG TIM THAY CAM BIEN!");
 }
 
-// Kết nối WiFi - BLOCK cho đến khi thành công
-// 1. Thử hardcode WiFi (15s)
-// 2. Nếu thất bại → bật AP + thử lại WiFi liên tục cho đến khi được
-void initWiFi() {
-  Serial.printf("[WiFi] Đang kết nối: %s\n", WIFI_SSID);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  
-  // Lần thử đầu tiên
-  unsigned long startAttempt = millis();
-  while (WiFi.status() != WL_CONNECTED) {
-    if (millis() - startAttempt >= WIFI_CONNECT_TIMEOUT_MS) break;
-    delay(500);
-    Serial.print(".");
-  }
-  
-  // Nếu kết nối được ngay → xong
-  if (WiFi.status() == WL_CONNECTED) {
-    wifi_connected = true;
-    Serial.printf("\n[WiFi] Kết nối thành công! IP: %s\n", WiFi.localIP().toString().c_str());
-    return;
-  }
-  
-  // Không kết nối được → bật AP + tiếp tục thử WiFi
-  Serial.println("\n[WiFi] Không kết nối được! Bật AP và thử lại...");
-  WiFi.disconnect(true);
-  delay(200);  // Đợi status WiFi reset hoàn toàn
-  WiFi.mode(WIFI_AP_STA);  // Vừa làm AP vừa thử kết nối STA
-  WiFi.softAP(AP_SSID, strlen(AP_PASS) > 0 ? AP_PASS : NULL);
-  
-  Serial.println("============================================");
-  Serial.println("[AP] CHẾ ĐỘ ACCESS POINT");
-  Serial.printf( "[AP] Tên WiFi: %s\n", AP_SSID);
-  if (strlen(AP_PASS) > 0) Serial.printf("[AP] Mật khẩu: %s\n", AP_PASS);
-  Serial.printf( "[AP] IP: %s\n", WiFi.softAPIP().toString().c_str());
-  Serial.println("[WiFi] Đang thử kết nối lại liên tục...");
-  Serial.println("============================================");
-  
-  // Block ở đây - thử lại WiFi cho đến khi STA thực sự kết nối
-  // KHÔNG dùng WiFi.status() cho vòng ngoài vì ở chế độ AP_STA,
-  // nó có thể trả về WL_CONNECTED sai do AP đang hoạt động.
-  while (true) {
-    WiFi.disconnect(true);  // Ngắt STA cũ trước khi thử lại
-    delay(200);
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    startAttempt = millis();
-    while (WiFi.status() != WL_CONNECTED) {
-      if (millis() - startAttempt >= WIFI_CONNECT_TIMEOUT_MS) break;
-      delay(500);
-    }
-    // Kiểm tra kỹ: STA phải có IP hợp lệ (không phải 0.0.0.0)
-    if (WiFi.status() == WL_CONNECTED && WiFi.localIP() != IPAddress(0, 0, 0, 0)) {
-      Serial.printf("\n[WiFi] STA đã có IP: %s\n", WiFi.localIP().toString().c_str());
-      break;
-    }
-    Serial.println("[WiFi] Vẫn chưa kết nối được, thử lại sau 10 giây...");
-    delay(10000);
-  }
-  
-  // Kết nối thành công! Tắt AP
-  wifi_connected = true;
-  WiFi.softAPdisconnect(true);
-  WiFi.mode(WIFI_STA);
-  Serial.printf("[WiFi] Kết nối thành công! IP: %s\n", WiFi.localIP().toString().c_str());
-}
-
 
 
 // Đọc PMS5003 qua UART: đồng bộ frame từng byte, verify checksum, cập nhật PM2.5/PM10
@@ -453,13 +380,15 @@ void taskNetwork(void *pvParameters) {
   for (;;) {
     esp_task_wdt_reset();
     
-    // Kiểm tra WiFi
+    // Kiểm tra WiFi – dùng credentials đang active (từ wifiConfig)
     if (WiFi.status() != WL_CONNECTED) {
-      Serial.println("[Network] Mất WiFi, đang thử kết nối lại...");
-      WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+      Serial.println("[Network] Mat WiFi, dang thu ket noi lai...");
+      wifiConfig.setMode(WIFI_MODE_LOST);
+      WiFi.begin(wifiConfig.getSSID().c_str(), wifiConfig.getPass().c_str());
       vTaskDelay(pdMS_TO_TICKS(15000));
       continue;
     }
+    wifiConfig.setMode(WIFI_MODE_CONNECTED);
 
     // Duy trì MQTT
     if (!mqttClient.connected()) {
@@ -532,10 +461,10 @@ void setup() {
   initBME680();
   pmsSerial.begin(9600, SERIAL_8N1, RXD1, TXD1);
 
-  // Kết nối WiFi (hardcode) hoặc chuyển sang AP mode
-  initWiFi();
+  // WiFi Manager: NVS → hardcode → Captive Portal (block cho đến khi có WiFi)
+  wifiConfig.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  // Watchdog Timer - cấu hình lại (Arduino Core v3.x đã tự init rồi)
+  // Watchdog Timer
   esp_task_wdt_config_t wdt_config = {
     .timeout_ms = WDT_TIMEOUT_S * 1000,
     .idle_core_mask = 0,
@@ -552,7 +481,8 @@ void setup() {
   Serial.println("=== Khởi tạo FreeRTOS thành công! ===");
 }
 
-// loop() trống - FreeRTOS scheduler quản lý toàn bộ
+// loop() – FreeRTOS scheduler quản lý tasks, loop chỉ chạy LED + nút
 void loop() {
-  vTaskDelay(pdMS_TO_TICKS(10000));
+  wifiConfig.run();              // LED feedback + giữ nút để reset
+  vTaskDelay(pdMS_TO_TICKS(100));
 }
