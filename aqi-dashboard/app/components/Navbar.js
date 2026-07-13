@@ -203,7 +203,7 @@ export default function Navbar() {
   return (
     <>
       {/* ─── Top header bar ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-12 bg-white border-b border-gray-200 flex items-center px-4 md:pl-[256px]">
+      <header className="fixed top-0 left-0 right-0 md:left-[240px] z-40 h-[60px] bg-white border-b border-gray-200 flex items-center px-4 md:px-6">
         <button onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden p-1.5 mr-2 rounded-lg hover:bg-gray-100 cursor-pointer text-gray-500">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -216,11 +216,11 @@ export default function Navbar() {
       </header>
 
       {/* Mobile overlay */}
-      {mobileOpen && <div className="md:hidden fixed inset-0 bg-black/20 z-40 top-12" onClick={() => setMobileOpen(false)} />}
+      {mobileOpen && <div className="md:hidden fixed inset-0 bg-black/20 z-40" onClick={() => setMobileOpen(false)} />}
 
       {/* ─── Sidebar ─── */}
-      <aside className={`fixed top-12 left-0 h-[calc(100vh-48px)] z-40 w-[240px] bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
-        <div className="px-5 py-5 border-b border-gray-100">
+      <aside className={`fixed top-0 left-0 h-screen z-50 w-[240px] bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+        <div className="px-5 h-[60px] flex items-center border-b border-gray-200 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-md bg-gray-900 flex items-center justify-center shrink-0">
               <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
