@@ -3,413 +3,260 @@
 import { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
+  CategoryScale, LinearScale, PointElement, LineElement,
+  Title, Tooltip, Legend, Filler
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
-ChartJS.defaults.font.family = "Outfit, sans-serif";
 
 function getAQIConfig(aqi) {
-  if (aqi == null) return { label: "Loading...", color: "text-gray-500", bg: "bg-gray-500", gradient: "from-gray-50 to-gray-100", emoji: "⏳", percent: 0 };
-
-  const step = 100 / 6; // Vì có 6 dải màu bằng nhau (mỗi dải chiếm 16.66% chiều rộng)
-
-  if (aqi <= 50) return {
-    label: "Good",
-    color: "text-emerald-500",
-    bg: "bg-emerald-500",
-    gradient: "from-emerald-50 via-white to-emerald-100/40",
-    emoji: "😊",
-    percent: (aqi / 50) * step
-  };
-  if (aqi <= 100) return {
-    label: "Moderate",
-    color: "text-yellow-500",
-    bg: "bg-yellow-500",
-    gradient: "from-yellow-50 via-white to-yellow-100/40",
-    emoji: "😐",
-    percent: step + ((aqi - 50) / 50) * step
-  };
-  if (aqi <= 150) return {
-    label: "Poor",
-    color: "text-orange-500",
-    bg: "bg-orange-500",
-    gradient: "from-orange-50 via-white to-orange-100/40",
-    emoji: "😷",
-    percent: step * 2 + ((aqi - 100) / 50) * step
-  };
-  if (aqi <= 200) return {
-    label: "Unhealthy",
-    color: "text-red-500",
-    bg: "bg-red-500",
-    gradient: "from-red-50 via-white to-red-100/40",
-    emoji: "🤢",
-    percent: step * 3 + ((aqi - 150) / 50) * step
-  };
-  if (aqi <= 300) return {
-    label: "Severe",
-    color: "text-purple-500",
-    bg: "bg-purple-500",
-    gradient: "from-purple-50 via-white to-purple-100/40",
-    emoji: "🤮",
-    percent: step * 4 + ((aqi - 200) / 100) * step
-  };
-  return {
-    label: "Hazardous",
-    color: "text-rose-800",
-    bg: "bg-rose-800",
-    gradient: "from-rose-50 via-white to-rose-200/40",
-    emoji: "☠️",
-    percent: step * 5 + ((Math.min(aqi, 500) - 300) / 200) * step
-  };
+  if (aqi == null) return { label: "Đang tải", color: "#94a3b8", bg: "#f8fafc", textColor: "#64748b" };
+  if (aqi <= 50)  return { label: "Tốt",       color: "#059669", bg: "#ecfdf5", textColor: "#065f46" };
+  if (aqi <= 100) return { label: "Trung bình", color: "#d97706", bg: "#fffbeb", textColor: "#92400e" };
+  if (aqi <= 150) return { label: "Kém",        color: "#ea580c", bg: "#fff7ed", textColor: "#9a3412" };
+  if (aqi <= 200) return { label: "Xấu",        color: "#dc2626", bg: "#fef2f2", textColor: "#991b1b" };
+  if (aqi <= 300) return { label: "Rất xấu",    color: "#7c3aed", bg: "#f5f3ff", textColor: "#4c1d95" };
+  return           { label: "Nguy hại",          color: "#9f1239", bg: "#fff1f2", textColor: "#881337" };
 }
+
+// Minimal SVG icons — no emoji
+const icons = {
+  pm: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>,
+  temp: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>,
+  humidity: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707M18.364 18.364l.707.707M1 12h1M21 12h1M4.22 19.778l.707-.707M18.364 5.636l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>,
+  pressure: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+  gas: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
+  clock: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+  map: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  list: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>,
+};
 
 export default function Dashboard() {
   const [latest, setLatest] = useState(null);
   const [history, setHistory] = useState([]);
-  const [timeLimit, setTimeLimit] = useState(60); // Mặc định 5 phút (60 * 5s)
-  const [isLive, setIsLive] = useState(null); // null = chưa biết, true = live, false = offline
+  const [timeLimit, setTimeLimit] = useState(60);
+  const [isLive, setIsLive] = useState(null);
 
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/data?limit=${timeLimit}`);
-      if (!res.ok) throw new Error("Lỗi mạng khi tải dữ liệu");
-
-      const resHistory = await res.json();
-      setHistory(resHistory);
-
-      if (resHistory && resHistory.length > 0) {
-        const newLatest = resHistory[resHistory.length - 1];
-        setLatest(newLatest);
-        // Kiểm tra bản ghi mới nhất có trong vòng 30 giây không
-        const age = Date.now() - new Date(newLatest.timestamp).getTime();
-        setIsLive(age < 30000);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setHistory(data);
+      if (data?.length > 0) {
+        const latest = data[data.length - 1];
+        setLatest(latest);
+        setIsLive(Date.now() - new Date(latest.timestamp).getTime() < 30000);
       } else {
         setIsLive(false);
       }
-      // Trigger alert check (fire and forget)
       fetch("/api/alert/check", { method: "POST" }).catch(() => {});
-    } catch (e) {
-      console.error("Lỗi Fetch Data:", e);
+    } catch {
       setIsLive(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
+    const id = setInterval(fetchData, 5000);
+    return () => clearInterval(id);
   }, [timeLimit]);
 
   const aqiConfig = getAQIConfig(latest?.aqi);
 
-  // Format thời gian
   const lastUpdated = latest?.timestamp
-    ? new Date(latest.timestamp).toLocaleString('vi-VN', {
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    })
+    ? new Date(latest.timestamp).toLocaleString("vi-VN", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+      })
     : "--";
-  const chartOptions = {
+
+  const chartOpts = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
     scales: {
-      y: { beginAtZero: false, grid: { color: "rgba(0,0,0,0.05)" } },
-      x: { grid: { display: false } }
-    }
+      y: {
+        beginAtZero: false,
+        grid: { color: "rgba(0,0,0,0.04)" },
+        ticks: { font: { size: 11, family: "Be Vietnam Pro" }, color: "#9ca3af" },
+        border: { display: false },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10, family: "Be Vietnam Pro" }, color: "#9ca3af", maxTicksLimit: 12 },
+        border: { display: false },
+      },
+    },
   };
 
-  const labels = history.map(d => {
-    const date = new Date(d.timestamp);
-    return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+  const labels = history.map((d) => {
+    const t = new Date(d.timestamp);
+    return `${t.getHours()}:${String(t.getMinutes()).padStart(2, "0")}`;
   });
 
-  const createChartData = (label, dataKey, color, bgColor) => ({
+  const makeChart = (key, color) => ({
     labels,
     datasets: [{
-      label,
-      data: history.map(d => d[dataKey]),
+      data: history.map((d) => d[key]),
       borderColor: color,
-      backgroundColor: bgColor,
-      fill: true,
-      tension: 0.4,
-      borderWidth: 2,
-      pointRadius: history.length > 100 ? 0 : 2
-    }]
+      backgroundColor: color + "14",
+      fill: true, tension: 0.4, borderWidth: 1.8,
+      pointRadius: history.length > 100 ? 0 : 2,
+      pointBackgroundColor: color,
+    }],
   });
 
-  const metrics = [
-    {
-      id: "pm25",
-      title: "Particulate Matter",
-      subtitle: "(PM2.5)",
-      value: latest?.pm2_5,
-      unit: "µg/m³",
-      icon: "🌫️",
-      color: "#ec4899",
-      bgColor: "rgba(236,72,153,0.1)",
-      dataKey: "pm2_5",
-      borderClass: "border-l-pink-500"
-    },
-    {
-      id: "pm10",
-      title: "Particulate Matter",
-      subtitle: "(PM10)",
-      value: latest?.pm10,
-      unit: "µg/m³",
-      icon: "🌫️",
-      color: "#f59e0b",
-      bgColor: "rgba(245,158,11,0.1)",
-      dataKey: "pm10",
-      borderClass: "border-l-amber-500"
-    },
-    {
-      id: "temp",
-      title: "Temperature",
-      subtitle: "",
-      value: latest?.temperature?.toFixed(1),
-      unit: "°C",
-      icon: "🌡️",
-      color: "#ef4444",
-      bgColor: "rgba(239,68,68,0.1)",
-      dataKey: "temperature",
-      borderClass: "border-l-red-500"
-    },
-    {
-      id: "hum",
-      title: "Relative Humidity",
-      subtitle: "",
-      value: latest?.humidity?.toFixed(1),
-      unit: "%RH",
-      icon: "💧",
-      color: "#3b82f6",
-      bgColor: "rgba(59,130,246,0.1)",
-      dataKey: "humidity",
-      borderClass: "border-l-blue-500"
-    },
-    {
-      id: "press",
-      title: "Atmospheric Pressure",
-      subtitle: "",
-      value: latest?.pressure?.toFixed(0),
-      unit: "hPa",
-      icon: "⏱️",
-      color: "#8b5cf6",
-      bgColor: "rgba(139,92,246,0.1)",
-      dataKey: "pressure",
-      borderClass: "border-l-purple-500"
-    },
-    {
-      id: "gas",
-      title: "Gas Resistance",
-      subtitle: "",
-      value: latest?.gas_resistance?.toFixed(0),
-      unit: "kΩ",
-      icon: "☣️",
-      color: "#10b981",
-      bgColor: "rgba(16,185,129,0.1)",
-      dataKey: "gas_resistance",
-      borderClass: "border-l-emerald-500"
-    }
+  const stats = [
+    { label: "PM2.5",       value: latest?.pm2_5,               unit: "µg/m³", icon: icons.pm,       sub: "Bụi mịn" },
+    { label: "PM10",        value: latest?.pm10,                unit: "µg/m³", icon: icons.pm,       sub: "Bụi thô" },
+    { label: "Nhiệt độ",    value: latest?.temperature?.toFixed(1), unit: "°C", icon: icons.temp,    sub: "BME680" },
+    { label: "Độ ẩm",       value: latest?.humidity?.toFixed(1), unit: "%RH",  icon: icons.humidity, sub: "Tương đối" },
+    { label: "Áp suất",     value: latest?.pressure?.toFixed(0), unit: "hPa",  icon: icons.pressure, sub: "Khí quyển" },
+    { label: "Gas VOC",     value: latest?.gas_resistance?.toFixed(0), unit: "kΩ", icon: icons.gas, sub: "Điện trở" },
   ];
+
+  const charts = [
+    { label: "PM2.5",    key: "pm2_5",        color: "#e11d48" },
+    { label: "PM10",     key: "pm10",         color: "#d97706" },
+    { label: "Nhiệt độ", key: "temperature",  color: "#ef4444" },
+    { label: "Độ ẩm",    key: "humidity",     color: "#2563eb" },
+    { label: "Áp suất",  key: "pressure",     color: "#7c3aed" },
+    { label: "Gas VOC",  key: "gas_resistance",color: "#059669" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans text-gray-800"
-      style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')" }}>
+    <div className="p-5 md:p-8">
 
-      <div className="max-w-6xl mx-auto space-y-6">
-
-        {/* Main AQI Card */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-
-          {/* Header Section */}
-          <div className="p-6 md:p-8 pb-4 border-b border-gray-100">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">AQI STATION</h1>
-                <p className="text-gray-400 text-sm italic mt-1">Last Updated: {lastUpdated} (Local Time)</p>
-              </div>
-              {/* Live / Offline Badge */}
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold ${isLive === null
-                  ? 'bg-gray-100 border-gray-200 text-gray-400'
-                  : isLive
-                    ? 'bg-green-50 border-green-200 text-green-600'
-                    : 'bg-red-50 border-red-200 text-red-500'
-                }`}>
-                <span className={`w-2.5 h-2.5 rounded-full ${isLive === null ? 'bg-gray-300'
-                    : isLive ? 'bg-green-500 animate-pulse'
-                      : 'bg-red-500'
-                  }`} />
-                {isLive === null ? 'Connecting...' : isLive ? 'LIVE' : 'Offline'}
-              </div>
-            </div>
-          </div>
-
-          {/* Dashboard Gradient Area */}
-          <div className={`p-6 md:p-8 bg-gradient-to-b ${aqiConfig.gradient} relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8`}>
-
-            {/* Background Decorations (Mây mờ) */}
-            <div className="absolute top-0 right-10 w-64 h-32 bg-white/30 rounded-full blur-3xl mix-blend-overlay pointer-events-none"></div>
-            <div className="absolute bottom-0 left-10 w-64 h-32 bg-white/40 rounded-full blur-3xl mix-blend-overlay pointer-events-none"></div>
-
-            {/* Left: AQI Values */}
-            <div className="flex-1 w-full relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`w-3 h-3 rounded-full ${aqiConfig.bg} animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.2)]`}></span>
-                <span className="text-gray-600 font-semibold text-sm uppercase tracking-wide">Live AQI</span>
-              </div>
-
-              <div className="flex items-baseline gap-4 mb-6">
-                <span className={`text-7xl md:text-9xl font-black ${aqiConfig.color} drop-shadow-md`}>
-                  {latest?.aqi || "--"}
-                </span>
-                <div className="flex flex-col">
-                  <span className="text-gray-500 font-medium text-sm mb-1">Air Quality is</span>
-                  <span className={`px-4 py-1 rounded-lg text-lg font-bold bg-white/60 backdrop-blur-sm shadow-sm ${aqiConfig.color}`}>
-                    {aqiConfig.label}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-8 mb-8 text-gray-700">
-                <div className="text-lg">
-                  <span className="font-bold">PM2.5 : </span>
-                  <span className="text-2xl font-bold">{latest?.pm2_5 || "--"}</span> <span className="text-sm">µg/m³</span>
-                </div>
-                <div className="text-lg">
-                  <span className="font-bold">PM10 : </span>
-                  <span className="text-2xl font-bold">{latest?.pm10 || "--"}</span> <span className="text-sm">µg/m³</span>
-                </div>
-              </div>
-
-              {/* AQI Scale Bar */}
-              <div className="max-w-md w-full">
-                <div className="flex justify-between text-[10px] md:text-xs font-semibold text-gray-600 mb-1 px-1">
-                  <span>Good</span><span>Moderate</span><span>Poor</span><span>Unhealthy</span><span>Severe</span><span>Hazardous</span>
-                </div>
-                <div className="relative h-3 w-full rounded-full bg-gray-200 overflow-hidden flex">
-                  <div className="h-full flex-1 bg-emerald-500"></div>
-                  <div className="h-full flex-1 bg-yellow-500"></div>
-                  <div className="h-full flex-1 bg-orange-500"></div>
-                  <div className="h-full flex-1 bg-red-500"></div>
-                  <div className="h-full flex-1 bg-purple-500"></div>
-                  <div className="h-full flex-1 bg-rose-800"></div>
-                </div>
-                <div className="flex justify-between text-[10px] text-gray-400 mt-1 px-1">
-                  <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300</span><span>301+</span>
-                </div>
-                {/* Indicator Triangle */}
-                <div
-                  className="absolute w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-gray-800 transition-all duration-500"
-                  style={{ left: `calc(${aqiConfig.percent}% - 6px)`, bottom: '22px' }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Center: Cartoon / Emoji Character */}
-            <div className="hidden md:flex flex-col items-center justify-center relative z-10 mx-4">
-              <div className="text-9xl drop-shadow-2xl hover:scale-110 transition-transform duration-300 cursor-pointer">
-                {aqiConfig.emoji}
-              </div>
-            </div>
-            <div className="w-full md:w-80 bg-white/40 backdrop-blur-xl border border-white/60 rounded-3xl p-6 shadow-xl relative z-10">
-              {/* Top: centered icon + temperature */}
-              <div className="flex flex-col items-center justify-center mb-6">
-                <div className="flex items-center gap-3">
-                  <span className="text-4xl drop-shadow-sm">🌡️</span>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-800 flex items-start">
-                      {latest?.temperature?.toFixed(1) || "--"} <span className="text-lg mt-1">°C</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom: 3-col metrics */}
-              <div className="grid grid-cols-3 gap-4 border-t border-gray-300/30 pt-4">
-                <div className="text-center">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">💧 Humidity</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.humidity?.toFixed(1) || "--"} %</div>
-                </div>
-                <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">⏱️ Pressure</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.pressure?.toFixed(0) || "--"} hPa</div>
-                </div>
-                <div className="text-center border-l border-gray-300/30">
-                  <div className="text-gray-500 text-xs mb-1 font-medium flex items-center justify-center gap-1">☣️ Gas</div>
-                  <div className="font-bold text-gray-800 text-sm">{latest?.gas_resistance?.toFixed(0) || "--"} kΩ</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Major Air Pollutants Header with Time Selector */}
-        <div className="mt-8 mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-800">Key Metrics</h2>
-          </div>
-
-          <div className="flex items-center gap-2 bg-slate-800 text-slate-200 px-4 py-2 rounded-xl shadow-md text-sm font-medium hover:bg-slate-700 transition cursor-pointer">
-            <span className="text-lg">🕒</span>
-            <select
-              className="bg-transparent border-none outline-none cursor-pointer text-white appearance-none pr-4"
-              value={timeLimit}
-              onChange={(e) => setTimeLimit(Number(e.target.value))}
-            >
-              <option value="15" className="text-black">Last 1 minute</option>
-              <option value="60" className="text-black">Last 5 minutes</option>
-              <option value="360" className="text-black">Last 30 minutes</option>
-              <option value="720" className="text-black">Last 1 hour</option>
-              <option value="4320" className="text-black">Last 6 hours</option>
-              <option value="17280" className="text-black">Last 24 hours</option>
-            </select>
-            <span className="text-slate-400 pointer-events-none -ml-6">▼</span>
-          </div>
-        </div>
-
-        {/* Detailed Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {metrics.map(metric => (
-            <div key={metric.id} className={`bg-slate-50 rounded-2xl shadow-sm border border-gray-100 border-l-[6px] ${metric.borderClass} p-5 h-[280px] flex flex-col hover:shadow-md transition-shadow`}>
-
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl bg-white p-2 rounded-xl shadow-sm">{metric.icon}</div>
-                  <div>
-                    <div className="font-semibold text-slate-800 leading-tight">{metric.title}</div>
-                    {metric.subtitle && <div className="text-sm text-slate-600">{metric.subtitle}</div>}
-                  </div>
-                </div>
-                <div className="text-right flex items-center gap-2">
-                  <div className="flex flex-col items-end">
-                    <div className="text-3xl font-black text-slate-800 leading-none">{metric.value || "--"}</div>
-                    <div className="text-xs font-bold text-slate-500 mt-1">{metric.unit}</div>
-                  </div>
-                  <div className="text-slate-400 text-2xl font-light ml-1">›</div>
-                </div>
-              </div>
-
-              <div className="flex-1 min-h-0 mt-2">
-                {history.length > 0 ? (
-                  <Line data={createChartData(metric.title, metric.dataKey, metric.color, metric.bgColor)} options={chartOptions} />
-                ) : (
-                  <div className="text-gray-400 text-center text-sm mt-10">Loading...</div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
+      {/* Page header */}
+      <div className="mb-7">
+        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Trang chủ</h1>
+        <p className="text-sm text-gray-400 mt-0.5 font-normal">
+          Hệ thống quan trắc chất lượng không khí đa thông số
+        </p>
       </div>
+
+      {/* Hero card */}
+      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden mb-5">
+        <div className="flex flex-col lg:flex-row">
+          {/* Left */}
+          <div className="flex-1 p-7">
+            <div className="flex items-center gap-2 mb-4">
+              <span className={`inline-block w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-500" : "bg-gray-300"}`} />
+              <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">
+                {isLive ? "Đang hoạt động" : "Ngoại tuyến"} · {lastUpdated}
+              </span>
+            </div>
+            <h2 className="text-[20px] font-semibold text-gray-900 leading-snug mb-2.5 tracking-tight">
+              Giám sát chất lượng không khí<br />theo thời gian thực
+            </h2>
+            <p className="text-[13.5px] text-gray-400 leading-relaxed mb-6 max-w-md font-normal">
+              Thu thập và phân tích liên tục các thông số PM2.5, PM10, nhiệt độ, độ ẩm và khí VOC từ trạm cảm biến ESP32.
+            </p>
+            <div className="flex items-center gap-2.5">
+              <a href="/map"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white text-[13px] font-medium rounded-lg transition-colors">
+                {icons.map}
+                Xem bản đồ
+              </a>
+              <a href="/history"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 text-[13px] font-medium rounded-lg border border-gray-200 transition-colors">
+                {icons.list}
+                Lịch sử
+              </a>
+            </div>
+          </div>
+
+          {/* Right: AQI value */}
+          <div
+            className="lg:w-[280px] flex flex-col items-center justify-center p-8 border-t lg:border-t-0 lg:border-l border-gray-100"
+            style={{ backgroundColor: aqiConfig.bg }}
+          >
+            <p className="text-[11px] font-medium uppercase tracking-widest mb-3" style={{ color: aqiConfig.color }}>
+              Chỉ số AQI
+            </p>
+            <div className="text-[64px] font-bold leading-none mb-1 tracking-tight" style={{ color: aqiConfig.color }}>
+              {latest?.aqi ?? "—"}
+            </div>
+            <div className="text-[13px] font-medium mb-5" style={{ color: aqiConfig.color }}>
+              {aqiConfig.label}
+            </div>
+            {/* Scale bar */}
+            <div className="w-full max-w-[200px]">
+              <div className="flex h-1.5 rounded-full overflow-hidden gap-px">
+                {["#059669","#d97706","#ea580c","#dc2626","#7c3aed","#9f1239"].map((c, i) => (
+                  <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                ))}
+              </div>
+              <div className="flex justify-between text-[9px] text-gray-400 mt-1.5 font-normal">
+                <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+        {stats.map((s, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{s.label}</span>
+              <span className="text-gray-300">{s.icon}</span>
+            </div>
+            <div className="text-[22px] font-semibold text-gray-900 leading-none tracking-tight">
+              {s.value ?? "—"}
+            </div>
+            <div className="text-[11px] text-gray-400 mt-1.5">{s.unit} · {s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="flex items-center justify-between mb-3.5">
+        <div>
+          <h3 className="text-[15px] font-semibold text-gray-900 tracking-tight">Biểu đồ theo thời gian</h3>
+          <p className="text-[12px] text-gray-400 mt-0.5">Xu hướng các thông số quan trắc</p>
+        </div>
+        <div className="flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-[12.5px] text-gray-500 font-medium shadow-sm">
+          {icons.clock}
+          <select
+            className="bg-transparent border-none outline-none cursor-pointer appearance-none pr-3 text-[12.5px] font-medium text-gray-600"
+            value={timeLimit}
+            onChange={(e) => setTimeLimit(Number(e.target.value))}
+          >
+            <option value="15">1 phút</option>
+            <option value="60">5 phút</option>
+            <option value="360">30 phút</option>
+            <option value="720">1 giờ</option>
+            <option value="4320">6 giờ</option>
+            <option value="17280">24 giờ</option>
+          </select>
+          <span className="text-gray-400 pointer-events-none -ml-3">▾</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        {charts.map((c, i) => (
+          <div key={i} className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[13px] font-semibold text-gray-700">{c.label}</span>
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+            </div>
+            <div className="h-[160px]">
+              {history.length > 0 ? (
+                <Line data={makeChart(c.key, c.color)} options={chartOpts} />
+              ) : (
+                <div className="h-full flex items-center justify-center text-[12px] text-gray-300">
+                  Đang tải dữ liệu...
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
     </div>
   );
 }

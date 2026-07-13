@@ -1,12 +1,13 @@
-import { Outfit } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "./components/AuthProvider";
 import Navbar from "./components/Navbar";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+const beVietnamPro = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -16,9 +17,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="vi" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="vi" className={`${beVietnamPro.variable} h-full antialiased`}>
       <head>
-        {/* Leaflet CSS */}
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -26,10 +26,16 @@ export default function RootLayout({ children }) {
           crossOrigin=""
         />
       </head>
-      <body className="min-h-full flex flex-col font-[var(--font-outfit)]" suppressHydrationWarning>
+      <body
+        className="min-h-full bg-[#f6f7f9]"
+        style={{ fontFamily: "var(--font-be-vietnam), 'Be Vietnam Pro', system-ui, sans-serif" }}
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="md:ml-[240px] pt-14 md:pt-0 min-h-screen transition-all duration-300">
+            {children}
+          </main>
         </AuthProvider>
       </body>
     </html>
