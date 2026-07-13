@@ -140,9 +140,10 @@ export default function SettingsPage() {
     }
     try {
       const reg = await navigator.serviceWorker.ready;
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BH5_fzF0HLX-9qjYr26OHl307AyNGFPoYPbimW1SJKrkr_EgtlqHF0LbMUeCrdOD75zfOJFgOIe5IXvT0xXyIPU";
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
       
       const res = await fetch('/api/push/subscribe', {
@@ -362,7 +363,6 @@ export default function SettingsPage() {
           {testing ? "Đang gửi..." : "Gửi thử"}
         </button>
       </div>
-      <p className="text-[11px] text-gray-400 mt-3 text-center">Cài đặt được lưu an toàn trên thiết bị này.</p>
 
         </div>
       </div>
