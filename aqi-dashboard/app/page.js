@@ -242,7 +242,7 @@ export default function Dashboard() {
           <div>
             <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
               <h1 className="text-[20px] md:text-[22px] font-bold text-[#0f172a] tracking-tight uppercase leading-none">
-                TRẠM QUAN TRẮC AQI
+                TRẠM QUAN TRẮC CHẤT LƯỢNG KHÔNG KHÍ ĐA THÔNG SỐ
               </h1>
               <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[10.5px] font-bold uppercase tracking-wider rounded-md border border-blue-100 shadow-sm">
                 Trạm 01
