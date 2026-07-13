@@ -61,7 +61,7 @@ export default function MapPage() {
 
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Bản đồ trạm</h1>
+        <h1 className="text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight uppercase">BẢN ĐỒ TRẠM</h1>
       </div>
 
 

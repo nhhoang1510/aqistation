@@ -172,8 +172,7 @@ export default function HistoryPage() {
 
       {/* Header */}
       <div className="mb-7">
-        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Lịch sử dữ liệu</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Truy vấn và xuất dữ liệu quan trắc theo ngày</p>
+        <h1 className="text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight uppercase">LỊCH SỬ DỮ LIỆU</h1>
       </div>
 
       {/* Filter bar */}

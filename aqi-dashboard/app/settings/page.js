@@ -168,8 +168,7 @@ export default function SettingsPage() {
 
       {/* Header */}
       <div className="mb-8 border-b border-gray-100 pb-5">
-        <h1 className="text-[24px] font-bold text-gray-900 tracking-tight">Cài đặt cảnh báo</h1>
-        <p className="text-sm text-gray-500 mt-1">Cấu hình các phương thức và điều kiện nhận thông báo khi chất lượng không khí đi xuống.</p>
+        <h1 className="text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight uppercase">CÀI ĐẶT CẢNH BÁO</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
