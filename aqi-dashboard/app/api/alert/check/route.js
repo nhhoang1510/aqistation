@@ -7,11 +7,11 @@ import { sendAlertEmail } from '@/lib/mailer';
 import webpush from 'web-push';
 
 function initWebPush() {
-  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BH5_fzF0HLX-9qjYr26OHl307AyNGFPoYPbimW1SJKrkr_EgtlqHF0LbMUeCrdOD75zfOJFgOIe5IXvT0xXyIPU";
-  const priv = process.env.VAPID_PRIVATE_KEY || "NlHWRhgJfuItWyI15LBn2wfcouF_y5p-S-I0ilyKFEI";
+  const pub = "BH5_fzF0HLX-9qjYr26OHl307AyNGFPoYPbimW1SJKrkr_EgtlqHF0LbMUeCrdOD75zfOJFgOIe5IXvT0xXyIPU";
+  const priv = "NlHWRhgJfuItWyI15LBn2wfcouF_y5p-S-I0ilyKFEI";
   if (pub && priv) {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
+      'mailto:admin@example.com',
       pub,
       priv
     );
