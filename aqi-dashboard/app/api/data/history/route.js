@@ -16,10 +16,15 @@ export async function GET(request) {
 
     await connectToDatabase();
 
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
-    // Set toDate to end of day
-    toDate.setHours(23, 59, 59, 999);
+    // from/to là ngày theo giờ Việt Nam (UTC+7)
+    // Cần chuyển về UTC: trừ 7 giờ
+    const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+    // Đầu ngày VN = from 00:00:00 VN = from - 7h UTC
+    const fromDate = new Date(new Date(from).getTime() - VN_OFFSET_MS);
+
+    // Cuối ngày VN = to 23:59:59.999 VN = (to + 1 ngày) - 7h - 1ms UTC
+    const toDate = new Date(new Date(to).getTime() - VN_OFFSET_MS + 24 * 60 * 60 * 1000 - 1);
 
     const filter = {
       timestamp: { $gte: fromDate, $lte: toDate }

@@ -49,7 +49,7 @@ const chartOpts = {
 };
 
 const columns = [
-  { key: "timestamp", label: "Thời gian",    fmt: (v) => new Date(v).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "2-digit" }) },
+  { key: "timestamp", label: "Thời gian",    fmt: (v) => new Date(v).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", second: "2-digit", day: "2-digit", month: "2-digit" }) },
   { key: "aqi",          label: "AQI",        fmt: (v) => v },
   { key: "pm2_5",        label: "PM2.5",      fmt: (v) => v, unit: "µg/m³" },
   { key: "pm10",         label: "PM10",       fmt: (v) => v, unit: "µg/m³" },
@@ -105,7 +105,8 @@ export default function HistoryPage() {
   const chartData = {
     labels: data.map((d) => {
       const t = new Date(d.timestamp);
-      return `${t.getHours()}:${String(t.getMinutes()).padStart(2, "0")}`;
+      // Hiển thị theo giờ VN (UTC+7)
+      return t.toLocaleTimeString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit" });
     }),
     datasets: [
       {
