@@ -20,11 +20,20 @@ const sensorDataSchema = new mongoose.Schema({
 });
 const SensorData = mongoose.models.SensorData || mongoose.model('SensorData', sensorDataSchema);
 
-// File CSV lưu trữ cục bộ
-const dbFile = path.join(__dirname, 'database.csv');
-if (!fs.existsSync(dbFile)) {
-    fs.writeFileSync(dbFile, "timestamp,pm2_5,pm10,temperature,humidity,pressure,gas_resistance,mq135,aqi\n");
-    console.log("Đã tạo file database.csv mới.");
+// Hàm lấy tên file CSV theo ngày (YYMMDD.csv)
+function getDailyCsvFile() {
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(-2);
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const filename = `${year}${month}${day}.csv`;
+  const filepath = path.join(__dirname, filename);
+  
+  if (!fs.existsSync(filepath)) {
+    fs.writeFileSync(filepath, "timestamp,pm2_5,pm10,temperature,humidity,pressure,gas_resistance,mq135,aqi\n");
+    console.log(`Đã tạo file mới: ${filename}`);
+  }
+  return filepath;
 }
 
 // Cấu hình MQTT (Đồng bộ với cấu hình trên ESP32)
@@ -71,11 +80,12 @@ async function main() {
       
       const data = JSON.parse(payload);
       
-      // Ghi vào file CSV
+      // Ghi vào file CSV theo ngày
       const timestamp = new Date().toISOString();
       const csvLine = `${timestamp},${data.pm2_5},${data.pm10},${data.temperature},${data.humidity},${data.pressure},${data.gas_resistance},${data.mq135},${data.aqi}\n`;
-      fs.appendFileSync(dbFile, csvLine);
-      console.log('📝 Đã lưu cục bộ vào file database.csv');
+      const dailyFile = getDailyCsvFile();
+      fs.appendFileSync(dailyFile, csvLine);
+      console.log(`📝 Đã lưu cục bộ vào file ${path.basename(dailyFile)}`);
 
       // Lưu lên MongoDB
       if (mongoose.connection.readyState === 1) {
