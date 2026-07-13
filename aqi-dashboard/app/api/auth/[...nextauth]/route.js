@@ -1,52 +1,74 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 
 const handler = NextAuth({
   providers: [
+    // ── Google OAuth ──
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
+
+    // ── Email + Password ──
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email:    { label: "Email",    type: "email" },
+        password: { label: "Mật khẩu", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          await connectToDatabase();
+          const user = await User.findOne({ email: credentials.email.toLowerCase() });
+          if (!user || !user.password) return null;
+          const valid = await bcrypt.compare(credentials.password, user.password);
+          if (!valid) return null;
+          return { id: user._id.toString(), name: user.name, email: user.email, image: user.image };
+        } catch (e) {
+          console.error("[Auth] Credentials error:", e);
+          return null;
+        }
+      },
+    }),
   ],
+
   secret: process.env.NEXTAUTH_SECRET,
+
+  session: { strategy: "jwt" },
+
   pages: {
-    signIn: "/login",
+    signIn: "/",   // không dùng trang login riêng
   },
+
   callbacks: {
-    async signIn({ user, account, profile }) {
-      try {
-        await connectToDatabase();
-        // Tự tạo user trong MongoDB nếu chưa có (auto-register)
-        const existingUser = await User.findOne({ email: user.email });
-        if (!existingUser) {
-          await User.create({
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          });
-          console.log(`[Auth] New user registered: ${user.email}`);
+    async signIn({ user, account }) {
+      // Google: tự tạo/cập nhật user
+      if (account?.provider === "google") {
+        try {
+          await connectToDatabase();
+          const existing = await User.findOne({ email: user.email });
+          if (!existing) {
+            await User.create({ name: user.name, email: user.email, image: user.image, provider: "google" });
+          }
+        } catch (e) {
+          console.error("[Auth] Google signIn error:", e);
         }
-        return true;
-      } catch (error) {
-        console.error("[Auth] Error during sign in:", error);
-        return true; // Vẫn cho đăng nhập dù lưu DB lỗi
       }
+      return true;
     },
+
+    async jwt({ token, user }) {
+      if (user) token.id = user.id;
+      return token;
+    },
+
     async session({ session, token }) {
-      // Gắn thêm user info từ MongoDB vào session
-      try {
-        await connectToDatabase();
-        const dbUser = await User.findOne({ email: session.user.email }).lean();
-        if (dbUser) {
-          session.user.id = dbUser._id.toString();
-          session.user.alertEnabled = dbUser.alertEnabled;
-          session.user.aqiThreshold = dbUser.aqiThreshold;
-        }
-      } catch (error) {
-        console.error("[Auth] Error fetching session user:", error);
-      }
+      if (token?.id) session.user.id = token.id;
       return session;
     },
   },

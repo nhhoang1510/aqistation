@@ -137,7 +137,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Contact info */}
-      <div className={`bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4 transition-opacity ${settings.alertEnabled ? "" : "opacity-40 pointer-events-none"}`}>
+      {settings.alertEnabled && (
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Thông tin liên hệ</p>
         <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
           Điền email, số điện thoại hoặc cả hai. Hệ thống sẽ gửi cảnh báo qua phương thức bạn cung cấp.
@@ -202,9 +203,11 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* AQI Threshold */}
-      <div className={`bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4 transition-opacity ${settings.alertEnabled ? "" : "opacity-40 pointer-events-none"}`}>
+      {settings.alertEnabled && (
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Ngưỡng AQI</p>
         <div className="flex items-end gap-3 mb-5">
           <div className="text-[48px] font-bold leading-none tracking-tight" style={{ color: thresholdColor }}>
@@ -232,9 +235,11 @@ export default function SettingsPage() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Cooldown */}
-      <div className={`bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-5 transition-opacity ${settings.alertEnabled ? "" : "opacity-40 pointer-events-none"}`}>
+      {settings.alertEnabled && (
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-5">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Thời gian chờ</p>
         <p className="text-[12px] text-gray-400 mb-4">Khoảng cách tối thiểu giữa hai lần gửi cảnh báo</p>
         <div className="grid grid-cols-4 gap-2">
@@ -251,6 +256,7 @@ export default function SettingsPage() {
           </p>
         )}
       </div>
+      )}
 
       {/* Actions */}
       <div className="flex gap-3">
