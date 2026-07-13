@@ -359,7 +359,7 @@ void taskNetwork(void *pvParameters) {
       continue;
     }
 
-    StaticJsonDocument<256> doc;
+    StaticJsonDocument<384> doc;
     doc["pm2_5"]          = round(localCopy.pm2_5 * 10) / 10.0;
     doc["pm10"]           = round(localCopy.pm10 * 10) / 10.0;
     doc["temperature"]    = round(localCopy.temperature * 10) / 10.0;
@@ -368,6 +368,8 @@ void taskNetwork(void *pvParameters) {
     doc["gas_resistance"] = round(localCopy.gas_resistance * 10) / 10.0;
     doc["mq135"]          = localCopy.mq135_value;
     doc["aqi"]            = localCopy.aqi;
+    doc["wifi_rssi"]      = WiFi.RSSI();
+    doc["uptime"]         = millis() / 1000;
 
     String payload;
     serializeJson(doc, payload);

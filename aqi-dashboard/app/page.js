@@ -79,6 +79,32 @@ function getFaceIcon(aqi) {
   );
 }
 
+function getWifiIcon(rssi) {
+  if (rssi == null) return null;
+  let bars = 0;
+  if (rssi > -60) bars = 4;
+  else if (rssi > -70) bars = 3;
+  else if (rssi > -80) bars = 2;
+  else if (rssi > -90) bars = 1;
+  return (
+    <div className="flex items-end gap-[1.5px] h-3.5" title={`WiFi RSSI: ${rssi} dBm`}>
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className={`w-[3px] rounded-sm ${i <= bars ? "bg-[#0f172a]" : "bg-gray-200"}`} style={{ height: `${i * 25}%` }} />
+      ))}
+    </div>
+  );
+}
+
+function formatUptime(seconds) {
+  if (!seconds) return null;
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d} ngày ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m} phút`;
+}
+
 // Minimal SVG icons — no emoji
 const icons = {
   pm: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>,
@@ -230,6 +256,18 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {(isLive && latest?.wifi_rssi != null) && (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-lg border border-gray-100 shadow-sm">
+                {getWifiIcon(latest.wifi_rssi)}
+                <span className="text-[11px] font-bold text-gray-500 ml-0.5">{latest.wifi_rssi} dBm</span>
+              </div>
+            )}
+            {(isLive && latest?.uptime != null) && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-gray-50 rounded-lg border border-gray-100 shadow-sm">
+                <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span className="text-[11px] font-bold text-gray-500">Hoạt động: {formatUptime(latest.uptime)}</span>
+              </div>
+            )}
             {(!isLive && latest && !loading) && (
               <span className="text-[11.5px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1.5 shadow-sm">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>

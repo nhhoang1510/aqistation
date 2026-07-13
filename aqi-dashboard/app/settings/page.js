@@ -18,8 +18,20 @@ function getAQILabel(aqi) {
   if (aqi <= 150) return "Kém";
   if (aqi <= 200) return "Xấu";
   if (aqi <= 300) return "Rất xấu";
+  if (aqi <= 300) return "Rất xấu";
   return "Nguy hại";
 }
+
+const urlBase64ToUint8Array = (base64String) => {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+};
 
 const STORAGE_KEY = "aqi_alert_settings";
 const COOLDOWN_KEY = "aqi_alert_last_sent";
@@ -38,8 +50,9 @@ export default function SettingsPage() {
   const [testing, setTesting] = useState(false);
   const [toast, setToast] = useState(null);
   const [lastSent, setLastSent] = useState(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // Load from localStorage
+  // Load from localStorage & check SW
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -47,6 +60,14 @@ export default function SettingsPage() {
       const ls = localStorage.getItem(COOLDOWN_KEY);
       if (ls) setLastSent(new Date(ls));
     } catch {}
+
+    if (typeof window !== "undefined" && 'serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          setIsSubscribed(!!sub);
+        });
+      }).catch(console.error);
+    }
   }, []);
 
   const saveSettings = () => {
@@ -88,7 +109,8 @@ export default function SettingsPage() {
       if (result.success) {
         const msgs = [];
         if (result.results?.email === "sent") msgs.push("Email đã gửi");
-        if (result.results?.phone) msgs.push("SMS đã ghi nhận (cần cấu hình provider)");
+        if (result.results?.phone) msgs.push("SMS đã ghi nhận");
+        if (result.results?.webpush === "sent") msgs.push("Web Push đã gửi");
         showToast(msgs.join(" · ") || "Đã xử lý.");
         localStorage.setItem(COOLDOWN_KEY, new Date().toISOString());
         setLastSent(new Date());
@@ -109,7 +131,36 @@ export default function SettingsPage() {
 
   const set = (key, val) => setSettings((s) => ({ ...s, [key]: val }));
   const thresholdColor = getAQIColor(settings.aqiThreshold);
-  const hasContact = settings.email || settings.phone;
+  const hasContact = settings.email || settings.phone || isSubscribed;
+
+  const subscribePush = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      showToast("Trình duyệt không hỗ trợ Web Push.", true);
+      return;
+    }
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+      });
+      
+      const res = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub)
+      });
+      if (res.ok) {
+        setIsSubscribed(true);
+        showToast("Đã bật thông báo thành công!");
+      } else {
+        showToast("Đăng ký thất bại trên server.", true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Lỗi khi cấp quyền thông báo.", true);
+    }
+  };
 
   return (
     <div className="p-5 md:p-8 max-w-xl">
@@ -200,8 +251,33 @@ export default function SettingsPage() {
                 Gửi SMS
               </span>
             )}
+            {isSubscribed && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-700 text-[11.5px] font-medium rounded-full">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+                Web Push
+              </span>
+            )}
           </div>
         )}
+      </div>
+      )}
+
+      {/* Web Push */}
+      {settings.alertEnabled && (
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-[13.5px] font-semibold text-gray-800">Thông báo trực tiếp</p>
+          <p className="text-[12px] text-gray-400 mt-0.5 max-w-[200px] sm:max-w-xs">Nhận cảnh báo qua popup trình duyệt (không cần mở tab)</p>
+        </div>
+        <button
+          onClick={subscribePush}
+          disabled={isSubscribed}
+          className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-colors ${
+            isSubscribed ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
+          }`}
+        >
+          {isSubscribed ? "Đã bật" : "Bật Push"}
+        </button>
       </div>
       )}
 
