@@ -6,11 +6,17 @@ import PushSubscription from '@/models/PushSubscription';
 import { sendAlertEmail } from '@/lib/mailer';
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+function initWebPush() {
+  if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    return true;
+  }
+  return false;
+}
 
 export async function POST() {
   try {
@@ -68,7 +74,7 @@ export async function POST() {
     // In a real system, you'd link subscriptions to users and their thresholds.
     // Here we send a global push if AQI >= 100 (Kém) to all subscribers.
     let webPushSent = 0;
-    if (latestData.aqi >= 100) {
+    if (latestData.aqi >= 100 && initWebPush()) {
       const subs = await PushSubscription.find().lean();
       if (subs.length > 0) {
         const payload = JSON.stringify({
@@ -95,8 +101,6 @@ export async function POST() {
       currentAQI: latestData.aqi,
       alertsSent: alerts.length,
       webPushSent,
-      details: alerts,
-    });
       details: alerts,
     });
   } catch (error) {

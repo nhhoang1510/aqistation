@@ -4,11 +4,17 @@ import webpush from 'web-push';
 import PushSubscription from '@/models/PushSubscription';
 import { connectToDatabase } from '@/lib/mongodb';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+function initWebPush() {
+  if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:admin@example.com',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    return true;
+  }
+  return false;
+}
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -113,23 +119,25 @@ export async function POST(request) {
 
     // ── Send Web Push (Test) ──
     try {
-      await connectToDatabase();
-      const subs = await PushSubscription.find().lean();
-      if (subs.length > 0) {
-        const payload = JSON.stringify({
-          title: `Cảnh báo thử nghiệm: AQI ${aqi}`,
-          body: `Kiểm tra gửi thông báo đẩy. PM2.5: ${metrics?.pm2_5 ?? '--'} µg/m³.`
-        });
-        for (const sub of subs) {
-          try {
-            await webpush.sendNotification(sub, payload);
-          } catch (e) {
-            if (e.statusCode === 410 || e.statusCode === 404) {
-              await PushSubscription.deleteOne({ _id: sub._id });
+      if (initWebPush()) {
+        await connectToDatabase();
+        const subs = await PushSubscription.find().lean();
+        if (subs.length > 0) {
+          const payload = JSON.stringify({
+            title: `Cảnh báo thử nghiệm: AQI ${aqi}`,
+            body: `Kiểm tra gửi thông báo đẩy. PM2.5: ${metrics?.pm2_5 ?? '--'} µg/m³.`
+          });
+          for (const sub of subs) {
+            try {
+              await webpush.sendNotification(sub, payload);
+            } catch (e) {
+              if (e.statusCode === 410 || e.statusCode === 404) {
+                await PushSubscription.deleteOne({ _id: sub._id });
+              }
             }
           }
+          results.webpush = "sent";
         }
-        results.webpush = "sent";
       }
     } catch (e) {
       console.error("Web Push test error:", e);
