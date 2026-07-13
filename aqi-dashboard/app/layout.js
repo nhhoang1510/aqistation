@@ -11,8 +11,24 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata = {
-  title: "AQI Station Dashboard",
-  description: "Hệ thống quan trắc chất lượng không khí đa thông số — Nhóm 22, HUST",
+  title: "Trạm Quan Trắc AQI - HUST",
+  description: "Hệ thống giám sát và cảnh báo chất lượng không khí đa thông số theo thời gian thực (PM2.5, PM10, Nhiệt độ, Độ ẩm, VOC) — Nhóm 22, ĐHBK Hà Nội.",
+  openGraph: {
+    title: "Trạm Quan Trắc AQI - HUST",
+    description: "Giám sát chất lượng không khí thời gian thực — Nhóm 22, ĐHBK Hà Nội",
+    url: "https://aqi-dashboard.vercel.app", // Adjust with your actual domain
+    siteName: "AQI Station HUST",
+    images: [
+      {
+        url: "/og-image.png", // Assuming an image will be added in public/
+        width: 1200,
+        height: 630,
+        alt: "AQI Station Dashboard",
+      },
+    ],
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }) {

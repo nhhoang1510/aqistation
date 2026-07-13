@@ -96,12 +96,16 @@ export default function Dashboard() {
   const [history, setHistory] = useState([]);
   const [timeLimit, setTimeLimit] = useState(60);
   const [isLive, setIsLive] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Restore timeLimit from localStorage
+  // Restore from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("aqi_dashboard_timelimit");
-      if (saved) setTimeLimit(Number(saved));
+      const savedLimit = localStorage.getItem("aqi_dashboard_timelimit");
+      if (savedLimit) setTimeLimit(Number(savedLimit));
+      
+      const savedLatest = localStorage.getItem("aqi_dashboard_latest");
+      if (savedLatest) setLatest(JSON.parse(savedLatest));
     } catch {}
   }, []);
 
@@ -117,15 +121,18 @@ export default function Dashboard() {
       const data = await res.json();
       setHistory(data);
       if (data?.length > 0) {
-        const latest = data[data.length - 1];
-        setLatest(latest);
-        setIsLive(Date.now() - new Date(latest.timestamp).getTime() < 30000);
+        const currentLatest = data[data.length - 1];
+        setLatest(currentLatest);
+        setIsLive(Date.now() - new Date(currentLatest.timestamp).getTime() < 30000);
+        try { localStorage.setItem("aqi_dashboard_latest", JSON.stringify(currentLatest)); } catch {}
       } else {
         setIsLive(false);
       }
       fetch("/api/alert/check", { method: "POST" }).catch(() => {});
     } catch {
       setIsLive(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -205,18 +212,34 @@ export default function Dashboard() {
       <div className="bg-white rounded-[24px] shadow-sm mb-6 flex flex-col overflow-hidden border border-gray-100">
         
         {/* Top Header */}
-        <div className="px-6 md:px-8 py-5 flex items-center justify-between bg-white border-b border-gray-50 z-20 relative">
+        <div className="px-6 md:px-8 py-5 flex flex-col md:flex-row md:items-center justify-between bg-white border-b border-gray-50 z-20 relative gap-4 md:gap-0">
           <div>
-            <h1 className="text-[20px] md:text-[22px] font-bold text-[#0f172a] tracking-tight uppercase leading-none mb-1.5">
-              TRẠM QUAN TRẮC AQI
-            </h1>
-            <p className="text-[12px] md:text-[13px] text-gray-500 font-medium">
+            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+              <h1 className="text-[20px] md:text-[22px] font-bold text-[#0f172a] tracking-tight uppercase leading-none">
+                TRẠM QUAN TRẮC AQI
+              </h1>
+              <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[10.5px] font-bold uppercase tracking-wider rounded-md border border-blue-100 shadow-sm">
+                Trạm 01
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 text-[12px] md:text-[13px] text-gray-500 font-medium">
+              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+              Đại học Bách Khoa Hà Nội
+              <span className="mx-1 text-gray-300">•</span>
               Cập nhật lúc: {lastUpdated}
-            </p>
+            </div>
           </div>
-          <div className={`px-4 py-1.5 rounded-full border flex items-center gap-2 shadow-sm ${isLive ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-red-200 bg-red-50 text-red-600"}`}>
-            <span className={`w-2 h-2 rounded-full ${isLive ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
-            <span className="text-[12.5px] font-bold tracking-wide">{isLive ? "Trực tuyến" : "Ngoại tuyến"}</span>
+          <div className="flex items-center gap-3">
+            {(!isLive && latest && !loading) && (
+              <span className="text-[11.5px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1.5 shadow-sm">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                Dữ liệu cũ (Cache)
+              </span>
+            )}
+            <div className={`px-4 py-1.5 rounded-full border flex items-center gap-2 shadow-sm ${isLive ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-red-200 bg-red-50 text-red-600"}`}>
+              <span className={`w-2 h-2 rounded-full ${isLive ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+              <span className="text-[12.5px] font-bold tracking-wide">{isLive ? "Trực tuyến" : "Ngoại tuyến"}</span>
+            </div>
           </div>
         </div>
 
@@ -355,11 +378,19 @@ export default function Dashboard() {
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
             </div>
             <div className="h-[160px]">
-              {history.length > 0 ? (
+              {loading ? (
+                <div className="h-full flex flex-col items-center justify-center text-[13px] font-medium text-gray-400">
+                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-2" />
+                  Đang tải dữ liệu...
+                </div>
+              ) : history.length > 0 ? (
                 <Line data={makeChart(c.key, c.color)} options={chartOpts} />
               ) : (
-                <div className="h-full flex items-center justify-center text-[12px] text-gray-300">
-                  Đang tải dữ liệu...
+                <div className="h-full flex flex-col items-center justify-center text-[13px] font-medium text-gray-400">
+                  <svg className="w-6 h-6 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  Chưa có dữ liệu
                 </div>
               )}
             </div>
