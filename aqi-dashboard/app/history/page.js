@@ -129,9 +129,14 @@ export default function HistoryPage() {
       columns.map((c) => c.fmt(d[c.key]) ?? "").join(",")
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv;charset=utf-8;" });
+    
+    // Format date from "YYYY-MM-DD" to "YYMMDD"
+    const [y, m, d] = from.split("-");
+    const filename = `${y.slice(-2)}${m}${d}.csv`;
+
     const a = Object.assign(document.createElement("a"), {
       href: URL.createObjectURL(blob),
-      download: `aqi_${from}_${to}.csv`,
+      download: filename,
     });
     a.click();
   };
