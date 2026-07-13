@@ -155,7 +155,7 @@ export default function MapComponent() {
       <MapContainer
         center={stationPos}
         zoom={16}
-        style={{ height: "100%", width: "100%" }}
+        style={{ height: "100%", width: "100%", borderRadius: "12px" }}
         scrollWheelZoom={true}
       >
         <RecenterMap position={stationPos} />

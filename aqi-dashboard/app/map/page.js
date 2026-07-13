@@ -89,7 +89,7 @@ export default function MapPage() {
       </div>
 
       {/* Map */}
-      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden flex-1" style={{ minHeight: "520px" }}>
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm flex-1" style={{ minHeight: "540px", height: "calc(100vh - 220px)", position: "relative" }}>
         <MapComponent />
       </div>
     </div>
