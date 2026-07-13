@@ -38,6 +38,19 @@ export default function Dashboard() {
   const [timeLimit, setTimeLimit] = useState(60);
   const [isLive, setIsLive] = useState(null);
 
+  // Restore timeLimit from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("aqi_dashboard_timelimit");
+      if (saved) setTimeLimit(Number(saved));
+    } catch {}
+  }, []);
+
+  const handleTimeLimitChange = (v) => {
+    setTimeLimit(v);
+    try { localStorage.setItem("aqi_dashboard_timelimit", v); } catch {}
+  };
+
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/data?limit=${timeLimit}`);
@@ -224,7 +237,7 @@ export default function Dashboard() {
           <select
             className="bg-transparent border-none outline-none cursor-pointer appearance-none pr-3 text-[12.5px] font-medium text-gray-600"
             value={timeLimit}
-            onChange={(e) => setTimeLimit(Number(e.target.value))}
+            onChange={(e) => handleTimeLimitChange(Number(e.target.value))}
           >
             <option value="15">1 phút</option>
             <option value="60">5 phút</option>

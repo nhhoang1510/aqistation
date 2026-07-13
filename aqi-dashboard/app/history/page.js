@@ -60,6 +60,8 @@ const columns = [
   { key: "mq135",        label: "MQ-135",     fmt: (v) => v, unit: "ADC" },
 ];
 
+const HISTORY_STORAGE_KEY = "aqi_history_state";
+
 export default function HistoryPage() {
   const today = new Date().toISOString().split("T")[0];
   const [from, setFrom] = useState(today);
@@ -72,10 +74,36 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const fetchHistory = async (p = 1) => {
+  // ── Khôi phục trạng thái từ localStorage khi vào trang ──
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(HISTORY_STORAGE_KEY);
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s.from) setFrom(s.from);
+        if (s.to)   setTo(s.to);
+        if (s.data?.length) {
+          setData(s.data);
+          setStats(s.stats);
+          setPage(s.page ?? 1);
+          setTotalPages(s.totalPages ?? 0);
+          setTotal(s.total ?? 0);
+          setSearched(true);
+        }
+      }
+    } catch {}
+  }, []);
+
+  const saveToStorage = (state) => {
+    try {
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  };
+
+  const fetchHistory = async (p = 1, fromVal = from, toVal = to) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/data/history?from=${from}&to=${to}&page=${p}&pageSize=50`);
+      const res = await fetch(`/api/data/history?from=${fromVal}&to=${toVal}&page=${p}&pageSize=50`);
       if (res.ok) {
         const r = await res.json();
         setData(r.data);
@@ -84,6 +112,12 @@ export default function HistoryPage() {
         setTotalPages(r.totalPages);
         setTotal(r.total);
         setSearched(true);
+        // Lưu trạng thái vào localStorage
+        saveToStorage({
+          from: fromVal, to: toVal,
+          data: r.data, stats: r.stats,
+          page: r.page, totalPages: r.totalPages, total: r.total,
+        });
       }
     } finally { setLoading(false); }
   };
