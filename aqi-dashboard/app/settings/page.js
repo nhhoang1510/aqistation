@@ -196,9 +196,6 @@ export default function SettingsPage() {
       {settings.alertEnabled && (
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Thông tin liên hệ</p>
-        <p className="text-[12px] text-gray-500 mb-4 leading-relaxed">
-          Điền email, số điện thoại hoặc cả hai. Hệ thống sẽ gửi cảnh báo qua phương thức bạn cung cấp.
-        </p>
 
         <div className="space-y-3">
           {/* Email */}
@@ -272,7 +269,6 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 flex items-center justify-between">
         <div>
           <p className="text-[13.5px] font-semibold text-gray-800">Thông báo trực tiếp</p>
-          <p className="text-[12px] text-gray-400 mt-0.5 max-w-[200px] sm:max-w-xs">Nhận cảnh báo qua popup trình duyệt (không cần mở tab)</p>
         </div>
         <button
           onClick={subscribePush}
