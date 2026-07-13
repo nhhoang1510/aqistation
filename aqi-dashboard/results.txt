@@ -1,0 +1,4 @@
+794: \textbf{Thông số} & \textbf{DHT11} & \textbf{DHT22} & \textbf{DS18B20} & \textbf{BME680} \\
+811: \item \textbf{DHT11}: Tùy chọn giá rẻ, dễ thiết lập và sử dụng, tuy nhiên độ chính xác thấp và dải đo rất hẹp.
+812: \item \textbf{DHT22}: Bản nâng cấp của DHT11 với độ chính xác cao hơn, dải đo rộng hơn, song giá thành cao hơn và tần suất lấy mẫu chậm.
+813: \item \textbf{DS18B20}: Cảm biến đo nhiệt độ dạng chống nước chuyên dụng cho công nghiệp/môi trường khắc nghiệt, tuy nhiên không đo được độ ẩm.

@@ -95,6 +95,8 @@ export default function Dashboard() {
       } else {
         setIsLive(false);
       }
+      // Trigger alert check (fire and forget)
+      fetch("/api/alert/check", { method: "POST" }).catch(() => {});
     } catch (e) {
       console.error("Lỗi Fetch Data:", e);
       setIsLive(false);

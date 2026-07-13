@@ -1,0 +1,18 @@
+254: %  CHƯƠNG 1. GIỚI THIỆU
+258: \textbf{\Large CHƯƠNG 1. GIỚI THIỆU}
+260: \addcontentsline{toc}{section}{CHƯƠNG 1. GIỚI THIỆU}
+315: %  CHƯƠNG 2. PHÂN TÍCH HỆ THỐNG
+319: \textbf{\Large CHƯƠNG 2. PHÂN TÍCH HỆ THỐNG}
+321: \addcontentsline{toc}{section}{CHƯƠNG 2. PHÂN TÍCH HỆ THỐNG}
+944: %  CHƯƠNG 3. THIẾT KẾ HỆ THỐNG
+948: \textbf{\Large CHƯƠNG 3. THIẾT KẾ HỆ THỐNG}
+950: \addcontentsline{toc}{section}{CHƯƠNG 3. THIẾT KẾ HỆ THỐNG}
+1156: \item \textbf{Cấu trúc Dual-Core Harvard}: Bộ xử lý trung tâm gồm hai nhân xử lý độc lập Xtensa Dual-Core 32-bit LX6 hoạt động với tần số xung nhịp lên tới 240\,MHz, mỗi nhân hoạt động độc lập theo kiến trúc Harvard (tách biệt bus lệnh và bus dữ liệu), cho phép nạp lệnh và truy xuất dữ liệu diễn ra đồng thời trong cùng một chu kỳ xung nhịp. Mỗi nhân LX6 có pipeline 5 tầng và tập lệnh mật độ cao Xtensa ISA hỗ trợ cả lệnh 16-bit và 24-bit nhằm tối ưu hóa dung lượng mã chương trình.
+1179: Flash ngoài (qua SPI) & 4\,MB (module dùng) & Lưu trữ mã chương trình cố định. Một phần Flash được ánh xạ (memory-mapped) vào không gian địa chỉ CPU thông qua bộ nhớ đệm Cache MMU 64\,KB (dung lượng bố trí 32\,KB cho lệnh và 32\,KB cho dữ liệu), giúp CPU truy xuất mã chương trình từ Flash với tốc độ gần như SRAM nội bộ. \\
+1411: %  CHƯƠNG 4. THUẬT TOÁN XỬ LÝ TÍN HIỆU
+1415: \textbf{\Large CHƯƠNG 4. THUẬT TOÁN XỬ LÝ TÍN HIỆU}
+1417: \addcontentsline{toc}{section}{CHƯƠNG 4. THUẬT TOÁN XỬ LÝ TÍN HIỆU}
+1685: %  CHƯƠNG 5. KẾT QUẢ THỰC HIỆN
+1689: \textbf{\Large CHƯƠNG 5. KẾT QUẢ THỰC HIỆN}
+1691: \addcontentsline{toc}{section}{CHƯƠNG 5. KẾT QUẢ THỰC HIỆN}
+1970: Trước khi bắt tay vào thiết kế, nhóm đã xây dựng một bảng khảo sát ngắn nhằm xác định nhu cầu thực tế của người dùng phổ thông đối với một thiết bị giám sát chất lượng không khí cá nhân, làm cơ sở định hướng các yêu cầu chức năng và phi chức năng đã trình bày ở Chương 2.

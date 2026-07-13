@@ -1,0 +1,555 @@
+331: 
+332: Hai đường dây mà mỗi thiết bị UART sử dụng để truyền dữ liệu đó là:
+333: \begin{itemize}
+334:     \item \textbf{Transmitter (Tx)}: Chân truyền dữ liệu.
+335:     \item \textbf{Receiver (Rx)}: Chân nhận dữ liệu.
+336: \end{itemize}
+337: 
+338: \begin{figure}[H]
+339:     \centering
+340:     \includegraphics[width=0.85\textwidth]{images/uart_parallel_serial.png}
+341:     \caption{Cơ chế chuyển đổi dữ liệu song song sang nối tiếp của UART}
+342:     \label{fig:uart_parallel_serial}
+343: \end{figure}
+344: 
+345: Dữ liệu được truyền và nhận qua các đường truyền này dưới dạng khung dữ liệu có cấu trúc chuẩn, với 1 bit bắt đầu, 1 số bit dữ liệu, 1 bit kiểm tra chẵn lẻ và 1 hoặc nhiều bit dừng. Tốc độ truyền của UART được đặt ở một số tốc độ chuẩn, ví dụ như 9600, 19200, 38400, 57600, 115200\,bps (biểu thị bằng bps -- bit per second). Tốc độ truyền giữa UART truyền và nhận chỉ có thể chênh lệch tối đa khoảng 10\% trước khi thời gian của các bit bị lệch quá xa, đồng thời cả hai UART cũng phải được cấu hình để truyền và nhận cùng một cấu trúc gói dữ liệu.
+346: 
+347: Truyền thông UART được sử dụng nhiều trong các ứng dụng để giao tiếp với các module như: Wifi, Bluetooth, Xbee, module đầu đọc thẻ RFID với Raspberry Pi, Arduino hoặc vi điều khiển khác. Đây cũng là chuẩn giao tiếp thông dụng và phổ biến trong công nghiệp.
+348: 
+349: \paragraph{Nguyên lý hoạt động của UART}
+350: 
+351: UART truyền dữ liệu nhận được từ một bus dữ liệu (Data Bus) được gửi từ một thiết bị khác như CPU, bộ nhớ hoặc vi điều khiển. Dữ liệu này được truyền ở dạng song song nên sau khi truyền đến UART truyền nhận dữ liệu, UART sẽ thêm một bit start, một bit chẵn lẻ và một bit stop, tạo ra gói dữ liệu. Tiếp theo, gói dữ liệu được xuất ra nối tiếp từng bit tại chân Tx. UART nhận đọc gói dữ liệu từng bit tại chân Rx. UART nhận sau đó \subsubsection{Cảm biến đo nhiệt độ và độ ẩm}
+352: 
+353: \paragraph{Vai trò đo đạc nhiệt độ và độ ẩm}
+354: Nhiệt độ và độ ẩm là hai thông số vi khí hậu cơ bản, ảnh hưởng trực tiếp đến sức khỏe con người và độ tin cậy của các thiết bị điện tử. Trong trạm quan trắc chất lượng không khí, việc đo đạc nhiệt độ và độ ẩm không chỉ cung cấp thông tin môi trường trực tiếp mà còn làm tham chiếu quan trọng để bù sai số (nhiệt-ẩm bù trừ) cho các cảm biến hóa học nhạy khí như MQ-135, vốn dễ bị trôi giá trị đo khi môi trường thay đổi.
+355: 
+356: \paragraph{So sánh các dòng sản phẩm trên thị trường}
+357: Để chọn linh kiện đo nhiệt độ và độ ẩm phù hợp, nhóm tiến hành khảo sát và so sánh các cảm biến phổ biến:
+358: 
+359: \begin{table}[H]
+360: \centering
+361: \caption{Bảng so sánh các dòng cảm biến đo nhiệt độ, độ ẩm}
+362: \label{tab:sensor_comparison}
+363: \begin{tabular}{|p{3cm}|c|c|c|p{4cm}|}
+364: \hline
+365: \textbf{Thông số} & \textbf{DHT11} & \textbf{DHT22} & \textbf{DS18B20} & \textbf{BME680} \\
+366: \hline
+367: Đo lường & Nhiệt độ, Độ ẩm & Nhiệt độ, Độ ẩm & Nhiệt độ & Nhiệt độ, Độ ẩm, Áp suất, Khí gas \\
+368: \hline
+369: Giao tiếp & One-wire (1 dây) & One-wire (1 dây) & One-wire (1 dây) & I2C / SPI \\
+370: \hline
+371: Điện áp cấp & 3 đến 5.5\,V & 3 đến 5.5\,V & 3 đến 5.5\,V & 1.7 -- 3.6\,V (Chip IC)\par 3.3 -- 5\,V (Module) \\
+372: \hline
+373: Dải nhiệt độ & 0 đến 50\,$^\circ$C & -40 đến 80\,$^\circ$C & -55 đến 125\,$^\circ$C & -40 đến 85\,$^\circ$C \\
+374: \hline
+375: Độ chính xác & $\pm 2\,^\circ$C (0--50$^\circ$C) & $\pm 0.5\,^\circ$C (-40--80$^\circ$C) & $\pm 0.5\,^\circ$C (-10--85$^\circ$C) & $\pm 0.5\,^\circ$C (ở 25\,$^\circ$C) \\
+376: \hline
+377: \end{tabular}
+378: \end{table}
+379: 
+380: \noindent\textbf{Đặc điểm chi tiết của từng dòng:}
+381: \begin{itemize}
+382:     \item \textbf{DHT11}: Tùy chọn giá rẻ, dễ thiết lập và sử dụng, tuy nhiên độ chính xác thấp và dải đo rất hẹp.
+383:     \item \textbf{DHT22}: Bản nâng cấp của DHT11 với độ chính xác cao hơn, dải đo rộng hơn, song giá thành cao hơn và tần suất lấy mẫu chậm.
+384:     \item \textbf{DS18B20}: Cảm biến đo nhiệt độ dạng chống nước chuyên dụng cho công nghiệp/môi trường khắc nghiệt, tuy nhiên không đo được độ ẩm.
+385:     \item \textbf{BME680}: Dòng cảm biến cao cấp tích hợp đa năng đo cả Nhiệt độ, Độ ẩm, Áp suất khí quyển và khí độc VOC hữu cơ. Có độ chính xác xuất sắc và giao tiếp I2C tốc độ cao.
+386: \end{itemize}
+387: 
+388: \paragraph{Lý do lựa chọn cảm biến BME680}
+389: Nhóm quyết định lựa chọn sử dụng cảm biến **BME680** vì những lý do sau:
+390: \begin{enumerate}
+391:     \item Đây là giải pháp tích hợp đa năng (All-in-One), giúp trạm quan trắc gọn nhẹ, giảm thiểu số lượng dây nối và tiết kiệm không gian mạch in PCB.
+392:     \item Cung cấp độ chính xác đo vi khí hậu rất cao, dải nhiệt ẩm hoạt động rộng, đồng thời bổ sung thông số áp suất khí quyển và khí hữu cơ VOC để đánh giá ô nhiễm toàn diện.
+393: \end{enumerate}
+394: 
+395: \paragraph{Sơ đồ chân BME680 và kết nối}
+396: \begin{figure}[H]
+397:     \centering
+398:     \includegraphics[width=0.45\textwidth]{images/bme680_pinout.png}
+399:     \caption{Sơ đồ chân module cảm biến BME680}
+400:     \label{fig:bme680_pinout}
+401: \end{figure}
+402: 
+403: \begin{table}[H]
+404: \centering
+405: \caption{Cấu hình kết nối chân BME680 với ESP32}
+406: \label{tab:bme680_pins}
+407: \begin{tabular}{|c|c|l|l|}
+408: \hline
+409: \textbf{Chân cảm biến} & \textbf{Ký hiệu} & \textbf{Chức năng} & \textbf{Chân kết nối ESP32} \\
+410: \hline
+411: 1 & VCC & Cấp nguồn cảm biến (3.3V) & 3V3 \\
+412: \hline
+413: 2 & GND & Nối đất & GND \\
+414: \hline
+415: 3 & SCL & Xung nhịp I2C Clock & GPIO 22 \\
+416: \hline
+417: 4 & SDA & Dữ liệu I2C Data & GPIO 21 \\
+418: \hline
+419: \end{tabular}
+420: \end{table}
+421: 
+422: \subsubsection{Cảm biến đo bụi mịn}
+423: 
+424: \paragraph{Vai trò đo đạc bụi mịn trong không khí}
+425: Bụi mịn (đặc biệt là hạt PM2.5 có kích thước đường kính $\leq 2.5\,\mu\text{m}$) là tác nhân gây ô nhiễm nguy hiểm nhất đối với hệ hô hấp và tim mạch của con người. Đo đạc nồng độ bụi mịn PM2.5 theo thời gian thực là yêu cầu bắt buộc và quan trọng nhất để tính toán chỉ số chất lượng không khí AQI của trạm quan trắc.
+426: 
+427: \paragraph{So sánh các sản phẩm trên thị trường}
+428: Hiện nay trên thị trường có hai dòng cảm biến đo bụi mịn phổ biến cho các dự án IoT:
+429: \begin{itemize}
+430:     \item \textbf{Cảm biến quang học Sharp GP2Y1010AU0F}: Đo bụi dựa trên diode phát hồng ngoại và quang transistor thu nhận ánh sáng tán xạ. Ưu điểm là giá thành rẻ, nhưng độ chính xác thấp, dễ bị nhiễu do luồng khí thổi không ổn định, và chỉ đo tương đối dạng điện áp analog.
+431:     \item \textbf{Cảm biến laser Plantower PMS5003}: Hoạt động theo nguyên lý tán xạ laser chủ động (sử dụng quạt hút nội bộ đi qua chùm laser). Ưu điểm là độ chính xác rất cao, phân tách được kích thước hạt PM1.0, PM2.5, PM10 và xuất dữ liệu số chính xác qua giao thức UART.
+432: \end{itemize}
+433: 
+434: \paragraph{Lý do lựa chọn cảm biến PMS5003}
+435: Nhóm lựa chọn cảm biến **PMS5003** làm thiết bị đo bụi mịn vì:
+436: \begin{enumerate}
+437:     \item Độ ổn định và độ chính xác vượt trội nhờ chùm phát laser và quạt hút tích hợp chủ động, đảm bảo đo đúng nồng độ bụi lơ lửng trong môi trường khí quyển.
+438:     \item Xuất trực tiếp dữ liệu số PM2.5 và PM10 qua cổng UART nối tiếp, giúp vi điều khiển ESP32 đọc dễ dàng mà không bị nhiễu lượng tử hóa như ngõ ra analog.
+439: \end{enumerate}
+440: 
+441: \paragraph{Thông số kỹ thuật cảm biến PMS5003}
+442: \begin{table}[H]
+443: \centering
+444: \caption{Thông số kỹ thuật cảm biến PMS5003}
+445: \label{tab:pms5003_specs}
+446: \begin{tabular}{|p{5.5cm}|p{7.5cm}|}
+447: \hline
+448: \textbf{Thông số} & \textbf{Giá trị} \\
+449: \hline
+450: Điện áp hoạt động & 4.95\,V -- 5.05\,V DC \\
+451: \hline
+452: Dòng điện tối đa & 120\,mA \\
+453: \hline
+454: Dòng điện chờ & $\leq 200\,\mu$A \\
+455: \hline
+456: Giao tiếp & UART (9600 baud, 8N1) \\
+457: \hline
+458: Dải đo PM & 0 -- 500\,$\mu$g/m$^3$ \\
+459: \hline
+460: Độ phân giải PM & 1\,$\mu$g/m$^3$ \\
+461: \hline
+462: Kích thước hạt nhỏ nhất & 0.3\,$\mu$m \\
+463: \hline
+464: Thời gian đáp ứng & $<$ 10 giây \\
+465: \hline
+466: Nhiệt độ hoạt động & -10\,$^\circ$C đến +60\,$^\circ$C \\
+467: \hline
+468: Độ ẩm hoạt động & 0 -- 99\% RH \\
+469: \hline
+470: Kích thước & 50 $\times$ 38 $\times$ 21\,mm \\
+471: \hline
+472: Tuổi thọ & $\geq$ 3 năm \\
+473: \hline
+474: \end{tabular}
+475: \end{table}
+476: 
+477: \paragraph{Cấu hình sơ đồ chân PMS5003}
+478: Cảm biến sử dụng đầu nối Molex Picoblade 8 chân (pitch 1.25mm):
+479: \begin{table}[H]
+480: \centering
+481: \caption{Cấu hình chân PMS5003}
+482: \label{tab:pms5003_pins}
+483: \begin{tabular}{|c|l|p{9.5cm}|}
+484: \hline
+485: \textbf{Chân} & \textbf{Tên} & \textbf{Chức năng} \\
+486: \hline
+487: 1 & VCC & Nguồn cấp 5V \\
+488: \hline
+489: 2 & GND & Chân nối đất (Ground) \\
+490: \hline
+491: 3 & SET & Chân thiết lập (điều khiển chế độ ngủ, active low) \\
+492: \hline
+493: 4 & RX & UART Nhận dữ liệu \\
+494: \hline
+495: 5 & TX & UART Truyền dữ liệu \\
+496: \hline
+497: 6 & RESET & Chân thiết lập lại (active low) \\
+498: \hline
+499: 7 & NC & Không kết nối \\
+500: \hline
+501: 8 & NC & Không kết nối \\
+502: \hline
+503: \end{tabular}
+504: \end{table}
+505: 
+506: \paragraph{Tìm hiểu về các phép đo PM}
+507: PMS5003 báo cáo dữ liệu bụi mịn dưới hai định dạng:
+508: \begin{itemize}
+509:     \item \textbf{Hạt tiêu chuẩn (Standard Particle, CF=1)}: Giả định mật độ hạt tiêu chuẩn cho môi trường trong nhà hoặc tham chiếu hiệu chuẩn.
+510:     \item \textbf{Môi trường khí quyển (Atmospheric Environment)}: Tính toán bù trừ điều kiện khí quyển thực tế. Phép đo này được sử dụng cho việc giám sát chất lượng không khí ngoài trời.
+511: \end{itemize}
+512: 
+513: \begin{table}[H]
+514: \centering
+515: \caption{Các nhóm kích thước đếm hạt của PMS5003}
+516: \label{tab:pms5003_particle_sizes}
+517: \begin{tabular}{|c|p{10cm}|}
+518: \hline
+519: \textbf{Nhóm} & \textbf{Mô tả} \\
+520: \hline
+521: $>$ 0.3\,$\mu$m & Tổng số hạt có kích thước lớn hơn 0.3 micromet \\
+522: \hline
+523: $>$ 0.5\,$\mu$m & Các hạt có kích thước lớn hơn 0.5 micromet \\
+524: \hline
+525: $>$ 1.0\,$\mu$m & Các hạt có kích thước lớn hơn 1.0 micromet \\
+526: \hline
+527: $>$ 2.5\,$\mu$m & Các hạt có kích thước lớn hơn 2.5 micromet \\
+528: \hline
+529: $>$ 5.0\,$\mu$m & Các hạt có kích thước lớn hơn 5.0 micromet \\
+530: \hline
+531: $>$ 10\,$\mu$m & Các hạt có kích thước lớn hơn 10 micromet \\
+532: \hline
+533: \end{tabular}
+534: \end{table}
+535: 
+536: \paragraph{Kết nối PMS5003 với ESP32}
+537: \begin{table}[H]
+538: \centering
+539: \caption{Cấu hình kết nối chân PMS5003 với ESP32}
+540: \label{tab:pms5003_wiring}
+541: \begin{tabular}{|c|c|l|}
+542: \hline
+543: \textbf{Chân PMS5003} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\
+544: \hline
+545: VCC (Pin 1) & 5V & Cần nguồn ổn định 5V \\
+546: \hline
+547: GND (Pin 2) & GND & Nối đất chung \\
+548: \hline
+549: TX (Pin 5) & GPIO17 (TX2) & Chân RX của cảm biến nối với TX của ESP32 \\
+550: \hline
+551: RX (Pin 4) & GPIO16 (RX2) & Chân TX của cảm biến nối với RX của ESP32 \\
+552: \hline
+553: \end{tabular}
+554: \end{table}
+555: 
+556: \subsubsection{Cảm biến đo khí độc hại (Gas)}
+557: 
+558: \paragraph{Vai trò đo đạc khí độc hại trong không khí}
+559: Các khí độc hại phát sinh từ hoạt động công nghiệp và phương tiện giao thông (như amoniac $\text{NH}_3$, benzen, khí CO, và các khí gây ô nhiễm khác) ảnh hưởng nghiêm trọng tới sức khỏe hô hấp. Việc giám sát liên tục sự tồn tại của các loại khí này giúp phát hiện sớm các nguy cơ ô nhiễm cục bộ xung quanh trạm đo.
+560: 
+561: \paragraph{So sánh các dòng sản phẩm trên thị trường}
+562: \begin{itemize}
+563:     \item \textbf{Cảm biến dòng MQ-2}: Chuyên phát hiện khí gas hóa lỏng (LPG), propan, metan, hydro và khói. Phù hợp cho báo cháy và rò rỉ gas đun nấu gia đình.
+564:     \item \textbf{Cảm biến dòng MQ-135}: Chuyên phát hiện khí ô nhiễm môi trường, đặc biệt nhạy với amoniac, benzen, cồn, khói và các khí độc hại trong khí quyển.
+565: \end{itemize}
+566: 
+567: \paragraph{Lý do lựa chọn cảm biến MQ-135}
+568: Nhóm lựa chọn cảm biến **MQ-135** vì dải nhạy của cảm biến này được thiết kế tối ưu cho việc kiểm tra chất lượng không khí xung quanh trạm đo, giúp phát hiện hiệu quả sự xuất hiện của các khí ô nhiễm chính trong môi trường đô thị và sinh hoạt.
+569: 
+570: \paragraph{Giới thiệu về MQ-135}
+571: MQ-135 là một cảm biến chất bán dẫn oxit thiếc pha tạp indium ($\text{In}_2\text{O}_3$-$\text{SnO}_2$) có độ dẫn điện thay đổi tùy thuộc vào nồng độ khí trong môi trường của nó. Sự thay đổi độ dẫn điện này chuyển thành sự thay đổi điện trở của cảm biến, có thể đo và sử dụng để xác định nồng độ khí hiện diện.
+572: Cảm biến giúp xác định chất lượng không khí bằng cách kiểm tra sự tồn tại của loại khí độc hại này.
+573: 
+574: Hơn nữa, độ nhạy có thể thay đổi tùy thuộc vào khí đo được, ví dụ:
+575: \begin{itemize}
+576:     \item Amoniac ($\text{NH}_3$): 10\,ppm -- 300\,ppm
+577:     \item Benzen: 10\,ppm -- 1000\,ppm
+578:     \item Rượu: 10\,ppm -- 300\,ppm
+579: \end{itemize}
+580: 
+581: \paragraph{Cấu hình sơ đồ chân (Pin Configuration)}
+582: \begin{figure}[H]
+583:     \centering
+584:     \includegraphics[width=0.55\textwidth]{images/mq135_module.png}
+585:     \caption{Module cảm biến khí MQ-135 và kích thước cơ học}
+586:     \label{fig:mq135_module}
+587: \end{figure}
+588: 
+589: \begin{figure}[H]
+590:     \centering
+591:     \includegraphics[width=0.4\textwidth]{images/mq135_pinout.png}
+592:     \caption{Sơ đồ chân module MQ-135}
+593:     \label{fig:mq135_pinout}
+594: \end{figure}
+595: 
+596: Cảm biến MQ-135 có cấu hình 4 chân như sau:
+597: \begin{table}[H]
+598: \centering
+599: \caption{Cấu hình chân module cảm biến MQ-135}
+600: \label{tab:mq135_pins_new}
+601: \begin{tabular}{|c|l|p{9.5cm}|}
+602: \hline
+603: \textbf{Chân} & \textbf{Ký hiệu} & \textbf{Chức năng} \\
+604: \hline
+605: 1 & Vcc & Cấp nguồn cho cảm biến, điện áp hoạt động là $+5$\,V. \\
+606: \hline
+607: 2 & GND & Kết nối mô-đun với mặt đất hệ thống. \\
+608: \hline
+609: 3 & DO & Đầu ra kỹ thuật số, cài đặt giá trị ngưỡng bằng chiết áp. \\
+610: \hline
+611: 4 & AO & Đầu ra điện áp tương tự $0 \sim 5$\,V dựa trên cường độ khí độc. \\
+612: \hline
+613: \end{tabular}
+614: \end{table}
+615: 
+616: \paragraph{Thông số kỹ thuật}
+617: \begin{table}[H]
+618: \centering
+619: \caption{Thông số kỹ thuật cảm biến MQ-135}
+620: \label{tab:mq135_specs_new}
+621: \begin{tabular}{|p{3.5cm}|p{4cm}|c|p{5cm}|}
+622: \hline
+623: \textbf{Thông số} & \textbf{Điều kiện / Đặc tính} & \textbf{KH} & \textbf{Giá trị} \\
+624: \hline
+625: Loại cảm biến & Semiconductor & --- & Oxit bán dẫn nhạy khí \\
+626: \hline
+627: Khí mục tiêu & Khí amoniac, sunfua, hơi nước benzen & --- & Khí gây ô nhiễm \\
+628: \hline
+629: Phạm vi phát hiện & $10 \sim 1000$\,ppm (khí amoniac, toluene, hydro, khói) & --- & Khí độc hại \\
+630: \hline
+631: \multirow{3}{=}{Điều kiện mạch tiêu chuẩn}
+632:   & Điện áp vòng & Vc & 5.0\,V $\pm$ 0.1\,V một chiều \\
+633: \cline{2-4}
+634:   & Điện áp nóng & VH & 5.0\,V $\pm$ 0.1\,V AC hoặc DC \\
+635: \cline{2-4}
+636:   & Tải kháng trọng & RL & Điều chỉnh \\
+637: \hline
+638: \multirow{5}{=}{Ký tự cảm biến trong điều kiện thử nghiệm tiêu chuẩn}
+639:   & Chống nóng & RH & $30\,\Omega \pm 3\,\Omega$ (nhiệt độ phòng) \\
+640: \cline{2-4}
+641:   & Tiêu thụ máy sưởi & PH & $\leq$ 950\,mW \\
+642: \cline{2-4}
+643:   & Độ nhạy & S & Rs(trong không khí)/Rs(trong 400ppm H2) $\geq$ 5 \\
+644: \cline{2-4}
+645:   & Điện áp đầu ra & Vs & $2.0\,\text{V} \sim 4.0\,\text{V}$ (trong 400ppm H2) \\
+646: \cline{2-4}
+647:   & Độ dốc nồng độ & $\alpha$ & $\leq 0.6$ (R400ppm/R100ppm H2) \\
+648: \hline
+649: \multirow{3}{=}{Điều kiện thử nghiệm tiêu chuẩn}
+650:   & \multicolumn{2}{l|}{Nhiệt độ / Độ ẩm} & 20\,$^\circ$C $\pm$ 2\,$^\circ$C ; 55\% $\pm$ 5\% RH \\
+651: \cline{2-4}
+652:   & \multicolumn{2}{l|}{Mạch kiểm tra tiêu chuẩn} & Vc: 5.0\,V $\pm$ 0.1\,V ; VH: 5.0\,V $\pm$ 0.1\,V \\
+653: \cline{2-4}
+654:   & \multicolumn{2}{l|}{Thời gian làm nóng sơ bộ} & Trên 48 giờ \\
+655: \hline
+656: Hàm lượng oxy & \multicolumn{3}{p{9.7cm}|}{21\% (không ít hơn 18\%, nồng độ O2 ảnh hưởng đến giá trị ban đầu, độ nhạy và độ lặp lại)} \\
+657: \hline
+658: Tuổi thọ & \multicolumn{3}{l|}{10 năm} \\
+659: \hline
+660: \end{tabular}
+661: \end{table}
+662: 
+663: \paragraph{Kết nối MQ-135 với ESP32}
+664: \begin{table}[H]
+665: \centering
+666: \caption{Cấu hình kết nối chân MQ-135 với ESP32}
+667: \label{tab:mq135_wiring_esp}
+668: \begin{tabular}{|c|c|l|}
+669: \hline
+670: \textbf{Chân MQ-135} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\
+671: \hline
+672: Vcc (Pin 1) & 5V (hoặc VIN) & Cần cấp nguồn 5V ổn định \\
+673: \hline
+674: GND (Pin 2) & GND & Nối đất chung \\
+675: \hline
+676: DO (Pin 3) & Không kết nối & Chân tín hiệu số phụ, không sử dụng \\
+677: \hline
+678: AO (Pin 4) & GPIO35 (ADC1\_CH7) & Xuất điện áp tương tự tới chân ADC \\
+679: \hline
+680: \end{tabular}
+681: \end{table}�t lập (điều khiển chế độ ngủ, kích hoạt ở mức thấp - active low) \\
+682: \hline
+683: 4 & RX & UART Nhận dữ liệu (truyền đến cảm biến) \\
+684: \hline
+685: 5 & TX & UART Truyền dữ liệu (gửi đi từ cảm biến) \\
+686: \hline
+687: 6 & RESET & Chân thiết lập lại (kích hoạt ở mức thấp - active low) \\
+688: \hline
+689: 7 & NC & Không kết nối (Not Connected) \\
+690: \hline
+691: 8 & NC & Không kết nối (Not Connected) \\
+692: \hline
+693: \end{tabular}
+694: \end{table}
+695: 
+696: Hầu hết các bo mạch mở rộng (breakout board) chỉ đưa ra các chân từ 1 đến 5, mức này là đủ cho các hoạt động cơ bản. Các chân SET và RESET cho phép bạn triển khai các chế độ tiết kiệm năng lượng, đưa cảm biến vào trạng thái ngủ khi không cần đo chủ động.
+697: 
+698: \paragraph{Tìm hiểu về các phép đo PM}
+699: PMS5003 báo cáo dữ liệu bụi mịn dưới hai định dạng thường gây nhầm lẫn cho những người mới bắt đầu:
+700: \begin{itemize}
+701:     \item \textbf{Hạt tiêu chuẩn (Standard Particle, CF=1)}: Các giá trị này giả định một mật độ hạt tiêu chuẩn và được dùng cho môi trường trong nhà hoặc làm tham chiếu hiệu chuẩn tại nhà máy. Cảm biến áp dụng một hệ số hiệu chỉnh (correction factor) bằng 1 cho các phép đo thô.
+702:     \item \textbf{Môi trường khí quyển (Atmospheric Environment)}: Các kết quả đọc này tính đến các điều kiện khí quyển và mật độ hạt thay đổi. Đối với việc giám sát chất lượng không khí thông thường, các giá trị môi trường khí quyển sẽ cung cấp kết quả mang tính đại diện chính xác hơn.
+703: \end{itemize}
+704: 
+705: Cảm biến cũng báo cáo số lượng hạt thô đếm được trên mỗi 0.1 lít không khí chia theo sáu nhóm kích thước:
+706: \begin{table}[H]
+707: \centering
+708: \caption{Các nhóm kích thước đếm hạt của PMS5003}
+709: \label{tab:pms5003_particle_sizes}
+710: \begin{tabular}{|c|p{10cm}|}
+711: \hline
+712: \textbf{Nhóm} & \textbf{Mô tả} \\
+713: \hline
+714: $>$ 0.3\,$\mu$m & Tổng số hạt có kích thước lớn hơn 0.3 micromet \\
+715: \hline
+716: $>$ 0.5\,$\mu$m & Các hạt có kích thước lớn hơn 0.5 micromet \\
+717: \hline
+718: $>$ 1.0\,$\mu$m & Các hạt có kích thước lớn hơn 1.0 micromet \\
+719: \hline
+720: $>$ 2.5\,$\mu$m & Các hạt có kích thước lớn hơn 2.5 micromet \\
+721: \hline
+722: $>$ 5.0\,$\mu$m & Các hạt có kích thước lớn hơn 5.0 micromet \\
+723: \hline
+724: $>$ 10\,$\mu$m & Các hạt có kích thước lớn hơn 10 micromet \\
+725: \hline
+726: \end{tabular}
+727: \end{table}
+728: 
+729: \paragraph{Kết nối PMS5003 với ESP32}
+730: Dưới đây là sơ đồ nối dây cơ bản:
+731: 
+732: \begin{table}[H]
+733: \centering
+734: \caption{Cấu hình kết nối chân PMS5003 với ESP32}
+735: \label{tab:pms5003_wiring}
+736: \begin{tabular}{|c|c|l|}
+737: \hline
+738: \textbf{Chân PMS5003} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\
+739: \hline
+740: VCC (Pin 1) & 5V & Cần nguồn ổn định 5V \\
+741: \hline
+742: GND (Pin 2) & GND & Nối đất chung \\
+743: \hline
+744: TX (Pin 5) & GPIO17 (TX2) & Chân RX của cảm biến nối với TX của ESP32 \\
+745: \hline
+746: RX (Pin 4) & GPIO16 (RX2) & Chân TX của cảm biến nối với RX của ESP32 \\
+747: \hline
+748: \end{tabular}
+749: \end{table}
+750: \subsubsection{Cảm biến khí MQ-135}
+751: 
+752: MQ-135 là một cảm biến chất bán dẫn oxit thiếc pha tạp indium ($\text{In}_2\text{O}_3$-$\text{SnO}_2$) có độ dẫn điện thay đổi tùy thuộc vào nồng độ khí trong môi trường của nó. Sự thay đổi độ dẫn điện này chuyển thành sự thay đổi điện trở của cảm biến, có thể đo và sử dụng để xác định nồng độ khí hiện diện.
+753: 
+754: Trong số các loại khí có thể được phát hiện trong không khí là $\text{CO}_2$, Alcohol, Nitrogen Oxide (NOx), Carbon Monoxide (CO), Amoniac ($\text{NH}_3$), Sunfua, Benzen ($\text{C}_6\text{H}_6$), khói và các loại khí khác có hại cho sức khỏe. Hãy nhớ rằng không thể đo được số lượng của từng loại khí, nó chỉ giúp bạn xác định chất lượng không khí bằng cách kiểm tra sự tồn tại của loại khí này.
+755: 
+756: Hơn nữa, độ nhạy có thể thay đổi tùy thuộc vào khí đo được, ví dụ:
+757: \begin{itemize}
+758:     \item Amoniac ($\text{NH}_3$): 10\,ppm -- 300\,ppm
+759:     \item Benzen: 10\,ppm -- 1000\,ppm
+760:     \item Rượu: 10\,ppm -- 300\,ppm
+761: \end{itemize}
+762: 
+763: \paragraph{Cấu hình sơ đồ chân (Pin Configuration)}\begin{figure}[H]
+764:     \centering
+765:     \includegraphics[width=0.65\textwidth]{images/mq135_module.png}
+766:     \caption{Module cảm biến khí MQ-135 và kích thước cơ học}
+767:     \label{fig:mq135_module}
+768: \end{figure}
+769: 
+770: \begin{figure}[H]
+771:     \centering
+772:     \includegraphics[width=0.45\textwidth]{images/mq135_pinout.png}
+773:     \caption{Sơ đồ chân module MQ-135}
+774:     \label{fig:mq135_pinout}
+775: \end{figure}
+776: 
+777: Cảm biến MQ-135 có cấu hình 4 chân như sau:
+778: 
+779: \begin{table}[H]
+780: \centering
+781: \caption{Cấu hình chân module cảm biến MQ-135}
+782: \label{tab:mq135_pins_new}
+783: \begin{tabular}{|c|l|p{9.5cm}|}
+784: \hline
+785: \textbf{Chân} & \textbf{Ký hiệu} & \textbf{Chức năng} \\
+786: \hline
+787: 1 & Vcc & Cấp nguồn cho cảm biến, điện áp hoạt động là $+5$\,V. \\
+788: \hline
+789: 2 & GND & Kết nối mô-đun với mặt đất hệ thống. \\
+790: \hline
+791: 3 & DO & Đầu ra kỹ thuật số, cài đặt giá trị ngưỡng bằng chiết áp. \\
+792: \hline
+793: 4 & AO & Đầu ra điện áp tương tự $0 \sim 5$\,V dựa trên cường độ khí độc. \\
+794: \hline
+795: \end{tabular}
+796: \end{table}
+797: 
+798: \paragraph{Thông số kỹ thuật}
+799: 
+800: \begin{table}[H]
+801: \centering
+802: \caption{Thông số kỹ thuật cảm biến MQ-135}
+803: \label{tab:mq135_specs_new}
+804: \begin{tabular}{|p{3.5cm}|p{4cm}|c|p{5cm}|}
+805: \hline
+806: \textbf{Thông số} & \textbf{Điều kiện / Đặc tính} & \textbf{KH} & \textbf{Giá trị} \\
+807: \hline
+808: Loại cảm biến & Semiconductor & --- & Oxit bán dẫn nhạy khí \\
+809: \hline
+810: Khí mục tiêu & Khí amoniac, sunfua, hơi nước benzen & --- & Khí gây ô nhiễm \\
+811: \hline
+812: Phạm vi phát hiện & $10 \sim 1000$\,ppm (khí amoniac, toluene, hydro, khói) & --- & Khí độc hại \\
+813: \hline
+814: \multirow{3}{=}{Điều kiện mạch tiêu chuẩn}
+815:   & Điện áp vòng & Vc & 5.0\,V $\pm$ 0.1\,V một chiều \\
+816: \cline{2-4}
+817:   & Điện áp nóng & VH & 5.0\,V $\pm$ 0.1\,V AC hoặc DC \\
+818: \cline{2-4}
+819:   & Tải kháng trọng & RL & Điều chỉnh \\
+820: \hline
+821: \multirow{5}{=}{Ký tự cảm biến trong điều kiện thử nghiệm tiêu chuẩn}
+822:   & Chống nóng & RH & $30\,\Omega \pm 3\,\Omega$ (nhiệt độ phòng) \\
+823: \cline{2-4}
+824:   & Tiêu thụ máy sưởi & PH & $\leq$ 950\,mW \\
+825: \cline{2-4}
+826:   & Độ nhạy & S & Rs(trong không khí)/Rs(trong 400ppm H2) $\geq$ 5 \\
+827: \cline{2-4}
+828:   & Điện áp đầu ra & Vs & $2.0\,\text{V} \sim 4.0\,\text{V}$ (trong 400ppm H2) \\
+829: \cline{2-4}
+830:   & Độ dốc nồng độ & $\alpha$ & $\leq 0.6$ (R400ppm/R100ppm H2) \\
+831: \hline
+832: \multirow{3}{=}{Điều kiện thử nghiệm tiêu chuẩn}
+833:   & \multicolumn{2}{l|}{Nhiệt độ / Độ ẩm} & 20\,$^\circ$C $\pm$ 2\,$^\circ$C ; 55\% $\pm$ 5\% RH \\
+834: \cline{2-4}
+835:   & \multicolumn{2}{l|}{Mạch kiểm tra tiêu chuẩn} & Vc: 5.0\,V $\pm$ 0.1\,V ; VH: 5.0\,V $\pm$ 0.1\,V \\
+836: \cline{2-4}
+837:   & \multicolumn{2}{l|}{Thời gian làm nóng sơ bộ} & Trên 48 giờ \\
+838: \hline
+839: Hàm lượng oxy & \multicolumn{3}{p{9.7cm}|}{21\% (không ít hơn 18\%, nồng độ O2 ảnh hưởng đến giá trị ban đầu, độ nhạy và độ lặp lại)} \\
+840: \hline
+841: Tuổi thọ & \multicolumn{3}{l|}{10 năm} \\
+842: \hline
+843: \end{tabular}
+844: \end{table}
+845: 
+846: \paragraph{Kết nối MQ-135 với ESP32}
+847: \begin{table}[H]
+848: \centering
+849: \caption{Cấu hình kết nối chân MQ-135 với ESP32}
+850: \label{tab:mq135_wiring_esp}
+851: \begin{tabular}{|c|c|l|}
+852: \hline
+853: \textbf{Chân MQ-135} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\
+854: \hline
+855: Vcc (Pin 1) & 5V (hoặc VIN) & Cần cấp nguồn 5V ổn định \\
+856: \hline
+857: GND (Pin 2) & GND & Nối đất chung \\
+858: \hline
+859: DO (Pin 3) & Không kết nối & Chân tín hiệu số phụ, không sử dụng \\
+860: \hline
+861: AO (Pin 4) & GPIO35 (ADC1\_CH7) & Xuất điện áp tương tự tới chân ADC \\
+862: \hline
+863: \end{tabular}
+864: \end{table}
+865: 
+866: \newpage
+867: 
+868: % ============================================================
+869: %  SECTION 5: THIẾT KẾ HỆ THỐNG
+870: % ============================================================
+871: \begin{center}
+872:     \textbf{\Large CHƯƠNG 5. THIẾT KẾ HỆ THỐNG}
+873: \end{center}
+874: \addcontentsline{toc}{section}{CHƯƠNG 5. THIẾT KẾ HỆ THỐNG}
+875: \setcounter{section}{5}
+876: \setcounter{subsection}{0}
+877: 
+878: \subsection{Thiết kế phần cứng}
+879: 
+880: \subsubsection{Mô hình tổng thể}
+881: 
+882: Hệ thống trạm quan trắc chất lượng không khí được xây dựng theo mô hình IoT ba tầng, kết nối liền mạch từ phần cứng thu thập dữ liệu tại hiện trường đến giao diện web hiển thị từ xa. Toàn bộ luồng dữ liệu được thiết kế theo hướng một chiều, liên tục và thời gian thực.
+883: 
+884: Mô hình tổng thể của hệ thống bao gồm ba thành phần chính:
+885: 

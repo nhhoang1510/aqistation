@@ -1,0 +1,194 @@
+--- Table 1 ---
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}p{4cm}|}
+        \hline
+        \textbf{Tiêu chí} & \textbf{SDS011} & \textbf{PMS5003} & \textbf{Sharp GP2Y1010AU0F} \\
+        \hline
+        & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/sds011.png}}\vspace*{2mm} & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/pms5003.png}}\vspace*{2mm} & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/gp2y1010au0f.png}}\vspace*{2mm} \\
+        \hline
+        \textbf{Nguyên lý đo} & Tán xạ LASER chủ động + quạt hút & Tán xạ LASER chủ động + quạt hút & LED hồng ngoại, không có quạt hút \\
+        \hline
+        \textbf{Dải đo} & PM2.5, PM10 (0--1000\,$\mu$g/m$^3$) & PM1.0, PM2.5, PM10 (0--500\,$\mu$g/m$^3$) & Chỉ có độ nhạy 0.5V/0.1mg/m$^3$ \\
+        \hline
+        \textbf{Đầu ra tín hiệu} & UART 9600bps / PWM & UART 9600bps & Analog (điện áp) \\
+        \hline
+        \textbf{Độ chính xác} & Sai số $\pm$10\% & Sai số $\pm$10$\mu$g/m$^3$ hoặc $\pm$10\% & Thấp, chỉ đo tương đối \\
+        \hline
+        \textbf{Nguồn điện} & 5V, $\sim$70mA (sleep $<$4mA) & 5V, $\leq$100mA (sleep $\leq$200$\mu$A) & 5V, $\sim$11mA \\
+        \hline
+        \textbf{Kích thước} & 71 $\times$ 70 $\times$ 23 mm (Lớn) & 50 $\times$ 38 $\times$ 21 mm (Trung bình) & 46 $\times$ 30 $\times$ 17.6 mm (Nhỏ gọn) \\
+        \hline
+        \textbf{Tuổi thọ} & $\sim$8000 giờ & $\geq$3 năm (MTTF) & Dài (không có quạt hút) \\
+        \hline
+        \textbf{Độ ẩm HĐ} & 0--70\% RH & 0--99\% RH & Không công bố \\
+        \hline
+    \end{tabular}
+\caption{Bảng phân công công việc thực hiện dự án}
+    \label{tab:work_distribution}
+    \begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|l|}
+        \hline
+        \textbf{Thành viên} & \textbf{Nhiệm vụ đảm nhiệm} & \textbf{Trạng thái} \\ 
+        \hline
+        Nguyễn Danh Trung & Thiết kế mạch nguyên lý PCB, hàn lắp linh kiện phần cứng, hiệu chuẩn các cảm biến BME680, PMS5003, MQ-135. & Hoàn thành \\ 
+        \hline
+        Tống Quang Giáp & Lập trình firmware trên ESP32, xây dựng thuật toán lọc số, tích hợp Watchdog Timer. & Hoàn thành \\ 
+        \hline
+        Nguyễn Huy Hoàng & Xây dựng giao diện hiển thị, giám sát dữ liệu thời gian thực, cấu hình REST API, triển khai cơ sở dữ liệu MongoDB Atlas và kết nối MQTT Broker. & Hoàn thành \\ 
+        \hline
+    \end{tabularx}
+\end{table}
+
+--- Table 13 ---
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{7.6cm}|}
+\hline
+\textbf{Vùng nhớ} & \textbf{Dung lượng} & \textbf{Vai trò và đặc tính} \\ 
+        \hline
+IRAM (Instruction RAM) & 128\,KB & Vùng nhớ tốc độ cao lưu mã lệnh thực thi trực tiếp (không qua cache), thường chứa các hàm xử lý ngắt (ISR) cần thời gian phản hồi tối thiểu như ISR nhận UART của PMS5003. \\ 
+        \hline
+DRAM (Data RAM) & 320\,KB & Vùng nhớ dữ liệu tĩnh và động (heap/stack), là nơi cấp phát Stack Memory cho từng Task FreeRTOS (\texttt{taskPMS}, \texttt{taskSensors}, \texttt{taskNetwork}) cũng như biến toàn cục \texttt{SharedData}. \\ 
+        \hline
+RTC FAST/SLOW Memory & 8\,KB & Vùng nhớ tồn tại xuyên suốt các chu kỳ ngủ sâu, được đề xuất sử dụng trong hướng phát triển tương lai để lưu trạng thái hệ thống trước khi vào chế độ tiết kiệm năng lượng. \\ 
+        \hline
+Flash ngoài (qua SPI) & 4\,MB (module dùng) & Lưu trữ mã chương trình cố định. Một phần Flash được ánh xạ (memory-mapped) vào không gian địa chỉ CPU thông qua bộ nhớ đệm Cache MMU 64\,KB (dung lượng bố trí 32\,KB cho lệnh và 32\,KB cho dữ liệu), giúp CPU truy xuất mã chương trình từ Flash với tốc độ gần như SRAM nội bộ. \\ 
+        \hline\end{tabular}
+\caption{Cấu hình GPIO ESP32}
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{GPIO} & \textbf{Chức năng} & \textbf{Ngoại vi} \\ 
+        \hline
+        GPIO 21 (SDA) & I2C Data  & BME680 \\ 
+        \hline
+        GPIO 22 (SCL) & I2C Clock & BME680 \\ 
+        \hline
+        GPIO 16 (RX2) & UART2 RX  & PMS5003 TX \\ 
+        \hline
+        GPIO 17 (TX2) & UART2 TX  & PMS5003 RX \\ 
+        \hline
+        GPIO 34       & ADC1\_CH6 & MQ-135 AOUT \\ 
+        \hline
+    \end{tabular}
+\end{table}
+
+--- Table 19 ---
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Endpoint} & \textbf{Method} & \textbf{Chức năng} \\ 
+        \hline
+\texttt{/api/data/latest}     & GET & Lấy bản ghi đo mới nhất \\ 
+        \hline
+\texttt{/api/data/history}    & GET & Lấy lịch sử theo khoảng thời gian \\ 
+        \hline
+\texttt{/api/data/stats}      & GET & Thống kê trung bình theo giờ/ngày \\ 
+        \hline\end{tabular}
+\caption{Danh sách cảm biến trong hệ thống và thông số đo}
+\label{tab:sensor_block}
+\begin{tabularx}{\textwidth}{|l|l|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Cảm biến} & \textbf{Giao tiếp} & \textbf{Thông số đo} \\ 
+        \hline
+BME680  & I2C (tự động quét 0x76/0x77) & Nhiệt độ ($-40 \div 85^\circ$C, đã bù trừ tự phát nhiệt), Độ ẩm (0--100\%RH), Áp suất (300--1100\,hPa), Điện trở khí VOC \\ 
+        \hline
+PMS5003 & UART2, 9600 baud & PM1.0, PM2.5, PM10 (0--500\,$\mu$g/m$^3$); số hạt theo 6 dải kích thước \\ 
+        \hline
+MQ-135  & ADC1 (GPIO34) & Tín hiệu tương tự 0--3.3\,V, chuyển đổi sang nồng độ ppm (NH$_3$, CO$_2$, VOC) \\ 
+        \hline\end{tabularx}
+\end{table}
+
+--- Table 21 ---
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|l|}
+\hline
+\textbf{Dải AQI} & \textbf{Phân loại} & \textbf{Màu} & \textbf{Khuyến cáo sức khỏe} \\ 
+        \hline
+0 -- 50    & Tốt                    & Xanh lá    & Chất lượng không khí tốt, không ảnh hưởng sức khỏe \\ 
+        \hline
+51 -- 100  & Trung bình         & Vàng       & Nhạy cảm với một số chất ô nhiễm \\ 
+        \hline
+101 -- 150 & Không tốt cho nhóm nhạy cảm  & Cam        & Người bệnh hô hấp cần chú ý \\ 
+        \hline
+151 -- 200 & Không tốt         & Đỏ         & Ảnh hưởng sức khỏe cộng đồng \\ 
+        \hline
+201 -- 300 & Rất không tốt& Tím        & Cảnh báo sức khỏe nghiêm trọng \\ 
+        \hline
+301 -- 500 & Nguy hại          & Nâu đỏ     & Nguy cơ khẩn cấp cho toàn bộ cộng đồng \\ 
+        \hline\end{tabular}
+\caption{Đặc tả cấu trúc tài liệu dữ liệu trong MongoDB Atlas}
+\label{tab:db_schema}
+\begin{tabularx}{\textwidth}{|l|l|c|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Trường dữ liệu} & \textbf{Kiểu dữ liệu} & \textbf{Bắt buộc} & \textbf{Mô tả chức năng} \\ 
+        \hline
+\texttt{pm2\_5}          & Number & Có & Nồng độ bụi mịn PM2.5 ($\mu$g/m$^3$). \\ 
+        \hline
+\texttt{pm10}           & Number & Có & Nồng độ bụi mịn PM10 ($\mu$g/m$^3$). \\ 
+        \hline
+\texttt{temperature}    & Number & Có & Nhiệt độ môi trường ($^\circ$C). \\ 
+        \hline
+\texttt{humidity}       & Number & Có & Độ ẩm tương đối (\%RH). \\ 
+        \hline
+\texttt{pressure}       & Number & Có & Áp suất khí quyển (hPa). \\ 
+        \hline
+\texttt{gas\_resistance} & Number & Không & Điện trở cảm biến khí VOC (k$\Omega$). \\ 
+        \hline
+\texttt{mq135}          & Number & Không & Giá trị tương tự đọc từ cảm biến MQ-135 (ADC). \\ 
+        \hline
+\texttt{aqi}            & Number & Có & Chỉ số chất lượng không khí tổng hợp. \\ 
+        \hline
+\texttt{timestamp}      & Date   & Có & Nhãn thời gian hệ thống (Được đánh chỉ mục Index, tự động TTL xóa sau 30 ngày). \\ 
+        \hline\end{tabularx}
+\end{table}
+
+--- Table 23 ---
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|}
+        \hline
+        \textbf{Từ viết tắt} & \textbf{Ý nghĩa diễn giải} \\ 
+        \hline
+        IoT   & Internet of Things (Internet vạn vật) \\ 
+        \hline
+        AQI   & Air Quality Index (Chỉ số chất lượng không khí) \\ 
+        \hline
+        MQTT  & Message Queuing Telemetry Transport \\ 
+        \hline
+        RTOS  & Real-Time Operating System (Hệ điều hành thời gian thực) \\ 
+        \hline
+        MEMS  & Micro-Electromechanical Systems (Hệ vi cơ điện tử) \\ 
+        \hline
+        VOC   & Volatile Organic Compounds (Hợp chất hữu cơ dễ bay hơi) \\ 
+        \hline
+        PCB   & Printed Circuit Board (Bo mạch in) \\ 
+        \hline
+        JSON  & JavaScript Object Notation \\ 
+        \hline
+        SoC   & System-on-Chip \\ 
+        \hline
+        DSP   & Digital Signal Processing (Xử lý tín hiệu số) \\ 
+        \hline
+    \end{tabular}
+\caption{Khung tổng hợp kết quả khảo sát nhu cầu sử dụng thiết bị}
+\label{tab:survey_results}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|}
+\hline
+\textbf{Tiêu chí khảo sát} & \textbf{Tỷ lệ / Số phiếu} \\ 
+        \hline
+Số phiếu khảo sát hợp lệ thu về & \\ 
+        \hline
+Tỷ lệ người lo ngại về chất lượng không khí (mức 4--5/5) & \\ 
+        \hline
+Tỷ lệ từng sử dụng thiết bị đo chất lượng không khí & \\ 
+        \hline
+Thông số được quan tâm nhiều nhất & \\ 
+        \hline
+Tỷ lệ sẵn sàng chi trả dưới 1.000.000\,VNĐ & \\ 
+        \hline
+Tính năng được mong muốn nhiều nhất & \\ 
+        \hline\end{tabularx}
+\end{table}
+

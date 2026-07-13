@@ -1,0 +1,21 @@
+529: \subsubsection{Giới thiệu về cảm biến bụi PMS5003}
+531: \paragraph{Nguyên lý}\mbox{}\\
+534: \paragraph{Giao thức truyền dữ liệu UART}\mbox{}\\
+563: \paragraph{Nguyên lý hoạt động của UART}\mbox{}\\
+567: \noindent\textbf{Thông số kỹ thuật cảm biến PMS5003}\\[6pt]
+603: \noindent\textbf{Cấu hình sơ đồ chân PMS5003}\\[6pt]
+632: \paragraph{Tìm hiểu về các phép đo PM}\mbox{}\\
+662: \noindent\textbf{Kết nối PMS5003 với ESP32}\\[6pt]
+682: \paragraph{Thuật toán đọc cảm biến bụi PMS5003}
+716: \subsubsection{Giới thiệu về cảm biến khí BME680}
+718: \paragraph{Nguyên lý}\mbox{}\\
+721: \paragraph{Giao thức truyền dữ liệu I2C}\mbox{}\\
+735: \paragraph{Cách I2C hoạt động}\mbox{}\\
+758: \paragraph{Giải thích hoạt động một vài cơ chế của quá trình giao tiếp}\mbox{}\\
+765: \paragraph{Vai trò đo đạc nhiệt độ và độ ẩm}\mbox{}\\
+768: \noindent\textbf{Sơ đồ chân BME680 và kết nối}\\[6pt]
+795: \subsubsection{Giới thiệu về cảm biến MQ-135}
+796: \paragraph{Nguyên lý hoạt động}\mbox{}\\
+801: \noindent\textbf{Cấu hình sơ đồ chân}\\[6pt]
+836: \noindent\textbf{Thông số kỹ thuật}\\[6pt]
+891: \noindent\textbf{Kết nối MQ-135 với ESP32}\\[6pt]

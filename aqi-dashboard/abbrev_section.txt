@@ -1,0 +1,8 @@
+\subsubsection{Danh mục từ viết tắt}
+\begin{table}[H]
+    \centering
+    \caption{Bảng tra cứu danh mục từ viết tắt kỹ thuật}
+    \label{tab:abbrev}
+    
+\end{table}
+

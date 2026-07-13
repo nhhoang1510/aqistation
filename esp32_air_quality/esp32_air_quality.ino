@@ -7,23 +7,19 @@
 #include <Adafruit_BME680.h>
 #include <HardwareSerial.h>
 #include <ArduinoJson.h>
-#include <FS.h>
-#include <SD.h>
-#include <SPI.h>
 #include <esp_task_wdt.h>
 
 // Cấu hình WiFi (hardcode – fallback nếu NVS trống)
 const char* WIFI_SSID     = "TP-Link_4DDC";
 const char* WIFI_PASSWORD = "00000000";
 
-const char* MQTT_SERVER   = "broker.emqx.io"; 
+const char* MQTT_SERVER   = "broker.emqx.io";
 const int   MQTT_PORT     = 1883;
 const char* MQTT_USER     = "";
 const char* MQTT_PASS     = "";
 const char* MQTT_TOPIC    = "aqistation/data";
 
 // Chân GPIO
-#define SD_CS_PIN   5 
 #define SDA_PIN    21
 #define SCL_PIN    22
 #define RXD1       16
@@ -35,14 +31,18 @@ const char* MQTT_TOPIC    = "aqistation/data";
 #define MED_SIZE   11
 #define EMA_ALPHA  0.1f
 
+// Bù nhiệt BME680 self-heating:
+// Heater gas 320°C + nhiệt ESP32 làm sensor đọc cao hơn thực tế ~2-4°C.
+// Dựa trên 31.270 bản ghi: mean=32.96°C trong khi thực tế phòng VN ~29-31°C.
+// Điều chỉnh tại đây nếu có nhiệt kế tham chiếu chính xác hơn.
+#define TEMP_OFFSET  (-3.0f)
+
 // Cấu hình FreeRTOS
 #define SENSOR_READ_INTERVAL_MS  10000
 #define WDT_TIMEOUT_S            30
 
-// Event Group bits: thông báo data mới cho từng consumer
-#define BIT_SD_READY    (1 << 0)
-#define BIT_MQTT_READY  (1 << 1)
-#define BITS_ALL_READY  (BIT_SD_READY | BIT_MQTT_READY)
+// Event Group bit: thông báo data mới cho MQTT task
+#define BIT_MQTT_READY  (1 << 0)
 
 // Đối tượng toàn cục
 WiFiClient espClient;
@@ -50,12 +50,10 @@ PubSubClient mqttClient(espClient);
 Adafruit_BME680 bme(&Wire);
 HardwareSerial  pmsSerial(1);
 
-volatile bool sd_ok  = false;
 volatile bool bme_ok = false;
 
 SemaphoreHandle_t dataMutex;       // Bảo vệ SharedData
-SemaphoreHandle_t spiMutex;        // Bảo vệ SPI bus (SD Card)
-EventGroupHandle_t dataReadyEvent; // Thông báo data mới cho SD và MQTT
+EventGroupHandle_t dataReadyEvent; // Thông báo data mới cho MQTT
 
 // Dữ liệu dùng chung giữa các task
 struct SharedData {
@@ -154,54 +152,38 @@ int aqiFromPM10(float c) {
 }
 
 int aqiFromMQ135(int analog_val) {
-  if (analog_val < 800)  return map(analog_val, 0, 800, 0, 50);
-  if (analog_val < 1500) return map(analog_val, 801, 1500, 51, 100);
-  if (analog_val < 2500) return map(analog_val, 1501, 2500, 101, 150);
-  return map(analog_val, 2501, 4095, 151, 300);
+  // Lưu ý: MQ135 chưa được calibrate chính xác.
+  // Trong không khí sạch, ADC baseline thường nằm ở ~200-400.
+  // Hàm này chỉ dùng để hiển thị riêng, KHÔNG tham gia tính AQI tổng hợp.
+  // Ngưỡng được dịch lên để tránh false alarm từ nhiễu baseline.
+  if (analog_val < 500)  return map(analog_val, 0,    500,  0,  25);
+  if (analog_val < 1000) return map(analog_val, 500,  1000, 25, 50);
+  if (analog_val < 2000) return map(analog_val, 1001, 2000, 51, 100);
+  if (analog_val < 3000) return map(analog_val, 2001, 3000, 101, 150);
+  return map(analog_val, 3001, 4095, 151, 300);
 }
 
-// Tính AQI tổng hợp: lấy giá trị cao nhất từ PM2.5, PM10 và MQ135
+// Tính AQI tổng hợp theo chuẩn EPA US AQI:
+// Chỉ dùng PM2.5 và PM10 — hai chỉ số có breakpoint chuẩn và không cần calibration.
+// MQ135 (gas sensor) bị loại khỏi AQI chính vì:
+//   1. Giá trị ADC raw (~200-400 trong không khí sạch) không thể map sang AQI
+//      mà không có calibration gas chuẩn.
+//   2. 99.9% dữ liệu thực tế nằm dưới 800 ADC → AQI_mq < 50 (Good)
+//      nhưng hay gây nhiễu khi PM thấp.
+// MQ135 vẫn được gửi lên MQTT và dashboard để hiển thị như chỉ số bổ sung.
 int calculateComprehensiveAQI(float pm25_avg, float pm10_avg, int mq135_val) {
-  int a25  = aqiFromPM25(pm25_avg);
-  int a10  = aqiFromPM10(pm10_avg);
-  int aGas = aqiFromMQ135(mq135_val);
-  return max(max(a25, a10), aGas);
+  int a25 = aqiFromPM25(pm25_avg);
+  int a10 = aqiFromPM10(pm10_avg);
+  return max(a25, a10);
 }
 
 
-
-// Khởi tạo SD Card, tạo file CSV header nếu chưa có
-void initSDCard() {
-  Serial.println("[SD Card] Đang khởi tạo...");
-  if (xSemaphoreTake(spiMutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-    if (!SD.begin(SD_CS_PIN)) {
-      Serial.println("[SD Card] Khoi tao that bai!");
-      sd_ok = false;
-      xSemaphoreGive(spiMutex);
-      return;
-    }
-    sd_ok = true;
-    Serial.println("[SD Card] Khoi tao thanh cong!");
-    
-    File file = SD.open("/database.csv", FILE_READ);
-    if (!file) {
-      file = SD.open("/database.csv", FILE_WRITE);
-      if (file) {
-        file.println("timestamp_ms,pm2_5,pm10,temperature,humidity,pressure,gas_resistance,mq135,aqi");
-        file.close();
-      }
-    } else {
-      file.close();
-    }
-    xSemaphoreGive(spiMutex);
-  }
-}
 
 // Khởi tạo BME680, quét địa chỉ I2C 0x76 và 0x77
 void initBME680() {
   Wire.begin(SDA_PIN, SCL_PIN);
   delay(100);
-  
+
   uint8_t addrs[] = {0x76, 0x77};
   for (int a = 0; a < 2 && !bme_ok; a++) {
     if (bme.begin(addrs[a])) {
@@ -222,20 +204,20 @@ void initBME680() {
 // Đọc PMS5003 qua UART: đồng bộ frame từng byte, verify checksum, cập nhật PM2.5/PM10
 void taskPMS(void *pvParameters) {
   esp_task_wdt_add(NULL);
-  Serial.println("[PMS5003] Task khởi động - Core " + String(xPortGetCoreID()));
-  
+  Serial.println("[PMS5003] Task khoi dong - Core " + String(xPortGetCoreID()));
+
   for (;;) {
     esp_task_wdt_reset();
-    
+
     if (pmsSerial.available() < 1) {
       vTaskDelay(pdMS_TO_TICKS(10));
       continue;
     }
-    
+
     // Tìm header byte 1: 0x42
     uint8_t startByte = pmsSerial.read();
     if (startByte != 0x42) continue;
-    
+
     // Chờ header byte 2: 0x4D
     unsigned long waitStart = millis();
     while (!pmsSerial.available()) {
@@ -243,10 +225,10 @@ void taskPMS(void *pvParameters) {
       vTaskDelay(pdMS_TO_TICKS(1));
     }
     if (!pmsSerial.available()) continue;
-    
+
     uint8_t secondByte = pmsSerial.read();
     if (secondByte != 0x4D) continue;
-    
+
     // Đọc 30 bytes còn lại
     uint8_t buf[30];
     waitStart = millis();
@@ -261,17 +243,17 @@ void taskPMS(void *pvParameters) {
       }
     }
     if (bytesRead < 30) continue;
-    
+
     // Verify checksum
     uint16_t checksum_received = ((uint16_t)buf[28] << 8) | buf[29];
     uint16_t checksum_calc = 0x42 + 0x4D;
     for (int i = 0; i < 28; i++) checksum_calc += buf[i];
     if (checksum_calc != checksum_received) continue;
-    
+
     // Trích xuất PM2.5 và PM10 (atmospheric environment)
     uint16_t raw_pm25 = ((uint16_t)buf[10] << 8) | buf[11];
     uint16_t raw_pm10 = ((uint16_t)buf[12] << 8) | buf[13];
-    
+
     // Cập nhật bộ lọc và SharedData
     if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(50)) == pdTRUE) {
       ma_pm25.push(raw_pm25);
@@ -280,28 +262,28 @@ void taskPMS(void *pvParameters) {
       systemData.pm10  = ma_pm10.get();
       xSemaphoreGive(dataMutex);
     }
-    
+
     vTaskDelay(pdMS_TO_TICKS(50));
   }
 }
 
-// Đọc BME680 + MQ135 mỗi 10s, tính AQI, thông báo EventGroup cho SD và MQTT
+// Đọc BME680 + MQ135 mỗi 10s, tính AQI, thông báo EventGroup cho MQTT
 void taskSensors(void *pvParameters) {
   esp_task_wdt_add(NULL);
-  Serial.println("[Sensors] Task khởi động - Core " + String(xPortGetCoreID()));
-  
+  Serial.println("[Sensors] Task khoi dong - Core " + String(xPortGetCoreID()));
+
   TickType_t lastWakeTime = xTaskGetTickCount();
-  
+
   for (;;) {
     esp_task_wdt_reset();
-    
+
     int raw_mq135 = analogRead(MQ135_PIN);
     med_mq135.push(raw_mq135);
     int filtered_mq135 = med_mq135.get();
 
     float t = 0, h = 0, p = 0, g = 0;
     if (bme_ok && bme.performReading()) {
-      t = bme.temperature;
+      t = bme.temperature + TEMP_OFFSET;  // Bù self-heating BME680
       h = bme.humidity;
       p = bme.pressure / 100.0f;
       g = bme.gas_resistance / 1000.0f;
@@ -313,73 +295,32 @@ void taskSensors(void *pvParameters) {
       systemData.pressure       = ema_pres.update(p);
       systemData.gas_resistance = ema_gas.update(g);
       systemData.mq135_value    = filtered_mq135;
-      
+
       systemData.aqi = calculateComprehensiveAQI(
         systemData.pm2_5, systemData.pm10, systemData.mq135_value
       );
-      
-      Serial.printf("[Sensors] Đã cập nhật phép đo mới. AQI hiện tại: %d\n", systemData.aqi);
+
+      Serial.printf("[Sensors] AQI hien tai: %d\n", systemData.aqi);
       xSemaphoreGive(dataMutex);
-      
-      xEventGroupSetBits(dataReadyEvent, BITS_ALL_READY);
+
+      xEventGroupSetBits(dataReadyEvent, BIT_MQTT_READY);
     }
 
     vTaskDelayUntil(&lastWakeTime, pdMS_TO_TICKS(SENSOR_READ_INTERVAL_MS));
   }
 }
 
-// Chờ EventGroup BIT_SD_READY, copy data, ghi CSV lên SD Card (bảo vệ SPI bằng mutex)
-void taskSDCard(void *pvParameters) {
-  esp_task_wdt_add(NULL);
-  Serial.println("[SD Card] Task khởi động - Core " + String(xPortGetCoreID()));
-  
-  for (;;) {
-    EventBits_t bits = xEventGroupWaitBits(
-      dataReadyEvent, BIT_SD_READY, pdTRUE, pdFALSE, pdMS_TO_TICKS(10000)
-    );
-    
-    esp_task_wdt_reset();
-    
-    if (!(bits & BIT_SD_READY)) continue;
-    if (!sd_ok) continue;
-    
-    SharedData localCopy;
-    if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-      localCopy = systemData;
-      xSemaphoreGive(dataMutex);
-    } else {
-      continue;
-    }
-    
-    if (xSemaphoreTake(spiMutex, pdMS_TO_TICKS(500)) == pdTRUE) {
-      File file = SD.open("/database.csv", FILE_APPEND);
-      if (file) {
-        file.printf("%lu,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d,%d\n", 
-                    millis(), localCopy.pm2_5, localCopy.pm10, 
-                    localCopy.temperature, localCopy.humidity, 
-                    localCopy.pressure, localCopy.gas_resistance, 
-                    localCopy.mq135_value, localCopy.aqi);
-        file.close();
-        Serial.println("[SD Card] Đã lưu database.csv.");
-      } else {
-        Serial.println("[SD Card] Khong mo duoc file!");
-      }
-      xSemaphoreGive(spiMutex);
-    }
-  }
-}
-
 // Quản lý WiFi + MQTT. Chờ EventGroup BIT_MQTT_READY, publish JSON lên broker
 void taskNetwork(void *pvParameters) {
   esp_task_wdt_add(NULL);
-  Serial.println("[Network] Task khởi động - Core " + String(xPortGetCoreID()));
-  
+  Serial.println("[Network] Task khoi dong - Core " + String(xPortGetCoreID()));
+
   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
   mqttClient.setBufferSize(512);
 
   for (;;) {
     esp_task_wdt_reset();
-    
+
     // Kiểm tra WiFi – dùng credentials đang active (từ wifiConfig)
     if (WiFi.status() != WL_CONNECTED) {
       Serial.println("[Network] Mat WiFi, dang thu ket noi lai...");
@@ -408,7 +349,7 @@ void taskNetwork(void *pvParameters) {
       dataReadyEvent, BIT_MQTT_READY, pdTRUE, pdFALSE, pdMS_TO_TICKS(1000)
     );
     if (!(bits & BIT_MQTT_READY)) continue;
-    
+
     // Publish data lên MQTT
     SharedData localCopy;
     if (xSemaphoreTake(dataMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
@@ -430,9 +371,9 @@ void taskNetwork(void *pvParameters) {
 
     String payload;
     serializeJson(doc, payload);
-    
+
     if (mqttClient.publish(MQTT_TOPIC, payload.c_str())) {
-      Serial.println("[MQTT] Đã publish dữ liệu thành công!");
+      Serial.println("[MQTT] Publish thanh cong!");
     } else {
       Serial.println("[MQTT] Publish that bai!");
     }
@@ -444,20 +385,18 @@ void taskNetwork(void *pvParameters) {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n=== HỆ THỐNG GIÁM SÁT CHẤT LƯỢNG KHÔNG KHÍ - FreeRTOS v2 ===");
+  Serial.println("\n=== HE THONG GIAM SAT CHAT LUONG KHONG KHI - FreeRTOS ===");
 
   // Tạo đối tượng đồng bộ
   dataMutex      = xSemaphoreCreateMutex();
-  spiMutex       = xSemaphoreCreateMutex();
   dataReadyEvent = xEventGroupCreate();
-  
-  if (dataMutex == NULL || spiMutex == NULL || dataReadyEvent == NULL) {
+
+  if (dataMutex == NULL || dataReadyEvent == NULL) {
     Serial.println("FATAL: Khong tao duoc Mutex/EventGroup!");
     while (1) { delay(1000); }
   }
 
   // Khởi tạo phần cứng
-  initSDCard();
   initBME680();
   pmsSerial.begin(9600, SERIAL_8N1, RXD1, TXD1);
 
@@ -473,12 +412,11 @@ void setup() {
   esp_task_wdt_reconfigure(&wdt_config);
 
   // Tạo Tasks - Core 1: Sensors, Core 0: Network
-  xTaskCreatePinnedToCore(taskPMS,     "PMS_UART",  3072, NULL, 3, NULL, 1);
-  xTaskCreatePinnedToCore(taskSensors, "Sensors",   4096, NULL, 2, NULL, 1);
-  xTaskCreatePinnedToCore(taskSDCard,  "SD_Logger", 4096, NULL, 1, NULL, 1);
-  xTaskCreatePinnedToCore(taskNetwork, "Network",   6144, NULL, 1, NULL, 0);
-  
-  Serial.println("=== Khởi tạo FreeRTOS thành công! ===");
+  xTaskCreatePinnedToCore(taskPMS,     "PMS_UART", 3072, NULL, 3, NULL, 1);
+  xTaskCreatePinnedToCore(taskSensors, "Sensors",  4096, NULL, 2, NULL, 1);
+  xTaskCreatePinnedToCore(taskNetwork, "Network",  6144, NULL, 1, NULL, 0);
+
+  Serial.println("=== Khoi tao FreeRTOS thanh cong! ===");
 }
 
 // loop() – FreeRTOS scheduler quản lý tasks, loop chỉ chạy LED + nút

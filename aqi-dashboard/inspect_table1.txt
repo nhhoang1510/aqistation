@@ -1,0 +1,193 @@
+\begin{table}[h]
+        \centering
+        \begin{tabular}{|c|l|c|}
+        \hline
+            \textbf{STT} & \textbf{Họ và tên} & \textbf{MSSV}\\ 
+        \hline
+            1 & Tống Quang Giáp   & 20223947\\ 
+        \hline
+            2 & Nguyễn Danh Trung & 20224176\\ 
+        \hline
+            3 & Nguyễn Huy Hoàng  & 20223984\\ 
+        \hline
+        \end{tabular}
+    \end{table}
+
+    \hspace{1cm}\textbf{Giảng viên hướng dẫn:} TS. Hàn Huy Dũng\\
+
+    \vspace*{\fill}
+
+    \begin{center}
+        Hà Nội -- \today
+    \end{center}
+\end{titlepage}
+
+\newpage
+\begin{center}
+    \textbf{\Large LỜI CẢM ƠN}
+\end{center}
+\vspace{1cm}
+
+Lời đầu tiên nhóm em xin chân thành cảm ơn Tiến sĩ Hàn Huy Dũng vì sự hướng dẫn tận tình, sự kiên nhẫn vô hạn và những đóng góp quý báu của thầy trong việc giúp đỡ nhóm em hoàn thành bài tập lớn này.
+
+Nhóm em cũng xin nói lời cảm ơn đến tất cả các anh trợ giảng của thầy Dũng, đặc biệt là anh Hiếu và anh Sơn đã góp ý và đưa ra những nhận xét rất thiết thực cho nhóm em trong thời gian hoàn thiện bài tập lớn này.
+
+\newpage
+\begin{center}
+    \textbf{\Large LỜI CAM ĐOAN}
+\end{center}
+\vspace{1cm}
+
+Nhóm em là nhóm 22, bao gồm 3 thành viên Nguyễn Huy Hoàng, MSSV: 20223984; Nguyễn Danh Trung, MSSV: 20224176; Tống Quang Giáp, MSSV: 2022394. Người hướng dẫn là TS. Hàn Huy Dũng. Nhóm em xin cam đoan toàn bộ nội dung được trình bày trong dự án Trạm quan trắc chất lượng không khí đa thông số là kết quả quá trình tìm hiểu và nghiên cứu của nhóm. Các dữ liệu được nêu trong báo cáo là hoàn toàn trung thực, phản ánh đúng kết quả đo đạc thực tế. Mọi thông tin trích dẫn đều tuân thủ các quy định về sở hữu trí tuệ, các tài liệu tham khảo được liệt kê rõ ràng. Nhóm xin chịu hoàn toàn trách nhiệm với những nội dung được viết trong báo cáo này.
+
+\vspace{1.5cm}
+\begin{flushright}
+Hà Nội, ngày 27 tháng 06 năm 2026\\[10pt]
+\textbf{Người cam đoan}\\[2.5cm]
+\textbf{Nhóm 22}
+\end{flushright}
+\newpage
+\begin{center}
+    \textbf{\Large TÓM TẮT NỘI DUNG DỰ ÁN}
+\end{center}
+\vspace{1cm}
+
+Trong bối cảnh hiện nay, ô nhiễm không khí đang là một vấn đề nghiêm trọng, ảnh hưởng trực tiếp đến sức khỏe cộng đồng và môi trường sống. Việc giám sát và đánh giá chất lượng không khí là yêu cầu cấp bách nhằm bảo vệ sức khỏe người dân và cải thiện môi trường.
+
+Công nghệ Internet of Things (IoT) đã mở ra một hướng tiếp cận mới, hiệu quả và tiết kiệm chi phí để thực hiện giám sát chất lượng không khí. Một hệ thống IoT có thể sử dụng các cảm biến để thu thập và truyền tải dữ liệu liên tục về các chỉ số ô nhiễm như khí gas, bụi mịn, nhiệt độ và độ ẩm. Từ đó, hệ thống có thể cung cấp thông tin chi tiết và kịp thời về chất lượng không khí.
+
+Ứng dụng công nghệ IoT trong giám sát ô nhiễm không khí sẽ mang lại nhiều lợi ích thiết thực. Nó có thể bảo vệ sức khỏe cộng đồng bằng cách cung cấp dữ liệu theo thời gian thực, giúp người dân theo dõi và tránh các khu vực ô nhiễm. Hệ thống cũng hỗ trợ quản lý môi trường, cung cấp dữ liệu chính xác để các cơ quan ra quyết sách và biện pháp kiểm soát ô nhiễm hiệu quả. Ngoài ra, nó còn góp phần nâng cao nhận thức cộng đồng về tình trạng ô nhiễm không khí.
+
+Mục tiêu của đề tài này là phát triển một hệ thống IoT giám sát chất lượng không khí với các chức năng chính như thu thập và truyền tải dữ liệu theo thời gian thực, xử lý dữ liệu trên server, và hiển thị thông tin lên web. Đây sẽ là một giải pháp toàn diện, linh hoạt và tiết kiệm chi phí, đáp ứng nhu cầu giám sát môi trường và bảo vệ sức khỏe cộng đồng.
+
+\vspace{1.5cm}
+\begin{flushright}
+Sinh viên thực hiện\\
+\textit{(Ký và ghi rõ họ tên)}
+\end{flushright}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section*{DANH MỤC KÝ HIỆU VÀ CHỮ VIẾT TẮT}
+\addcontentsline{toc}{section}{DANH MỤC KÝ HIỆU VÀ CHỮ VIẾT TẮT}
+
+\vspace{1cm}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}p{10cm}|}
+MQTT  & Message Queueing Telemetry Transport \\[6pt] 
+        \hline
+IoT   & Internet of Things \\[6pt] 
+        \hline
+WHO   & World Health Organisations \\[6pt] 
+        \hline
+AQI   & Air Quality Index \\[6pt] 
+        \hline
+CEM   & Continuos Emission Monitoring \\[6pt] 
+        \hline
+MCU   & Micro Controller Unit \\[6pt] 
+        \hline
+MVC   & Model-View-Controlle \\[6pt] 
+        \hline
+VPS   & Virtual Private Server \\[6pt] 
+        \hline\end{tabular}
+
+\newpage
+
+\listoffigures
+\addcontentsline{toc}{section}{DANH MỤC HÌNH VẼ}
+\newpage
+
+\listoftables
+\addcontentsline{toc}{section}{DANH MỤC BẢNG BIỂU}
+\newpage
+
+% ============================================================
+%  SECTION 1: GIỚI THIỆU ĐỀ TÀI
+% ============================================================
+\setcounter{section}{1}
+\setcounter{subsection}{0}
+
+% ============================================================
+%  CHƯƠNG 1. GIỚI THIỆU
+% ============================================================
+\newpage
+\begin{center}
+    \textbf{\Large CHƯƠNG 1. GIỚI THIỆU}
+\end{center}
+\addcontentsline{toc}{section}{CHƯƠNG 1. GIỚI THIỆU}
+
+\subsection{Đặt vấn đề}
+Trong bối cảnh hiện đại, chất lượng không khí đang trở thành một vấn đề ngày càng cấp thiết. Sự phát triển nhanh chóng của công nghiệp và đô thị hóa đã dẫn đến sự gia tăng đáng kể các chất ô nhiễm trong không khí, bao gồm khí gas, CO và các hạt bụi mịn. Tình trạng này không chỉ ảnh hưởng đến sức khỏe con người mà còn gây ra các vấn đề nghiêm trọng về môi trường. Việc giám sát và đánh giá chất lượng không khí trở thành một nhu cầu cấp bách nhằm bảo vệ sức khỏe cộng đồng và cải thiện chất lượng môi trường sống.
+
+Trong bối cảnh này, công nghệ Internet of Things (IoT) mở ra một hướng tiếp cận mới, hiệu quả và tiết kiệm chi phí. Một hệ thống IoT quan trắc chất lượng không khí cho phép kết nối các thiết bị cảm biến với nhau, thu thập và truyền tải dữ liệu liên tục, từ đó cung cấp thông tin chi tiết và kịp thời về chất lượng không khí. Ứng dụng quan trắc chất lượng không khí dựa trên IoT nếu được triển khai sẽ mang lại nhiều lợi ích đáng kể. Cụ thể, nó có thể bảo vệ sức khỏe cộng đồng bằng cách cung cấp dữ liệu theo thời gian thực giúp người dân có thể theo dõi và phòng tránh các khu vực có mức độ ô nhiễm cao. Nó cũng hỗ trợ quản lý môi trường bằng cách giúp các cơ quan quản lý có được dữ liệu chính xác để đưa ra các chính sách và biện pháp kiểm soát ô nhiễm hiệu quả. Bên cạnh đó, hệ thống này còn nâng cao nhận thức cộng đồng về tình trạng ô nhiễm không khí và các biện pháp bảo vệ sức khỏe. Hệ thống này có thể được áp dụng không chỉ trong giám sát chất lượng không khí mà còn trong nhiều lĩnh vực khác như nông nghiệp, giao thông và quản lý đô thị.
+
+Đồ án này đặt ra vấn đề là cần xây dựng một hệ thống IoT hiệu quả, chi phí thấp và có khả năng cung cấp dữ liệu chất lượng không khí tại một địa điểm cụ thể theo thời gian thực.
+
+\subsection{Giới thiệu đề tài}
+Dự án tập trung vào việc nghiên cứu, thiết kế và chế tạo trạm quan trắc chất lượng không khí tự động thời gian thực. 
+
+\subsubsection{Mục tiêu và phạm vi đề tài}
+Trên thị trường hiện nay, có một số sản phẩm và ứng dụng hỗ trợ giám sát chất lượng không khí, như các thiết bị đo lường cá nhân, các ứng dụng di động cung cấp thông tin về chất lượng không khí theo thời gian thực. Tuy nhiên, những sản phẩm này thường chỉ dừng lại ở việc cung cấp thông tin mà chưa tích hợp được các chức năng tiên tiến như cảnh báo theo ngưỡng hay cập nhật phần mềm tự động. Đồng thời, nhu cầu của người dùng ngày càng đa dạng và yêu cầu cao hơn về độ chính xác và tính linh hoạt của hệ thống giám sát chất lượng không khí. Một sản phẩm phổ biến để đo chất lượng không khí đang được sử dụng là sản phẩm Máy Dò Chất Lượng Không Khí Bộ Dò Formaldehyde (mẫu sản phẩm dm161) tuy rằng có thể cung cấp thông số một cách chính xác nhưng chỉ có thể làm nhiệm vụ phát hiện chất độc hại mà không cung cấp những tính năng tiên tiến khác như lưu trữ lại thông số đo được và hiển thị trực quan cho người dùng.
+
+Dựa trên các phân tích và đánh giá tổng quan ở trên, có thể thấy rằng các hệ thống giám sát giá rẻ hiện tại vẫn còn nhiều hạn chế cần khắc phục. Đó là vấn đề về chi phí và tính linh hoạt của một số hệ thống vẫn chưa được đảm bảo. Do đó đề tài này hướng tới giải quyết các vấn đề cụ thể và khắc phục những hạn chế đã nêu. Cụ thể, mục tiêu của đề tài là phát triển một hệ thống IoT giám sát chất lượng không khí giá rẻ cho người dùng phục vụ cho việc đo lường chất lượng không khí tại một địa điểm cụ thể với các chức năng chính bao gồm thu thập và truyền tải dữ liệu lên server theo thời gian thực qua giao thức MQTT để tổng hợp và xử lý dữ liệu trên server, và sau đó hiển thị thông tin lên web cho người dùng. Hệ thống sẽ cung cấp các chức năng tiên tiến như thiết lập ngưỡng cảnh báo, nhận cảnh báo khi các chỉ số vượt ngưỡng, và cập nhật phần mềm tự động cho thiết bị. Việc phát triển hệ thống này không chỉ nhằm cải thiện chất lượng giám sát không khí mà còn hướng tới tạo ra một giải pháp toàn diện, linh hoạt và tiết kiệm chi phí, đáp ứng đầy đủ nhu cầu của người dùng.
+
+\subsubsection{Định hướng giải pháp}
+Để giải quyết các vấn đề đã nêu trong phần 1.2, đề tài này sẽ áp dụng định hướng sử dụng công nghệ Internet of Things (IoT) kết hợp với giao thức truyền tải dữ liệu MQTT và hệ thống web. MQTT được lựa chọn do đặc tính nhẹ, phù hợp với
+
+\subsubsection{Khảo sát hiện trạng}
+Theo những nghiên cứu mang tính chính xác tới từ WHO, 92 phần trăm dân số trên thế giới đang sống và hít thở nguồn không khí bị ô nhiễm. Vì vậy, ô nhiễm không khí được xem là một trong những vấn đề lớn, vấn đề mang tính toàn cầu. Tại Việt Nam hiện nay, vấn đề quản lý và giám sát chất lượng không khí ngày càng được coi là vấn đề cấp thiết do sự gia tăng của các hàng quán trong quá trình nấu nướng đang thải ra một lượng lớn khí độc điển hình như khí gas và khí CO. Do đó việc phát triển và xây dựng những hệ thống giúp việc quan sát chất lượng không khí đang là nhu cầu mang tính cấp thiết hiện tại.
+
+Trong nhiều văn bản pháp luật của Việt Nam, vai trò của hệ thống quan trắc chất lượng không khí được đánh giá rất cao nhưng trong thực tế, Việt Nam vẫn chưa xây dựng được hệ thống quan trắc có hiệu quả cao. Việt Nam cũng chưa xây dựng được cơ sở dữ liệu chất lượng không khí đủ để đánh giá hiện trạng, xu thế nồng độ các chất ô nhiễm không khí đối với môi trường xung quanh. Năm 2016 Thủ tướng Chính phủ đã có Quyết định số 90/QĐ-TTg ngày 12 tháng 01 năm 2016 phê duyệt Quy hoạch mạng lưới quan trắc tài nguyên và môi trường quốc gia giai đoạn 2016-2025, tầm nhìn đến năm 2030. Các thông tin về chất lượng không khí từ các trạm quan trắc hiện đã được cung cấp đến người dân qua nhiều kênh thông tin như Cổng thông tin điện tử thành phố Hà Nội, Đài Truyền hình Hà Nội. Theo cổng thông tin của Trung tâm Quan trắc môi trường miền Bắc ngày 7/5/2022 có 67 trạm đủ để số liệu tính toán AQI từng giờ đồng nghĩa với việc đã có ít nhất 67 trạm quan trắc môi trường không khí tự động cố định ở Việt Nam. Hình 2.1 minh họa cho số liệu cảm biến theo dõi được trên Trung tâm Quan trắc môi trường miền Bắc.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/cem.png}
+    \caption{Hệ thống quan trắc chất lượng môi trường CEM}
+    \label{fig:cem}
+\end{figure}
+
+Có thể thấy rằng số liệu mà hệ thống này mang lại được cập nhật liên tục theo từng giờ với phạm vi rộng, phủ khắp Việt Nam. Hệ thống này đang làm rất tốt trong việc đem lại cái nhìn tổng quan cho chất lượng không khí trong cả một khu vực. Tuy nhiên, việc theo dõi chất lượng môi trường tại một địa điểm cụ thể đang là một vấn đề hạn chế mà hệ thống này đang gặp phải. Cùng với nó, những số liệu được cập nhật sau mỗi giờ đồng hồ không đáp ứng được nhu cầu của người dân muốn theo dõi với tần suất cao hơn. Do đó việc xây dựng một hệ thống quan trắc giá rẻ dành riêng cho từng cá nhân để đo chất lượng không khí tại một địa điểm cụ thể có thể là giải pháp tạm thời mà chúng ta hướng đến. Ưu điểm của hệ thống này là việc dữ liệu được cập nhật liên tục với tần suất lớn đảm bảo cho việc theo dõi dữ liệu chi tiết nhất có thể. Ngoài ra hệ thống hướng đến tính cá nhân hoá bằng cách tích hợp tính năng cảnh báo cũng như thiết lập ngưỡng cảnh báo cho từng người sử dụng.
+
+\subsection{Phân công công việc}
+Để thực hiện dự án một cách hiệu quả, nhóm phát triển đã phân chia vai trò và nhiệm vụ cụ thể cho từng thành viên trong nhóm nghiên cứu:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}p{4cm}|}
+        \hline
+        \textbf{Tiêu chí} & \textbf{SDS011} & \textbf{PMS5003} & \textbf{Sharp GP2Y1010AU0F} \\
+        \hline
+        & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/sds011.png}}\vspace*{2mm} & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/pms5003.png}}\vspace*{2mm} & \vspace*{2mm}\makebox[\linewidth][c]{\includegraphics[width=0.95\linewidth]{images/gp2y1010au0f.png}}\vspace*{2mm} \\
+        \hline
+        \textbf{Nguyên lý đo} & Tán xạ LASER chủ động + quạt hút & Tán xạ LASER chủ động + quạt hút & LED hồng ngoại, không có quạt hút \\
+        \hline
+        \textbf{Dải đo} & PM2.5, PM10 (0--1000\,$\mu$g/m$^3$) & PM1.0, PM2.5, PM10 (0--500\,$\mu$g/m$^3$) & Chỉ có độ nhạy 0.5V/0.1mg/m$^3$ \\
+        \hline
+        \textbf{Đầu ra tín hiệu} & UART 9600bps / PWM & UART 9600bps & Analog (điện áp) \\
+        \hline
+        \textbf{Độ chính xác} & Sai số $\pm$10\% & Sai số $\pm$10$\mu$g/m$^3$ hoặc $\pm$10\% & Thấp, chỉ đo tương đối \\
+        \hline
+        \textbf{Nguồn điện} & 5V, $\sim$70mA (sleep $<$4mA) & 5V, $\leq$100mA (sleep $\leq$200$\mu$A) & 5V, $\sim$11mA \\
+        \hline
+        \textbf{Kích thước} & 71 $\times$ 70 $\times$ 23 mm (Lớn) & 50 $\times$ 38 $\times$ 21 mm (Trung bình) & 46 $\times$ 30 $\times$ 17.6 mm (Nhỏ gọn) \\
+        \hline
+        \textbf{Tuổi thọ} & $\sim$8000 giờ & $\geq$3 năm (MTTF) & Dài (không có quạt hút) \\
+        \hline
+        \textbf{Độ ẩm HĐ} & 0--70\% RH & 0--99\% RH & Không công bố \\
+        \hline
+    \end{tabular}
+\caption{Bảng phân công công việc thực hiện dự án}
+    \label{tab:work_distribution}
+    \begin{tabularx}{\textwidth}{|l|>{\raggedright\arraybackslash}X|l|}
+        \hline
+        \textbf{Thành viên} & \textbf{Nhiệm vụ đảm nhiệm} & \textbf{Trạng thái} \\ 
+        \hline
+        Nguyễn Danh Trung & Thiết kế mạch nguyên lý PCB, hàn lắp linh kiện phần cứng, hiệu chuẩn các cảm biến BME680, PMS5003, MQ-135. & Hoàn thành \\ 
+        \hline
+        Tống Quang Giáp & Lập trình firmware trên ESP32, xây dựng thuật toán lọc số, tích hợp Watchdog Timer. & Hoàn thành \\ 
+        \hline
+        Nguyễn Huy Hoàng & Xây dựng giao diện hiển thị, giám sát dữ liệu thời gian thực, cấu hình REST API, triển khai cơ sở dữ liệu MongoDB Atlas và kết nối MQTT Broker. & Hoàn thành \\ 
+        \hline
+    \end{tabularx}
+\end{table}
