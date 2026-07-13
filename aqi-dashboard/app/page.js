@@ -11,13 +11,13 @@ import { Line } from "react-chartjs-2";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 function getAQIConfig(aqi) {
-  if (aqi == null) return { label: "Loading", color: "#94a3b8", bg: "#f8fafc", textColor: "#64748b" };
-  if (aqi <= 50)  return { label: "Good",       color: "#059669", bg: "#ecfdf5", textColor: "#065f46" };
-  if (aqi <= 100) return { label: "Moderate",   color: "#d97706", bg: "#fffbeb", textColor: "#92400e" };
-  if (aqi <= 150) return { label: "Poor",       color: "#ea580c", bg: "#fff7ed", textColor: "#9a3412" };
-  if (aqi <= 200) return { label: "Unhealthy",  color: "#dc2626", bg: "#fef2f2", textColor: "#991b1b" };
-  if (aqi <= 300) return { label: "Severe",     color: "#7c3aed", bg: "#f5f3ff", textColor: "#4c1d95" };
-  return           { label: "Hazardous",        color: "#9f1239", bg: "#fff1f2", textColor: "#881337" };
+  if (aqi == null) return { label: "--", color: "#94a3b8", bg: "#f1f5f9", textColor: "#475569" };
+  if (aqi <= 50)  return { label: "Tốt",       color: "#059669", bg: "#ecfdf5", textColor: "#065f46" };
+  if (aqi <= 100) return { label: "Trung bình",   color: "#d97706", bg: "#fffbeb", textColor: "#b45309" };
+  if (aqi <= 150) return { label: "Kém", color: "#ea580c", bg: "#fff7ed", textColor: "#c2410c" };
+  if (aqi <= 200) return { label: "Xấu",  color: "#dc2626", bg: "#fef2f2", textColor: "#b91c1c" };
+  if (aqi <= 300) return { label: "Rất xấu", color: "#7c3aed", bg: "#f5f3ff", textColor: "#6d28d9" };
+  return { label: "Nguy hại", color: "#9f1239", bg: "#fff1f2", textColor: "#881337" };
 }
 
 function getMarkerPosition(aqi) {
@@ -240,7 +240,7 @@ export default function Dashboard() {
         {/* Top Header */}
         <div className="px-6 md:px-8 py-5 flex flex-col md:flex-row md:items-center justify-between bg-white border-b border-gray-50 z-20 relative gap-4 md:gap-0">
           <div>
-            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+            <div className="flex flex-wrap items-center gap-2.5 mb-1.5 mt-2">
               <h1 className="text-[20px] md:text-[22px] font-bold text-[#0f172a] tracking-tight uppercase leading-none">
                 TRẠM QUAN TRẮC CHẤT LƯỢNG KHÔNG KHÍ ĐA THÔNG SỐ
               </h1>
@@ -249,9 +249,6 @@ export default function Dashboard() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 text-[12px] md:text-[13px] text-gray-500 font-medium">
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-              Đại học Bách Khoa Hà Nội
-              <span className="mx-1 text-gray-300">•</span>
               Cập nhật lúc: {lastUpdated}
             </div>
           </div>

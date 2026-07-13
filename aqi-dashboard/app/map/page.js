@@ -62,31 +62,9 @@ export default function MapPage() {
       {/* Header */}
       <div className="mb-5">
         <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Bản đồ trạm</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Vị trí trạm quan trắc trên OpenStreetMap</p>
       </div>
 
-      {/* Top info bar */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        {/* AQI badge */}
-        <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm px-5 py-3 flex items-center gap-4">
-          <div>
-            <p className="text-[10.5px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Chỉ số AQI</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-bold leading-none tracking-tight" style={{ color: cfg.color }}>
-                {latest?.aqi ?? "—"}
-              </span>
-              <span className="inline-block px-2 py-0.5 rounded-md text-[11px] font-semibold text-white" style={{ backgroundColor: cfg.color }}>
-                {cfg.label}
-              </span>
-            </div>
-          </div>
-          <div className="h-8 w-px bg-gray-100" />
-          <div className="flex items-center gap-1.5">
-            <span className={`w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`} />
-            <span className="text-[11.5px] text-gray-400 font-medium">{isLive === null ? "Kết nối..." : isLive ? "Trực tiếp" : "Ngoại tuyến"}</span>
-          </div>
-        </div>
-      </div>
+
 
       {/* Map */}
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm flex-1" style={{ minHeight: "540px", height: "calc(100vh - 220px)", position: "relative" }}>

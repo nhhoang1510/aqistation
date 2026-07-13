@@ -163,13 +163,18 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-5 md:p-8 max-w-xl">
+    <div className="p-5 md:p-8 max-w-5xl mx-auto">
 
       {/* Header */}
-      <div className="mb-7">
-        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Cài đặt cảnh báo</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Nhận thông báo khi AQI vượt ngưỡng qua email hoặc tin nhắn</p>
+      <div className="mb-8 border-b border-gray-100 pb-5">
+        <h1 className="text-[24px] font-bold text-gray-900 tracking-tight">Cài đặt cảnh báo</h1>
+        <p className="text-sm text-gray-500 mt-1">Cấu hình các phương thức và điều kiện nhận thông báo khi chất lượng không khí đi xuống.</p>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+        
+        {/* Left Column */}
+        <div className="lg:col-span-7 space-y-5">
 
       {/* Enable toggle */}
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4">
@@ -264,7 +269,7 @@ export default function SettingsPage() {
 
       {/* Web Push */}
       {settings.alertEnabled && (
-      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-4 flex items-center justify-between">
+      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 flex items-center justify-between">
         <div>
           <p className="text-[13.5px] font-semibold text-gray-800">Thông báo trực tiếp</p>
           <p className="text-[12px] text-gray-400 mt-0.5 max-w-[200px] sm:max-w-xs">Nhận cảnh báo qua popup trình duyệt (không cần mở tab)</p>
@@ -280,6 +285,18 @@ export default function SettingsPage() {
         </button>
       </div>
       )}
+      
+      {!settings.alertEnabled && (
+        <div className="flex flex-col items-center justify-center p-10 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+          <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+          <p className="text-[13px] text-gray-400 font-medium">Bật cảnh báo để định cấu hình thông báo</p>
+        </div>
+      )}
+
+        </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-5 space-y-5">
 
       {/* AQI Threshold */}
       {settings.alertEnabled && (
@@ -337,15 +354,18 @@ export default function SettingsPage() {
       {/* Actions */}
       <div className="flex gap-3">
         <button onClick={saveSettings} disabled={saving}
-          className="flex-1 py-2.5 bg-gray-900 hover:bg-gray-700 text-white text-[13px] font-medium rounded-lg transition-colors disabled:opacity-50 cursor-pointer">
+          className="flex-1 py-3 bg-gray-900 hover:bg-gray-800 text-white text-[13px] font-medium rounded-xl transition-all shadow-md shadow-gray-900/10 disabled:opacity-50 cursor-pointer">
           {saving ? "Đang lưu..." : "Lưu cài đặt"}
         </button>
         <button onClick={testAlert} disabled={testing || !settings.alertEnabled || !hasContact}
-          className="flex-1 py-2.5 bg-white hover:bg-gray-50 text-gray-600 text-[13px] font-medium rounded-lg border border-gray-200 transition-colors disabled:opacity-40 cursor-pointer">
+          className="flex-1 py-3 bg-white hover:bg-gray-50 text-gray-700 text-[13px] font-medium rounded-xl border border-gray-200 transition-all shadow-sm disabled:opacity-40 cursor-pointer">
           {testing ? "Đang gửi..." : "Gửi thử"}
         </button>
       </div>
-      <p className="text-[11px] text-gray-400 mt-3 text-center">Cài đặt được lưu trên thiết bị này.</p>
+      <p className="text-[11px] text-gray-400 mt-3 text-center">Cài đặt được lưu an toàn trên thiết bị này.</p>
+
+        </div>
+      </div>
 
       {/* Toast */}
       {toast && (
