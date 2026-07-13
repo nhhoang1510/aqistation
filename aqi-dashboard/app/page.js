@@ -11,13 +11,72 @@ import { Line } from "react-chartjs-2";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 function getAQIConfig(aqi) {
-  if (aqi == null) return { label: "Đang tải", color: "#94a3b8", bg: "#f8fafc", textColor: "#64748b" };
-  if (aqi <= 50)  return { label: "Tốt",       color: "#059669", bg: "#ecfdf5", textColor: "#065f46" };
-  if (aqi <= 100) return { label: "Trung bình", color: "#d97706", bg: "#fffbeb", textColor: "#92400e" };
-  if (aqi <= 150) return { label: "Kém",        color: "#ea580c", bg: "#fff7ed", textColor: "#9a3412" };
-  if (aqi <= 200) return { label: "Xấu",        color: "#dc2626", bg: "#fef2f2", textColor: "#991b1b" };
-  if (aqi <= 300) return { label: "Rất xấu",    color: "#7c3aed", bg: "#f5f3ff", textColor: "#4c1d95" };
-  return           { label: "Nguy hại",          color: "#9f1239", bg: "#fff1f2", textColor: "#881337" };
+  if (aqi == null) return { label: "Loading", color: "#94a3b8", bg: "#f8fafc", textColor: "#64748b" };
+  if (aqi <= 50)  return { label: "Good",       color: "#059669", bg: "#ecfdf5", textColor: "#065f46" };
+  if (aqi <= 100) return { label: "Moderate",   color: "#d97706", bg: "#fffbeb", textColor: "#92400e" };
+  if (aqi <= 150) return { label: "Poor",       color: "#ea580c", bg: "#fff7ed", textColor: "#9a3412" };
+  if (aqi <= 200) return { label: "Unhealthy",  color: "#dc2626", bg: "#fef2f2", textColor: "#991b1b" };
+  if (aqi <= 300) return { label: "Severe",     color: "#7c3aed", bg: "#f5f3ff", textColor: "#4c1d95" };
+  return           { label: "Hazardous",        color: "#9f1239", bg: "#fff1f2", textColor: "#881337" };
+}
+
+function getMarkerPosition(aqi) {
+  if (aqi == null) return 0;
+  let p = 0;
+  if (aqi <= 50) p = (aqi / 50) * 16.66;
+  else if (aqi <= 100) p = 16.66 + ((aqi - 50) / 50) * 16.66;
+  else if (aqi <= 150) p = 33.33 + ((aqi - 100) / 50) * 16.66;
+  else if (aqi <= 200) p = 50 + ((aqi - 150) / 50) * 16.66;
+  else if (aqi <= 300) p = 66.66 + ((aqi - 200) / 100) * 16.66;
+  else p = 83.33 + (Math.min(aqi - 300, 100) / 100) * 16.66;
+  return Math.max(0, Math.min(100, p));
+}
+
+function getFaceIcon(aqi) {
+  if (aqi == null) return null;
+  const cx = "w-[160px] h-[160px] md:w-[200px] md:h-[200px] drop-shadow-2xl transition-transform hover:scale-105 duration-300";
+  if (aqi <= 50) return ( // Good
+    <svg viewBox="0 0 100 100" className={cx}>
+       <circle cx="50" cy="50" r="48" fill="#FDE047" stroke="#111827" strokeWidth="4.5"/>
+       <circle cx="20" cy="55" r="9" fill="#FCA5A5" opacity="0.8"/>
+       <circle cx="80" cy="55" r="9" fill="#FCA5A5" opacity="0.8"/>
+       <path d="M 30 40 Q 35 30 40 40" fill="none" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <path d="M 60 40 Q 65 30 70 40" fill="none" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <path d="M 30 60 Q 50 85 70 60" fill="none" stroke="#111827" strokeWidth="5.5" strokeLinecap="round"/>
+    </svg>
+  );
+  if (aqi <= 100) return ( // Moderate
+    <svg viewBox="0 0 100 100" className={cx}>
+       <circle cx="50" cy="50" r="48" fill="#FDE047" stroke="#111827" strokeWidth="4.5"/>
+       <circle cx="35" cy="40" r="4.5" fill="#111827"/>
+       <circle cx="65" cy="40" r="4.5" fill="#111827"/>
+       <path d="M 35 65 L 65 65" fill="none" stroke="#111827" strokeWidth="5.5" strokeLinecap="round"/>
+    </svg>
+  );
+  if (aqi <= 150) return ( // Poor
+    <svg viewBox="0 0 100 100" className={cx}>
+       <circle cx="50" cy="50" r="48" fill="#FDBA74" stroke="#111827" strokeWidth="4.5"/>
+       <circle cx="35" cy="45" r="4.5" fill="#111827"/>
+       <circle cx="65" cy="45" r="4.5" fill="#111827"/>
+       <path d="M 35 70 Q 50 55 65 70" fill="none" stroke="#111827" strokeWidth="5.5" strokeLinecap="round"/>
+    </svg>
+  );
+  if (aqi <= 200) return ( // Unhealthy
+    <svg viewBox="0 0 100 100" className={cx}>
+       <circle cx="50" cy="50" r="48" fill="#FCA5A5" stroke="#111827" strokeWidth="4.5"/>
+       <path d="M 30 35 L 40 45 M 40 35 L 30 45" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <path d="M 60 35 L 70 45 M 70 35 L 60 45" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <path d="M 30 70 Q 40 60 50 70 T 70 70" fill="none" stroke="#111827" strokeWidth="5" strokeLinecap="round"/>
+    </svg>
+  );
+  return ( // Severe/Hazardous
+    <svg viewBox="0 0 100 100" className={cx}>
+       <circle cx="50" cy="50" r="48" fill="#D8B4FE" stroke="#111827" strokeWidth="4.5"/>
+       <path d="M 30 35 L 40 45 M 40 35 L 30 45" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <path d="M 60 35 L 70 45 M 70 35 L 60 45" stroke="#111827" strokeWidth="4.5" strokeLinecap="round"/>
+       <ellipse cx="50" cy="70" rx="10" ry="15" fill="#111827"/>
+    </svg>
+  );
 }
 
 // Minimal SVG icons — no emoji
@@ -142,88 +201,131 @@ export default function Dashboard() {
   return (
     <div className="p-5 md:p-8">
 
-      {/* Page header */}
-      <div className="mb-7">
-        <h1 className="text-[22px] font-semibold text-gray-900 tracking-tight">Trang chủ</h1>
-        <p className="text-sm text-gray-400 mt-0.5 font-normal">
-          Hệ thống quan trắc chất lượng không khí đa thông số
-        </p>
-      </div>
-
-      {/* Hero card */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden mb-5">
-        <div className="flex flex-col lg:flex-row">
-          {/* Left */}
-          <div className="flex-1 p-7">
-            <div className="flex items-center gap-2 mb-4">
-              <span className={`inline-block w-1.5 h-1.5 rounded-full ${isLive ? "bg-emerald-500" : "bg-gray-300"}`} />
-              <span className="text-[11px] font-medium text-gray-400 tracking-wide uppercase">
-                {isLive ? "Đang hoạt động" : "Ngoại tuyến"} · {lastUpdated}
-              </span>
-            </div>
-            <h2 className="text-[20px] font-semibold text-gray-900 leading-snug mb-2.5 tracking-tight">
-              Giám sát chất lượng không khí<br />theo thời gian thực
-            </h2>
-            <p className="text-[13.5px] text-gray-400 leading-relaxed mb-6 max-w-md font-normal">
-              Thu thập và phân tích liên tục các thông số PM2.5, PM10, nhiệt độ, độ ẩm và khí VOC từ trạm cảm biến ESP32.
+      {/* Hero Redesign */}
+      <div className="bg-white rounded-[24px] shadow-sm mb-6 flex flex-col overflow-hidden border border-gray-100">
+        
+        {/* Top Header */}
+        <div className="px-6 md:px-8 py-5 flex items-center justify-between bg-white border-b border-gray-50 z-20 relative">
+          <div>
+            <h1 className="text-[22px] md:text-[24px] font-black text-[#0f172a] tracking-tight uppercase leading-none mb-1.5">
+              AQI STATION
+            </h1>
+            <p className="text-[12px] md:text-[13px] text-gray-400 italic font-medium">
+              Last Updated: {lastUpdated} (Local Time)
             </p>
-            <div className="flex items-center gap-2.5">
-              <a href="/map"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-700 text-white text-[13px] font-medium rounded-lg transition-colors">
-                {icons.map}
-                Xem bản đồ
-              </a>
-              <a href="/history"
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-600 text-[13px] font-medium rounded-lg border border-gray-200 transition-colors">
-                {icons.list}
-                Lịch sử
-              </a>
-            </div>
           </div>
-
-          {/* Right: AQI value */}
-          <div
-            className="lg:w-[280px] flex flex-col items-center justify-center p-8 border-t lg:border-t-0 lg:border-l border-gray-100"
-            style={{ backgroundColor: aqiConfig.bg }}
-          >
-            <p className="text-[11px] font-medium uppercase tracking-widest mb-3" style={{ color: aqiConfig.color }}>
-              Chỉ số AQI
-            </p>
-            <div className="text-[64px] font-bold leading-none mb-1 tracking-tight" style={{ color: aqiConfig.color }}>
-              {latest?.aqi ?? "—"}
-            </div>
-            <div className="text-[13px] font-medium mb-5" style={{ color: aqiConfig.color }}>
-              {aqiConfig.label}
-            </div>
-            {/* Scale bar */}
-            <div className="w-full max-w-[200px]">
-              <div className="flex h-1.5 rounded-full overflow-hidden gap-px">
-                {["#059669","#d97706","#ea580c","#dc2626","#7c3aed","#9f1239"].map((c, i) => (
-                  <div key={i} className="flex-1" style={{ backgroundColor: c }} />
-                ))}
-              </div>
-              <div className="flex justify-between text-[9px] text-gray-400 mt-1.5 font-normal">
-                <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300+</span>
-              </div>
-            </div>
+          <div className={`px-4 py-1.5 rounded-full border flex items-center gap-2 shadow-sm ${isLive ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-red-200 bg-red-50 text-red-600"}`}>
+            <span className={`w-2 h-2 rounded-full ${isLive ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+            <span className="text-[12.5px] font-bold tracking-wide">{isLive ? "Live" : "Offline"}</span>
           </div>
         </div>
-      </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        {stats.map((s, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wide">{s.label}</span>
-              <span className="text-gray-300">{s.icon}</span>
+        {/* Main Content Area */}
+        <div className="flex flex-col lg:flex-row relative p-6 md:p-10 transition-colors duration-500" style={{ backgroundColor: `${aqiConfig.bg}` }}>
+          
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
+
+          {/* Left Column: AQI Info */}
+          <div className="flex-1 z-10 flex flex-col justify-center mb-8 lg:mb-0">
+            <div className="flex items-center gap-2 mb-3 md:mb-1">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: aqiConfig.color }} />
+              <span className="text-[13px] font-black uppercase tracking-widest text-[#0f172a]/70">
+                LIVE AQI
+              </span>
             </div>
-            <div className="text-[22px] font-semibold text-gray-900 leading-none tracking-tight">
-              {s.value ?? "—"}
+            
+            <div className="flex flex-col md:flex-row md:items-baseline gap-4 md:gap-6 mb-8">
+              <div className="text-[120px] md:text-[140px] font-black leading-none tracking-tighter" style={{ color: aqiConfig.color, textShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+                {latest?.aqi ?? "—"}
+              </div>
+              <div className="flex flex-col items-start mt-[-20px] md:mt-0">
+                <span className="text-[14px] md:text-[15px] font-semibold text-[#0f172a]/60 mb-2">Air Quality is</span>
+                <span className="px-5 py-2 bg-white rounded-xl text-[18px] font-black border border-white/50 shadow-md" style={{ color: aqiConfig.color }}>
+                  {aqiConfig.label}
+                </span>
+              </div>
             </div>
-            <div className="text-[11px] text-gray-400 mt-1.5">{s.unit} · {s.sub}</div>
+
+            <div className="flex items-center gap-6 mb-10">
+              <div className="text-[18px] font-black text-[#0f172a]">PM2.5 : <span className="font-bold text-[#0f172a]/50 ml-1">{latest?.pm2_5 ?? "--"} <span className="text-[14px]">µg/m³</span></span></div>
+              <div className="text-[18px] font-black text-[#0f172a]">PM10 : <span className="font-bold text-[#0f172a]/50 ml-1">{latest?.pm10 ?? "--"} <span className="text-[14px]">µg/m³</span></span></div>
+            </div>
+
+            {/* Scale Bar */}
+            <div className="w-full max-w-[480px]">
+              <div className="flex justify-between text-[11px] md:text-[12px] font-bold text-[#0f172a]/60 mb-2 px-1">
+                <span className="flex-1">Good</span>
+                <span className="flex-1 text-center">Moderate</span>
+                <span className="flex-1 text-center">Poor</span>
+                <span className="flex-1 text-center">Unhealthy</span>
+                <span className="flex-1 text-center">Severe</span>
+                <span className="flex-1 text-right">Hazardous</span>
+              </div>
+              <div className="relative h-3 rounded-full overflow-hidden flex gap-0.5 bg-white p-0.5 shadow-sm border border-white/50">
+                {["#059669","#d97706","#ea580c","#dc2626","#7c3aed","#9f1239"].map((c, i) => (
+                  <div key={i} className={`flex-1 ${i===0?'rounded-l-full':''} ${i===5?'rounded-r-full':''}`} style={{ backgroundColor: c }} />
+                ))}
+                {/* Marker Overlay */}
+                <div className="absolute top-0 bottom-0 left-0 right-0 pointer-events-none">
+                  <div className="h-full w-[2px] bg-[#0f172a] absolute transition-all duration-500 ease-out z-20 shadow-[0_0_4px_rgba(255,255,255,1)]" style={{ left: `calc(${getMarkerPosition(latest?.aqi)}% - 1px)` }} />
+                  <div className="absolute -top-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[7px] border-t-[#0f172a] transition-all duration-500 ease-out z-20 drop-shadow-sm" style={{ left: `calc(${getMarkerPosition(latest?.aqi)}% - 6px)` }} />
+                </div>
+              </div>
+              <div className="flex justify-between text-[11px] text-[#0f172a]/40 mt-1.5 px-1 font-bold">
+                <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300</span><span>301+</span>
+              </div>
+            </div>
           </div>
-        ))}
+
+          {/* Center Column: Smiley Face */}
+          <div className="flex-1 z-10 flex items-center justify-center py-10 lg:py-0">
+            {getFaceIcon(latest?.aqi)}
+          </div>
+
+          {/* Right Column: Floating Stats Card */}
+          <div className="flex-1 z-10 flex items-center justify-start lg:justify-end mt-8 lg:mt-0">
+            <div className="bg-white/95 backdrop-blur-xl rounded-[28px] shadow-[0_12px_40px_rgb(0,0,0,0.08)] border border-white p-7 w-full max-w-[360px] mx-auto lg:mx-0">
+              {/* Main Temp */}
+              <div className="flex items-center justify-center gap-4 mb-7 pb-7 border-b border-gray-100/80">
+                <div className="text-[44px] md:text-[52px] font-black tracking-tighter text-[#0f172a] flex items-start">
+                  <svg className="w-8 h-8 text-red-500 mr-2 mt-1 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                  {latest?.temperature?.toFixed(1) ?? "--"}<span className="text-[24px] font-bold text-gray-400 ml-1 mt-1.5">°C</span>
+                </div>
+              </div>
+
+              {/* Bottom 3 Stats */}
+              <div className="flex justify-between items-center px-1">
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0f172a]/40 uppercase tracking-widest mb-2">
+                    <svg className="w-3.5 h-3.5 text-blue-500 drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                    Humidity
+                  </div>
+                  <div className="text-[17px] font-black text-[#0f172a]">{latest?.humidity?.toFixed(1) ?? "--"} <span className="text-[13px] font-bold text-gray-400">%</span></div>
+                </div>
+                <div className="w-px h-10 bg-gray-100" />
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0f172a]/40 uppercase tracking-widest mb-2">
+                    <svg className="w-3.5 h-3.5 text-gray-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Pressure
+                  </div>
+                  <div className="text-[17px] font-black text-[#0f172a]">{latest?.pressure?.toFixed(0) ?? "--"} <span className="text-[13px] font-bold text-gray-400">hPa</span></div>
+                </div>
+                <div className="w-px h-10 bg-gray-100" />
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#0f172a]/40 uppercase tracking-widest mb-2">
+                    <svg className="w-3.5 h-3.5 text-yellow-500 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    Gas
+                  </div>
+                  <div className="text-[17px] font-black text-[#0f172a]">{latest?.gas_resistance?.toFixed(0) ?? "--"} <span className="text-[13px] font-bold text-gray-400">kΩ</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
       </div>
 
       {/* Charts */}
