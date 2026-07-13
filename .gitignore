@@ -1,2 +1,6 @@
 node_modules/
 .env
+
+# Local server data logs (không cần push lên GitHub)
+local_server/database.csv
+local_server/*.csv
