@@ -994,6 +994,26 @@ Cảm biến BME680 giao tiếp qua I2C (tự động quét địa chỉ 0x76/0x
 Cảm biến MQ-135 xuất tín hiệu tương tự qua cầu phân áp hạ điện áp từ 5V xuống 3.3V trước khi đưa vào chân ADC1\_CH6 (GPIO34) của ESP32; nguồn cấp 5V lấy từ chân VIN (chi tiết đầy đủ tại Bảng~\ref{tab:mq135_wiring_esp}).
 
 Bảng tổng hợp định tuyến GPIO của toàn bộ ngoại vi trên vi điều khiển trung tâm ESP32 được chuẩn hóa như sau:
+\begin{table}[H]
+\centering
+\caption{Bảng sơ đồ chân giao tiếp ngoại vi của ESP32}
+\label{tab:gpio}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{GPIO} & \textbf{Chức năng} & \textbf{Ngoại vi} \\ 
+\hline
+GPIO 21 (SDA) & I2C Data  & BME680 \\ 
+\hline
+GPIO 22 (SCL) & I2C Clock & BME680 \\ 
+\hline
+GPIO 16 (RX2) & UART2 RX  & PMS5003 TX \\ 
+\hline
+GPIO 17 (TX2) & UART2 TX  & PMS5003 RX \\ 
+\hline
+GPIO 34       & ADC1\_CH6 & MQ-135 AOUT \\ 
+\hline
+\end{tabular}
+\end{table}
 
 \begin{table}[H]
     \centering
@@ -1878,71 +1898,6 @@ Prentice Hall, 2009.
 \renewcommand{\thesubparagraph}{\Alph{subparagraph}.}
 \setcounter{subsection}{0}
 
-\subsection{Khảo sát nhu cầu sử dụng thiết bị giám sát chất lượng không khí}
-Trước khi bắt tay vào thiết kế, nhóm đã xây dựng một bảng khảo sát ngắn nhằm xác định nhu cầu thực tế của người dùng phổ thông đối với một thiết bị giám sát chất lượng không khí cá nhân, làm cơ sở định hướng các yêu cầu chức năng và phi chức năng đã trình bày ở Chương 2.
-
-\subsubsection{Mục đích và đối tượng khảo sát}
-Khảo sát hướng tới hai nhóm đối tượng chính: (1) người dân sinh sống tại khu vực đô thị có mật độ giao thông và mật độ quán ăn/nấu nướng cao, nơi thường xuyên phát sinh khí gas và khói bụi; (2) các hộ gia đình có người thân nhạy cảm với chất lượng không khí (trẻ nhỏ, người cao tuổi, người có bệnh lý hô hấp). Mục tiêu là xác định mức độ quan tâm đến vấn đề ô nhiễm không khí trong nhà/xung quanh nơi ở, mức độ sẵn sàng chi trả cho một thiết bị giám sát cá nhân, và các tính năng được kỳ vọng nhiều nhất.
-
-\subsubsection{Bảng câu hỏi khảo sát}
-Bảng câu hỏi được thiết kế dưới dạng trắc nghiệm và thang đo Likert 5 mức, bao gồm các nhóm câu hỏi chính:
-\begin{enumerate}
-    \item Anh/chị có thường xuyên lo ngại về chất lượng không khí tại nơi sinh sống/làm việc không?
-    \item Anh/chị đã từng sử dụng qua thiết bị đo chất lượng không khí (cá nhân hoặc của cơ quan nhà nước) chưa?
-    \item Những thông số nào anh/chị quan tâm nhất khi theo dõi chất lượng không khí (bụi mịn, khí gas, nhiệt độ/độ ẩm, tất cả)?
-    \item Anh/chị có sẵn sàng chi trả cho một thiết bị giám sát chất lượng không khí cá nhân giá dưới 1.000.000\,VNĐ không?
-    \item Tính năng nào anh/chị mong muốn nhất ở một thiết bị như vậy (cảnh báo tức thời, xem lịch sử dữ liệu, kết nối ứng dụng di động, chi phí thấp)?
-\end{enumerate}
-
-\subsubsection{Kết quả khảo sát}
-\textit{Ghi chú: bảng dưới đây là khung tổng hợp kết quả khảo sát; nhóm điền số liệu thống kê thực tế thu được từ phiếu khảo sát đã phát ra trước khi nộp báo cáo chính thức, đảm bảo đúng tinh thần trung thực đã cam kết ở phần Lời cam đoan.}
-\begin{table}[H]
-\centering
-\begin{tabular}{|l|l|}
-        \hline
-        \textbf{Từ viết tắt} & \textbf{Ý nghĩa diễn giải} \\ 
-        \hline
-        IoT   & Internet of Things (Internet vạn vật) \\ 
-        \hline
-        AQI   & Air Quality Index (Chỉ số chất lượng không khí) \\ 
-        \hline
-        MQTT  & Message Queuing Telemetry Transport \\ 
-        \hline
-        RTOS  & Real-Time Operating System (Hệ điều hành thời gian thực) \\ 
-        \hline
-        MEMS  & Micro-Electromechanical Systems (Hệ vi cơ điện tử) \\ 
-        \hline
-        VOC   & Volatile Organic Compounds (Hợp chất hữu cơ dễ bay hơi) \\ 
-        \hline
-        PCB   & Printed Circuit Board (Bo mạch in) \\ 
-        \hline
-        JSON  & JavaScript Object Notation \\ 
-        \hline
-        SoC   & System-on-Chip \\ 
-        \hline
-        DSP   & Digital Signal Processing (Xử lý tín hiệu số) \\ 
-        \hline
-    \end{tabular}
-\caption{Khung tổng hợp kết quả khảo sát nhu cầu sử dụng thiết bị}
-\label{tab:survey_results}
-\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}X|c|}
-\hline
-\textbf{Tiêu chí khảo sát} & \textbf{Tỷ lệ / Số phiếu} \\ 
-        \hline
-Số phiếu khảo sát hợp lệ thu về & \\ 
-        \hline
-Tỷ lệ người lo ngại về chất lượng không khí (mức 4--5/5) & \\ 
-        \hline
-Tỷ lệ từng sử dụng thiết bị đo chất lượng không khí & \\ 
-        \hline
-Thông số được quan tâm nhiều nhất & \\ 
-        \hline
-Tỷ lệ sẵn sàng chi trả dưới 1.000.000\,VNĐ & \\ 
-        \hline
-Tính năng được mong muốn nhiều nhất & \\ 
-        \hline\end{tabularx}
-\end{table}
-Kết quả khảo sát định hướng trực tiếp cho các yêu cầu chức năng và phi chức năng đã đề ra ở mục 2.1 và 2.2 -- đặc biệt là yêu cầu về giá thành hợp lý, cảnh báo tức thời theo ngưỡng, và giao diện Dashboard trực quan dễ theo dõi.
 
 \subsection{Giới thiệu chi tiết về các thông số môi trường đo đạc}
 
@@ -2035,6 +1990,31 @@ Cấu trúc dữ liệu bộ đệm vòng được sử dụng để triển kha
     \centering
     \caption{Bảng tra cứu danh mục từ viết tắt kỹ thuật}
     \label{tab:abbrev}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Từ viết tắt} & \textbf{Ý nghĩa diễn giải} \\ 
+\hline
+IoT   & Internet of Things (Internet vạn vật) \\ 
+\hline
+AQI   & Air Quality Index (Chỉ số chất lượng không khí) \\ 
+\hline
+MQTT  & Message Queuing Telemetry Transport \\ 
+\hline
+RTOS  & Real-Time Operating System (Hệ điều hành thời gian thực) \\ 
+\hline
+MEMS  & Micro-Electromechanical Systems (Hệ vi cơ điện tử) \\ 
+\hline
+VOC   & Volatile Organic Compounds (Hợp chất hữu cơ dễ bay hơi) \\ 
+\hline
+PCB   & Printed Circuit Board (Bo mạch in) \\ 
+\hline
+JSON  & JavaScript Object Notation \\ 
+\hline
+SoC   & System-on-Chip \\ 
+\hline
+DSP   & Digital Signal Processing (Xử lý tín hiệu số) \\ 
+\hline
+\end{tabular}
     
 \end{table}
 
