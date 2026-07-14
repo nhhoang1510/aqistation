@@ -1620,95 +1620,94 @@ Ba cảm biến bổ sung cho nhau để tạo ra bức tranh toàn diện về 
     \item \textbf{MQ-135} phản ánh tổng hợp chất lượng không khí qua điện trở bán dẫn $\text{SnO}_2$ -- nhạy cảm với các khí độc hại như NH$_3$, CO và các hợp chất hữu cơ bay hơi.
 \end{itemize}
 
-\subsection{Kết quả phần mềm backend và cơ sở dữ liệu MongoDB Atlas}
-Hệ thống lưu trữ cơ sở dữ liệu MongoDB Atlas hoạt động ổn định.
-Khối server là tầng trung gian đảm nhận việc tiếp nhận, xử lý và lưu trữ dữ liệu từ ESP32, đồng thời cung cấp API cho giao diện web. Hệ thống sử dụng kiến trúc backend serverless trên nền tảng Vercel kết hợp MongoDB Atlas.
+\subsection{Kết quả phần mềm backend và cơ sở dữ liệu MongoDB}
+Hệ thống lưu trữ cơ sở dữ liệu MongoDB Atlas hoạt động ổn định. Khối server là tầng trung gian đảm nhận việc tiếp nhận, xử lý và lưu trữ dữ liệu từ ESP32, đồng thời cung cấp API cho giao diện web. Hệ thống sử dụng kiến trúc backend serverless trên nền tảng Vercel kết hợp cơ sở dữ liệu MongoDB Atlas.
 
 \paragraph{MQTT Subscriber}\mbox{}\\
+Dịch vụ Node.js chạy liên tục, kết nối bất đồng bộ đến MQTT Broker công cộng \texttt{broker.emqx.io} qua cổng 1883, lắng nghe topic \texttt{aqistation/data}. Khi nhận được gói tin, hệ thống parse JSON, bổ sung \texttt{timestamp} và ghi bản ghi vào MongoDB.
 
-Dịch vụ Node.js chạy liên tục, kết nối bất đồng bộ đến MQTT Broker công cộng \texttt{broker.emqx.io} qua cổng 1883, lắng nghe topic \texttt{aqistation/data}. Khi nhận được gói tin:
-\begin{enumerate}
-    \item Parse chuỗi JSON từ payload MQTT thành đối tượng JavaScript.
-    \item Bổ sung trường \texttt{timestamp} dạng ISO 8601 do server tạo ra (Server-side Timestamping -- vì ESP32 không tích hợp RTC).
-    \item Validate cấu trúc dữ liệu qua khối \texttt{try-catch} -- bỏ qua gói tin lỗi cú pháp hoặc thiếu trường.
-    \item Ghi bản ghi vào MongoDB Atlas thông qua thư viện Mongoose.
-\end{enumerate}
+\subsubsection{Cơ sở dữ liệu MongoDB Atlas}
+\paragraph{Ví dụ bản ghi thực tế}\mbox{}\\
+Dưới đây là một bản ghi JSON mẫu trích xuất thực tế từ MongoDB Client khi thiết bị thực hiện đo lường và đẩy dữ liệu lên cơ sở dữ liệu:
+\begin{lstlisting}[language=json, basicstyle=\footnotesize\ttfamily, backgroundcolor=\color{gray!10}, frame=single]
+{
+  "_id": "64bc1a2f9d3e4a1b2c3d4e5f",
+  "pm2_5": 35.2,
+  "pm10": 42.1,
+  "temperature": 32.5,
+  "humidity": 68.4,
+  "pressure": 1005,
+  "gas_resistance": 45,
+  "aqi": 99,
+  "timestamp": "2023-07-22T10:15:30.000Z",
+  "__v": 0
+}
+\end{lstlisting}
 
-\paragraph{REST API Endpoints}\mbox{}\\
+\paragraph{Lý do lựa chọn}\mbox{}\\
+Dự án quyết định lựa chọn cơ sở dữ liệu phi quan hệ (NoSQL) MongoDB thay vì các hệ quản trị CSDL quan hệ (SQL) truyền thống dựa trên các đặc thù của dữ liệu IoT:
+\begin{itemize}
+    \item \textbf{Đặc thù dữ liệu Time-Series:} Dữ liệu quan trắc từ trạm IoT liên tục được ghi mới theo chu kỳ ngắn (ghi nhiều) và thường được truy vấn theo khoảng thời gian để vẽ biểu đồ (đọc theo khoảng thời gian). MongoDB tối ưu hóa rất tốt cho kiểu dữ liệu Time-Series này thông qua việc đánh chỉ mục (Index) trường \texttt{timestamp}.
+    \item \textbf{Schema linh hoạt (Flexible Schema):} Dữ liệu từ cảm biến gửi lên dưới dạng JSON. MongoDB lưu trữ dữ liệu dưới định dạng BSON (tương tự JSON), giúp việc ánh xạ (mapping) trực tiếp từ payload MQTT sang Database diễn ra tự nhiên, không cần định nghĩa các bảng ghép nối phức tạp.
+    \item \textbf{Hiệu năng nạp dữ liệu (Write Performance):} MongoDB hỗ trợ ghi dữ liệu tốc độ cao, hoàn toàn phù hợp với luồng dữ liệu thời gian thực không ngừng nghỉ từ thiết bị nhúng.
+\end{itemize}
 
-Backend cung cấp các API endpoint phục vụ Frontend:
+\subsubsection{Mô tả REST API}
+
+\paragraph{Bảng endpoint}\mbox{}\\
+Hệ thống Backend (Next.js API Routes) cung cấp các REST API sau nhằm phục vụ giao diện hiển thị:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{GPIO} & \textbf{Chức năng} & \textbf{Ngoại vi} \\ 
-        \hline
-        GPIO 21 (SDA) & I2C Data  & BME680 \\ 
-        \hline
-        GPIO 22 (SCL) & I2C Clock & BME680 \\ 
-        \hline
-        GPIO 16 (RX2) & UART2 RX  & PMS5003 TX \\ 
-        \hline
-        GPIO 17 (TX2) & UART2 TX  & PMS5003 RX \\ 
-        \hline
-        GPIO 34       & ADC1\_CH6 & MQ-135 AOUT \\ 
-        \hline
-    \end{tabular}
 \caption{Danh sách REST API endpoint của hệ thống}
-\label{tab:api_endpoints}
-
+\label{tab:rest_api}
+\begin{tabularx}{\textwidth}{|l|l|>{\raggedright\arraybackslash}X|l|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Method} & \textbf{URL} & \textbf{Chức năng} & \textbf{Tham số đầu vào} & \textbf{Ví dụ response JSON} \\ 
+\hline
+GET & \texttt{/api/data/latest} & Lấy bản ghi đo môi trường mới nhất & Không có & \texttt{\{"pm2\_5\":35,"aqi":99,...\}} \\ 
+\hline
+GET & \texttt{/api/data} & Lấy danh sách lịch sử đo theo số lượng & \texttt{?limit=60} (số bản ghi) & \texttt{[\{"pm2\_5\":35\}, \{"pm2\_5\":36\}]} \\ 
+\hline
+POST & \texttt{/api/alert/check} & Kích hoạt kiểm tra thông số vượt ngưỡng cảnh báo & Không có & \texttt{\{"alert\": true, "msg": "..."\}} \\ 
+\hline
+\end{tabularx}
 \end{table}
 
-\paragraph{Cơ sở dữ liệu MongoDB Atlas}\mbox{}\\
+\paragraph{Ví dụ thực tế}\mbox{}\\
+Dưới đây là mô phỏng Request và Response thực tế cho endpoint quan trọng nhất lấy lịch sử dữ liệu (sử dụng lệnh cURL):
 
-Dữ liệu được lưu trong MongoDB Atlas (M0 Free Tier, 512\,MB) theo schema cố định với Mongoose ODM:
+\textbf{Request:}
+\begin{lstlisting}[language=bash, basicstyle=\footnotesize\ttfamily, backgroundcolor=\color{gray!10}, frame=single]
+curl -X GET "https://aqistation.vercel.app/api/data?limit=2"
+\end{lstlisting}
 
-\begin{table}[H]
-\centering
-\begin{tabular}{|c|l|c|l|}
-\hline
-\textbf{Dải AQI} & \textbf{Phân loại} & \textbf{Màu} & \textbf{Khuyến cáo sức khỏe} \\ 
-        \hline
-0 -- 50    & Tốt                    & Xanh lá    & Chất lượng không khí tốt, không ảnh hưởng sức khỏe \\ 
-        \hline
-51 -- 100  & Trung bình         & Vàng       & Nhạy cảm với một số chất ô nhiễm \\ 
-        \hline
-101 -- 150 & Không tốt cho nhóm nhạy cảm  & Cam        & Người bệnh hô hấp cần chú ý \\ 
-        \hline
-151 -- 200 & Không tốt         & Đỏ         & Ảnh hưởng sức khỏe cộng đồng \\ 
-        \hline
-201 -- 300 & Rất không tốt& Tím        & Cảnh báo sức khỏe nghiêm trọng \\ 
-        \hline
-301 -- 500 & Nguy hại          & Nâu đỏ     & Nguy cơ khẩn cấp cho toàn bộ cộng đồng \\ 
-        \hline\end{tabular}
-\caption{Đặc tả cấu trúc tài liệu dữ liệu trong MongoDB Atlas}
-\label{tab:db_schema}
-\begin{tabularx}{\textwidth}{|l|l|c|>{\raggedright\arraybackslash}X|}
-\hline
-\textbf{Trường dữ liệu} & \textbf{Kiểu dữ liệu} & \textbf{Bắt buộc} & \textbf{Mô tả chức năng} \\ 
-        \hline
-\texttt{pm2\_5}          & Number & Có & Nồng độ bụi mịn PM2.5 ($\mu$g/m$^3$). \\ 
-        \hline
-\texttt{pm10}           & Number & Có & Nồng độ bụi mịn PM10 ($\mu$g/m$^3$). \\ 
-        \hline
-\texttt{temperature}    & Number & Có & Nhiệt độ môi trường ($^\circ$C). \\ 
-        \hline
-\texttt{humidity}       & Number & Có & Độ ẩm tương đối (\%RH). \\ 
-        \hline
-\texttt{pressure}       & Number & Có & Áp suất khí quyển (hPa). \\ 
-        \hline
-\texttt{gas\_resistance} & Number & Không & Điện trở cảm biến khí VOC (k$\Omega$). \\ 
-        \hline
-\texttt{mq135}          & Number & Không & Giá trị tương tự đọc từ cảm biến MQ-135 (ADC). \\ 
-        \hline
-\texttt{aqi}            & Number & Có & Chỉ số chất lượng không khí tổng hợp. \\ 
-        \hline
-\texttt{timestamp}      & Date   & Có & Nhãn thời gian hệ thống (Được đánh chỉ mục Index, tự động TTL xóa sau 30 ngày). \\ 
-        \hline\end{tabularx}
-\end{table}
+\textbf{Response (Status 200 OK):}
+\begin{lstlisting}[language=json, basicstyle=\footnotesize\ttfamily, backgroundcolor=\color{gray!10}, frame=single]
+[
+  {
+    "_id": "64bc1a2f9d...",
+    "pm2_5": 35.2,
+    "temperature": 32.5,
+    "aqi": 99,
+    "timestamp": "2023-07-22T10:15:30.000Z"
+  },
+  {
+    "_id": "64bc1a3f9d...",
+    "pm2_5": 36.1,
+    "temperature": 32.6,
+    "aqi": 102,
+    "timestamp": "2023-07-22T10:15:35.000Z"
+  }
+]
+\end{lstlisting}
 
-Trường \texttt{timestamp} được đánh index để tăng tốc độ truy vấn theo khoảng thời gian. Collection được cấu hình TTL (Time-To-Live) để tự động xóa bản ghi cũ hơn 30 ngày, kiểm soát dung lượng lưu trữ.
+\paragraph{Xác thực (Authentication)}\mbox{}\\
+\begin{itemize}
+    \item \textbf{Cơ chế bảo vệ trang quản trị Dashboard:} Hệ thống hiện tại áp dụng cơ chế xác thực dựa trên thư viện NextAuth.js kết nối với cơ sở dữ liệu MongoDB (collection \texttt{users}). Quá trình đăng nhập trả về một Session Token (được mã hóa JWT và lưu trong cookie an toàn của trình duyệt), đảm bảo chỉ những tài khoản hợp lệ mới có thể truy cập các trang nội bộ của Web Dashboard.
+    \item \textbf{Với các public REST API lấy dữ liệu (\texttt{/api/data...}):} Hiện tại, các endpoint đọc dữ liệu cảm biến được thiết kế ở trạng thái "Mở" (Public) không yêu cầu xác thực. \textit{Lý do:} Mục đích của trạm quan trắc là chia sẻ thông tin chất lượng không khí cộng đồng nên việc đọc dữ liệu là công khai. Tuy nhiên, luồng ghi dữ liệu từ MQTT Subscriber vào MongoDB đã được che giấu ở tầng server-side (ẩn hoàn toàn khỏi Client).
+    \item \textbf{Phương án triển khai thực tế tương lai:} Khi phát triển mở rộng cho phép bên thứ 3 lấy dữ liệu, hệ thống sẽ áp dụng \textbf{API Key} được cấp phát riêng cho từng đối tác. Client sẽ cần truyền Key qua HTTP Header (ví dụ: \texttt{Authorization: Bearer <API\_KEY>}) để Backend kiểm soát lưu lượng truy cập (Rate Limiting).
+\end{itemize}
 
 \subsection{Kết quả hiển thị Web Dashboard}
 Khối hiển thị là tầng giao tiếp với người dùng cuối, bao gồm giao diện Web Dashboard được xây dựng bằng framework Next.js và triển khai trên nền tảng Vercel.
