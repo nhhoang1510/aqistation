@@ -1440,124 +1440,109 @@ curl -X GET "https://aqistation.vercel.app/api/data?limit=2"
 \end{itemize}
 
 \subsection{Kết quả hiển thị Web Dashboard}
-Để người dùng có thể dễ dàng theo dõi và tương tác với dữ liệu từ hệ thống, nhóm đã xây dựng một Web Dashboard trực quan sử dụng framework Next.js kết hợp với Chart.js và Tailwind CSS. Giao diện được triển khai trên nền tảng Vercel, đảm bảo khả năng truy cập linh hoạt từ mọi thiết bị có trình duyệt mọi lúc, mọi nơi.
+Hệ thống Web Dashboard được xây dựng bằng Next.js, triển khai trên Vercel, là giao diện giám sát chất lượng không khí thời gian thực dành cho người dùng cuối. Dashboard có 4 trang chức năng được điều hướng qua thanh Sidebar bên trái: \textbf{Trang chủ}, \textbf{Lịch sử dữ liệu}, \textbf{Bản đồ trạm} và \textbf{Cài đặt cảnh báo}.
 
-\subsubsection{Hiển thị chỉ số AQI và cảnh báo màu sắc}
+\subsubsection{Trang chủ -- Hiển thị chỉ số AQI và thông số thời gian thực}
 
-Widget AQI Gauge: Một đồng hồ đo dạng bán nguyệt (Gauge Chart) được sử dụng để trình bày chỉ số AQI theo thời gian thực một cách nổi bật.
+Trang chủ hiển thị tiêu đề \textit{``TRẠM QUAN TRẮC CHẤT LƯỢNG KHÔNG KHÍ ĐA THÔNG SỐ''} cùng badge nhận diện \textit{TRẠM 01} và chỉ báo trạng thái \textbf{● Trực tuyến} ở góc phải. Dòng thời gian cập nhật lần cuối được hiển thị ngay bên dưới tiêu đề (ví dụ: \textit{Cập nhật lúc: 17:30:37 14/07/2026}).
 
-Phân loại màu sắc tự động: Màu sắc của gauge và các card thông tin sẽ tự động thay đổi tương ứng với các cấp độ chất lượng không khí theo tiêu chuẩn quốc tế:
+Phần trung tâm trang chủ gồm hai thành phần chính:
 \begin{itemize}
-    \item Xanh lá (0--50): Tốt
-    \item Vàng (51--100): Trung bình
-    \item Cam (101--150): Không tốt cho nhóm nhạy cảm
-    \item Đỏ (151--200): Không tốt
-    \item Tím (201--300): Rất xấu
-    \item Nâu đỏ (>300): Nguy hại
+    \item \textbf{Chỉ số AQI hiện tại:} Giá trị AQI được hiển thị cỡ chữ lớn nổi bật (ví dụ: \textbf{114}) kèm nhãn phân loại màu (ví dụ: \textit{Kém}). Bên dưới là thanh màu gradient từ xanh lá đến đỏ sẫm (từ 0 đến 300+) theo đúng thang chuẩn US EPA, với mũi tên đánh dấu vị trí AQI hiện tại.
+    \item \textbf{4 thẻ thông số phụ:} Hiển thị song song các chỉ số môi trường cốt lõi: PM2.5 (µg/m³), PM10 (µg/m³), Nhiệt độ (°C) và Độ ẩm (\%).
 \end{itemize}
-
-Điều này giúp người dùng nhanh chóng nhận biết mức độ ô nhiễm chỉ bằng một cái nhìn.
-
-\subsubsection{Hiển thị các thông số môi trường chi tiết}
-
-Dashboard hiển thị 4 card thông tin chính với icon trực quan:
-\begin{itemize}
-    \item Nhiệt độ (°C) -- Icon nhiệt kế
-    \item Độ ẩm (\%) -- Icon giọt nước
-    \item Mức Gas (ppm) -- Icon khí độc
-    \item Mật độ bụi ($\mu$g/m\textsuperscript{3}) -- Icon bụi mịn
-\end{itemize}
-
-Card AQI có màu nền động thay đổi theo mức độ cảnh báo, giúp người dùng dễ dàng nhận diện các thông số bất thường.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1.0\textwidth]{images/dashboard_overview.png}
+    % \includegraphics[width=1.0\textwidth]{images/dashboard_home.png}
     \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
-    \textit{[Hình ảnh: Giao diện Dashboard với chỉ số AQI=85 ``Trung bình'' và 4 card thông số (Nhiệt độ 25°C, Mức Gas 150ppm, Độ ẩm 60\%, Mật độ bụi 35 µg/m³)]}
+    \textit{[Hình ảnh trang chủ Dashboard: AQI = 114 ``Kém'', thanh màu gradient, 4 thẻ PM2.5=40.8 µg/m³, PM10=49.8 µg/m³, Nhiệt độ=32°C, Độ ẩm=65\%]}
     \vspace{2.5cm}}}
-    \caption{Các thông số môi trường hiển thị trên Dashboard theo thời gian thực}
-    \label{fig:dashboard_metrics}
+    \caption{Trang chủ Dashboard hiển thị AQI hiện tại và 4 thông số môi trường chính}
+    \label{fig:dashboard_home}
 \end{figure}
 
-\subsubsection{Biểu đồ lịch sử AQI theo thời gian}
+\subsubsection{Biểu đồ theo thời gian -- 6 thông số song song}
 
-Hệ thống sử dụng Chart.js để vẽ các biểu đồ tương tác:
-\begin{itemize}
-    \item \textbf{Biểu đồ đường AQI:} Theo dõi xu hướng biến động của chỉ số AQI theo thời gian thực, với các vùng màu phân chia rõ ràng theo từng mức độ chất lượng không khí.
-    \item \textbf{Biểu đồ kết hợp Nhiệt độ \& Độ ẩm:} Hiển thị đồng thời hai thông số này trên cùng một biểu đồ với 2 trục Y, giúp phân tích mối tương quan giữa nhiệt độ và độ ẩm.
-\end{itemize}
+Phần dưới trang chủ hiển thị \textbf{6 biểu đồ đường} (Line Chart) vẽ song song theo thời gian thực cho toàn bộ các thông số cảm biến: PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất và Gas VOC. Mỗi biểu đồ được tô màu nền (area fill) riêng biệt và có thể tùy chọn khung thời gian bằng menu thả xuống (1 phút, 5 phút, 1 giờ, 24 giờ).
 
-Tính năng này cho phép người dùng:
+Các giá trị thực tế ghi nhận trong khoảng thời gian từ 17:30 đến 17:32:
 \begin{itemize}
-    \item Theo dõi xu hướng thay đổi của chất lượng không khí trong 24 giờ qua
-    \item Xác định các thời điểm ô nhiễm cao điểm trong ngày
-    \item Phân tích mối liên hệ giữa các yếu tố môi trường
-    \item Có cơ sở để lên kế hoạch và điều chỉnh các hoạt động cho phù hợp
+    \item PM2.5: dao động 39,5 -- 42,0 $\mu$g/m³
+    \item PM10: dao động 48,0 -- 51,0 $\mu$g/m³
+    \item Nhiệt độ: dao động 31,50 -- 31,60 °C
+    \item Độ ẩm: dao động 64,70 -- 64,80 \%
+    \item Áp suất: dao động 998,80 -- 998,90 hPa
+    \item Gas VOC: dao động 22,65 -- 22,90 (đơn vị nội bộ)
 \end{itemize}
 
 \begin{figure}[H]
     \centering
     % \includegraphics[width=1.0\textwidth]{images/dashboard_charts.png}
     \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
-    \textit{[Hình ảnh: Biểu đồ AQI theo thời gian (trái) và biểu đồ Nhiệt độ \& Độ ẩm kết hợp (phải)]}
+    \textit{[Hình ảnh 6 biểu đồ thời gian thực: PM2.5 (hồng), PM10 (cam), Nhiệt độ (đỏ), Độ ẩm (xanh dương), Áp suất (tím), Gas VOC (xanh lá)]}
     \vspace{2.5cm}}}
-    \caption{Biểu đồ lịch sử AQI và nhiệt độ \& độ ẩm theo thời gian thực}
+    \caption{6 biểu đồ đường diễn biến thời gian thực của các thông số môi trường}
     \label{fig:dashboard_charts}
 \end{figure}
 
-\subsubsection{Bảng dữ liệu chi tiết}
+\subsubsection{Trang Lịch sử dữ liệu}
 
-Một bảng dữ liệu (Data Table) hiển thị 10 bản ghi gần nhất với đầy đủ thông tin:
+Trang \textbf{Lịch sử dữ liệu} cung cấp công cụ phân tích chuyên sâu với bộ lọc theo khoảng ngày (\textit{Từ ngày} -- \textit{Đến ngày}), nút \textit{Tìm kiếm} và nút \textit{Xuất CSV} để tải dữ liệu về phân tích ngoại tuyến.
+
+\textbf{Khối thống kê tổng hợp} hiển thị 4 chỉ số thống kê của khoảng thời gian đã chọn:
 \begin{itemize}
-    \item Timestamp (Thời gian ghi nhận)
-    \item Device ID (Mã thiết bị)
-    \item Tất cả các thông số cảm biến (Nhiệt độ, Độ ẩm, Gas, Bụi)
-    \item Trạng thái AQI với màu sắc phân loại
+    \item \textbf{Tổng bản ghi:} 1.334 bản ghi (ngày 14/07/2026)
+    \item \textbf{AQI trung bình:} 61,7 -- phân loại \textit{Trung bình}
+    \item \textbf{AQI cao nhất:} 126 -- phân loại \textit{Kém}
+    \item \textbf{PM2.5 trung bình:} 21,6 $\mu$g/m³
 \end{itemize}
 
-Bảng có khả năng cuộn ngang trên mobile, đảm bảo hiển thị tốt trên mọi kích thước màn hình.
+Bên dưới là \textbf{biểu đồ đường AQI} toàn ngày và bảng dữ liệu chi tiết gồm 8 cột: Thời gian, AQI, PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất, Gas VOC, MQ-135. Các giá trị AQI trong bảng được hiển thị dạng badge màu sắc theo chuẩn US EPA.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1.0\textwidth]{images/dashboard_table.png}
+    % \includegraphics[width=1.0\textwidth]{images/history_page.png}
     \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
-    \textit{[Hình ảnh: Bảng dữ liệu gần đây với 10 bản ghi, gồm các cột: Thời gian, Nhiệt độ, Độ ẩm, Gas, Bụi, AQI, Trạng thái]}
+    \textit{[Hình ảnh trang Lịch sử: Bộ lọc ngày, 4 thẻ thống kê (1334 bản ghi, AQI TB=61.7, AQI max=126, PM2.5 TB=21.6 µg/m³), biểu đồ AQI toàn ngày]}
     \vspace{2.5cm}}}
-    \caption{Bảng dữ liệu chi tiết các bản ghi đo theo thứ tự thời gian}
-    \label{fig:dashboard_table}
+    \caption{Trang Lịch sử dữ liệu với thống kê tổng hợp và biểu đồ AQI theo ngày}
+    \label{fig:history_page}
 \end{figure}
 
-\subsubsection{Cập nhật dữ liệu tự động}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1.0\textwidth]{images/history_table.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
+    \textit{[Hình ảnh bảng dữ liệu lịch sử: 8 cột Thời gian -- AQI -- PM2.5 -- PM10 -- Nhiệt độ -- Độ ẩm -- Áp suất -- Gas VOC -- MQ-135, badge AQI màu xanh lá]}
+    \vspace{2.5cm}}}
+    \caption{Bảng dữ liệu chi tiết lịch sử với 8 thông số đo và badge AQI màu sắc}
+    \label{fig:history_table}
+\end{figure}
 
-\textbf{Auto-refresh:} Dashboard tự động làm mới dữ liệu mỗi 5 giây để đảm bảo hiển thị thông tin mới nhất từ ESP32.
+\subsubsection{Trang Cài đặt cảnh báo}
 
-\textbf{Real-time indicator:} Hiển thị thời gian cập nhật gần nhất và trạng thái kết nối thiết bị.
-
-\textbf{Kiến trúc REST API:} Hệ thống cung cấp các API endpoint chuẩn RESTful:
+Trang \textbf{Cài đặt cảnh báo} cho phép người dùng cá nhân hóa hoàn toàn chế độ thông báo:
 \begin{itemize}
-    \item \texttt{GET /api/data/latest} \quad -- Lấy bản ghi đo mới nhất
-    \item \texttt{GET /api/data/history} \quad -- Lấy lịch sử theo khoảng thời gian
-    \item \texttt{GET /api/data/stats} \quad\quad -- Lấy thống kê tổng hợp
+    \item \textbf{Bật/Tắt cảnh báo:} Toggle ``Bật cảnh báo'' -- Tự động gửi thông báo khi AQI vượt ngưỡng.
+    \item \textbf{Thông tin liên hệ:} Nhập địa chỉ email và số điện thoại nhận thông báo.
+    \item \textbf{Thông báo trực tiếp:} Nút ``Bật Push'' kích hoạt Push Notification ngay trên trình duyệt.
+    \item \textbf{Ngưỡng AQI:} Thanh trượt điều chỉnh từ 30 đến 300, có sẵn 4 nút tắt nhanh: 50 (Tốt), 100 (TB), 150 (Kém), 200 (Xấu). Ngưỡng hiện tại mặc định là 90 (Trung bình).
+    \item \textbf{Thời gian chờ:} Khoảng cách tối thiểu giữa hai lần gửi cảnh báo, chọn trong 4 mức: 15 phút, 30 phút, 1 giờ, 3 giờ.
+    \item \textbf{Lần gửi gần nhất:} Hiển thị timestamp lần gửi cảnh báo gần nhất (ví dụ: 12:55:49 14/7/2026).
 \end{itemize}
 
-Tất cả API trả về dữ liệu dạng JSON, dễ dàng tích hợp với các nền tảng khác.
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.95\textwidth]{images/settings_page.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2.5cm}
+    \textit{[Hình ảnh trang Cài đặt cảnh báo: Toggle bật cảnh báo, form email/SĐT, nút Bật Push, thanh trượt ngưỡng AQI=90, thời gian chờ 30 phút, nút Lưu cài đặt]}
+    \vspace{2.5cm}}}
+    \caption{Trang Cài đặt cảnh báo với ngưỡng AQI tùy chỉnh và thời gian chờ giữa các lần gửi}
+    \label{fig:settings_page}
+\end{figure}
 
-\textbf{Thiết kế giao diện:}
-\begin{itemize}
-    \item \textbf{Responsive Design:} Giao diện tự động điều chỉnh theo kích thước màn hình, tối ưu cho cả desktop, tablet và mobile.
-    \item \textbf{Modern UI:} Sử dụng Tailwind CSS với theme hiện đại, card-based layout và hiệu ứng smooth transitions.
-    \item \textbf{Dark indicators:} Các card có nền màu động theo mức độ cảnh báo, giúp tăng khả năng nhận diện nhanh.
-    \item \textbf{Color scheme:} Palette màu được thiết kế theo tiêu chuẩn AQI quốc tế, dễ hiểu và thân thiện với người dùng.
-\end{itemize}
 
-\textbf{Thống kê cung cấp:}
-\begin{itemize}
-    \item AQI: Average, Max, Min, Current
-    \item Temperature: Average, Max, Min, Current
-    \item Humidity: Average, Max, Min, Current
-    \item Tổng số bản ghi, time range
-\end{itemize}
 
 \subsection{Kết quả kiểm thử các kịch bản thực tế}
 Dưới đây là kết quả kiểm chứng chi tiết thông qua các bài test thực nghiệm tại hiện trường:
