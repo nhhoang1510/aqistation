@@ -508,11 +508,16 @@ Vi điều khiển trung tâm ESP32 (phiên bản mô đun DOIT DevKit V1) đón
 \end{table}
 
 \subsubsection{Giới thiệu về cảm biến bụi PMS5003}
-\noindent\textbf{Tổng quan}\\[6pt]
-PMS5003 là một loại cảm biến nồng độ hạt kỹ thuật số và đa năng, có thể được sử dụng để thu thập số lượng các hạt lơ lửng trong không khí, tức là nồng độ hạt, và xuất dữ liệu dưới dạng giao tiếp kỹ thuật số. Cảm biến này có thể được tích hợp vào các thiết bị khác nhau liên quan đến nồng độ hạt lơ lửng trong không khí hoặc các thiết bị cải thiện môi trường khác để cung cấp dữ liệu nồng độ chính xác kịp thời.
+\noindent\textbf{Tìm hiểu về các phép đo PM:}\\[6pt]
+Một hạt bụi (Particulate Matter -- PM) là hỗn hợp của chất rắn và giọt chất lỏng, kích thước hiển vi, có thể trôi nổi trong không khí. Chúng có thể có nhiều hình dạng, kích cỡ và cấu tạo từ nhiều chất khác nhau. 
+\begin{itemize}
+    \item \textbf{PM1.0}: Những hạt có đường kính nhỏ hơn 1 micromet.
+    \item \textbf{PM2.5}: Những hạt có đường kính từ 1 đến 2.5 micromet.
+    \item \textbf{PM10}: Những hạt có đường kính từ 2.5 đến 10 micromet.
+\end{itemize}
 
 \noindent\textbf{Nguyên lý hoạt động}\\[6pt]
-Cảm biến này sử dụng nguyên lý tán xạ laser, tức là tạo ra sự tán xạ bằng cách sử dụng tia laser chiếu vào các hạt lơ lửng trong không khí, sau đó thu thập ánh sáng tán xạ ở một góc độ nhất định, và cuối cùng thu được đường cong thay đổi của ánh sáng tán xạ theo thời gian. Sau cùng, đường kính hạt tương đương và số lượng hạt có đường kính khác nhau trên một đơn vị thể tích có thể được vi xử lý tính toán dựa trên lý thuyết MIE. Sơ đồ chức năng của cảm biến được trình bày như Hình 1 của nhà sản xuất.
+Cảm biến PMS5003 hoạt động dựa trên nguyên lý tán xạ ánh sáng laser chủ động. Khi các hạt bụi lơ lửng trong không khí được hút vào buồng đo thông qua quạt tích hợp, chúng đi qua chùm tia laser. Ánh sáng tán xạ từ hạt bụi được cảm biến quang học thu nhận và chuyển đổi thành tín hiệu điện. Vi điều khiển tích hợp trên cảm biến sử dụng thuật toán dựa trên lý thuyết Mie để tính toán đường kính tương đương của các hạt bụi và số lượng hạt trên một đơn vị thể tích, từ đó đưa ra nồng độ khối lượng PM1.0, PM2.5, PM10 chuẩn xác.
 
 \noindent\textbf{Giao thức truyền dữ liệu UART}\\[6pt]
 UART (Universal Asynchronous Receiver-Transmitter) là giao thức truyền thông phần cứng nối tiếp không đồng bộ. Trong giao tiếp UART, hai thiết bị kết nối trực tiếp với nhau thông qua hai đường truyền chéo: chân truyền (Tx) nối với chân nhận (Rx) và ngược lại. Dữ liệu dạng song song từ vi điều khiển được chuyển đổi thành khung dữ liệu nối tiếp (kèm bit start, bit stop) để truyền đi. Phía nhận sẽ đọc từng bit và chuyển đổi ngược lại thành dữ liệu song song. Nhờ tính đơn giản và linh hoạt, UART là chuẩn giao tiếp rất phổ biến trong công nghiệp để kết nối các module hoặc cảm biến.
@@ -537,45 +542,33 @@ UART (Universal Asynchronous Receiver-Transmitter) là giao thức truyền thô
  
 \begin{table}[H]
  \centering
- \begin{tabular}{|>{\raggedright\arraybackslash}p{5.5cm}|>{\raggedright\arraybackslash}p{5.5cm}|>{\raggedright\arraybackslash}p{3cm}|}
+ \begin{tabular}{|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{7.5cm}|}
  \hline
- \textbf{Thông số (Parameter)} & \textbf{Chỉ số (Index)} & \textbf{Đơn vị (Unit)} \\ 
+ \textbf{Thông số} & \textbf{Giá trị} \\ 
         \hline
- Dải đo (Range of measurement) & $0.3\sim1.0;\ 1.0\sim2.5;\ 2.5\sim10$ & Micromet ($\mu$m) \\ 
+ Điện áp hoạt động & 4.95\,V -- 5.05\,V DC \\ 
         \hline
- Hiệu suất đếm (Counting Efficiency) & 50\%@0.3$\mu$m, 98\%@$\ge$0.5$\mu$m & \\ 
+ Dòng điện tối đa & 120\,mA \\ 
         \hline
- Dải hiệu quả chuẩn PM2.5 (Effective Range) & $0\sim500$ & $\mu$g/m$^3$ \\ 
+ Dòng điện chờ & $\leq 200\,\mu$A \\ 
         \hline
- Dải tối đa chuẩn PM2.5 (Maximum Range) & $\ge1000$ & $\mu$g/m$^3$ \\ 
+ Giao tiếp & UART (9600 baud, 8N1) \\ 
         \hline
- Độ phân giải (Resolution) & 1 & $\mu$g/m$^3$ \\ 
+ Dải đo PM & 0 -- 500\,$\mu$g/m$^3$ \\ 
         \hline
- Sai số nhất quán tối đa (Maximum Consistency Error) & $\pm10\%@100\sim500\mu$g/m$^3$\newline $\pm10\mu$g/m$^3@0\sim100\mu$g/m$^3$ & \\ 
+ Độ phân giải PM & 1\,$\mu$g/m$^3$ \\ 
         \hline
- Thể tích chuẩn (Standard Volume) & 0.1 & Lít (L) \\ 
+ Kích thước hạt nhỏ nhất & 0.3\,$\mu$m \\ 
         \hline
- Thời gian đáp ứng đơn (Single Response Time) & $<1$ & Giây (s) \\ 
+ Thời gian đáp ứng & $<$ 10 giây \\ 
         \hline
- Tổng thời gian đáp ứng (Total Response Time) & $\le10$ & Giây (s) \\ 
+ Nhiệt độ hoạt động & -10\,$^\circ$C đến +60\,$^\circ$C \\ 
         \hline
- Nguồn điện DC (DC Power Supply) & Typ:5.0 Min:4.5 Max: 5.5 & Volt (V) \\ 
+ Độ ẩm hoạt động & 0 -- 99\% RH \\ 
         \hline
- Dòng điện hoạt động (Active Current) & $\le100$ & Miliampe (mA) \\ 
+ Kích thước & 50 $\times$ 38 $\times$ 21\,mm \\ 
         \hline
- Dòng điện chờ (Standby Current) & $\le200$ & Microampe ($\mu$A) \\ 
-        \hline
- Mức điện áp giao tiếp (Interface Level) & L $<$0.8 @3.3, H $>$2.7@3.3 & Volt (V) \\ 
-        \hline
- Nhiệt độ hoạt động (Working Temperature Range) & $-10\sim+60$ & $^\circ$C \\ 
-        \hline
- Độ ẩm hoạt động (Working Humidity Range) & $0\sim99\%$ & \\ 
-        \hline
- Nhiệt độ bảo quản (Storage Temp. Range) & $-40\sim+80$ & $^\circ$C \\ 
-        \hline
- Tuổi thọ trung bình (MTTF) & $\ge3$ & Năm (Y) \\ 
-        \hline
- Kích thước vật lý (Physical Size) & $50 \times 38 \times 21$ & Milimet (mm) \\ 
+ Tuổi thọ & $\geq$ 3 năm \\ 
         \hline
  \end{tabular}
 \caption{Thông số kỹ thuật cảm biến PMS5003}
@@ -595,23 +588,23 @@ UART (Universal Asynchronous Receiver-Transmitter) là giao thức truyền thô
  
  \begin{table}[H]
  \centering
- \begin{tabular}{|c|c|p{10cm}|}
+ \begin{tabular}{|c|c|l|}
  \hline
  \textbf{Chân} & \textbf{Ký hiệu} & \textbf{Mô tả chức năng} \\ 
         \hline
- PIN1 & VCC & Nguồn dương 5V \\ 
+ 1 & VCC & Nguồn dương (5V) \\ 
         \hline
- PIN2 & GND & Nguồn âm \\ 
+ 2 & GND & Nguồn âm (Mass) \\ 
         \hline
- PIN3 & SET & Chân thiết lập / Mức TTL@3.3V, mức cao hoặc để lơ lửng là trạng thái hoạt động bình thường, trong khi mức thấp là chế độ chờ (sleep). \\ 
+ 3 & SET & Pin thiết lập chế độ chờ. Mức cao: hoạt động. Mức thấp: chờ. \\ 
         \hline
- PIN4 & RX & Chân nhận của cổng nối tiếp / Mức TTL@3.3V \\ 
+ 4 & RX & Nhận dữ liệu (để nhận lệnh điều khiển nếu có) \\ 
         \hline
- PIN5 & TX & Chân gửi của cổng nối tiếp / Mức TTL@3.3V \\ 
+ 5 & TX & Truyền dữ liệu (cung cấp dữ liệu đo PM ra ngoài) \\ 
         \hline
- PIN6 & RESET & Tín hiệu reset module / Mức TTL@3.3V, reset ở mức thấp. \\ 
+ 6 & RESET & Pin khởi động lại module. Mức thấp: reset. \\ 
         \hline
- PIN7/8 & NC & Không kết nối \\ 
+ 7,8 & NC & Không kết nối \\ 
         \hline
  \end{tabular}
 \caption{Chức năng các chân của PMS5003}
