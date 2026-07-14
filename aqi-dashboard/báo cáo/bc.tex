@@ -353,25 +353,6 @@ Kích thước hộp chứa thiết bị và mạch PCB phải nhỏ gọn, thu�
 \subsubsection{Giá thành hợp lý}
 Sử dụng các linh kiện phổ biến trên thị trường để tối ưu hóa chi phí sản xuất diện rộng.
 
-\subsection{Sơ đồ hệ thống}
-Hệ thống được xây dựng dựa trên kiến trúc phân tầng 3 lớp IoT tiêu chuẩn: \textbf{Edge -- Fog -- Cloud}.
-
-\begin{itemize}
-    \item \textbf{Tầng biên (Edge)}: Vi điều khiển kết nối trực tiếp với các cảm biến để thu thập dữ liệu môi trường, thực hiện lọc nhiễu và tính toán chỉ số chất lượng không khí ngay tại thiết bị đầu cuối.
-    \item \textbf{Tầng trung gian (Fog)}: Lớp trung chuyển đảm nhận việc định tuyến, chuẩn hóa dữ liệu và bổ sung nhãn thời gian thông qua giao thức truyền thông nhẹ và dịch vụ xử lý trung gian.
-    \item \textbf{Tầng đám mây (Cloud)}: Cơ sở dữ liệu lưu trữ dữ liệu lịch sử lâu dài, kết hợp giao diện web hiển thị biểu đồ trực quan và cảnh báo cho người dùng.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{images/block_diagram.png}
-    \caption{Mô hình tổng thể hệ thống trạm quan trắc chất lượng không khí}
-    \label{fig:system_overview_5}
-\end{figure}
-
-% ============================================================
-%  CHƯƠNG 3. THIẾT KẾ HỆ THỐNG
-% ============================================================
 \newpage
 \begin{center}
     \textbf{\Large CHƯƠNG 3. THIẾT KẾ HỆ THỐNG}
@@ -381,22 +362,20 @@ Hệ thống được xây dựng dựa trên kiến trúc phân tầng 3 lớp 
 \setcounter{subsection}{0}
 
 \subsection{Tổng quan hệ thống}
-Hệ thống trạm quan trắc chất lượng không khí đa thông số được xây dựng theo mô hình IoT ba tầng: tầng nhận thức (Perception Layer), tầng truyền dẫn (Network Layer) và tầng ứng dụng (Application Layer). Kiến trúc tổng quan của hệ thống được minh họa như sau:
+Hệ thống được xây dựng dựa trên kiến trúc phân tầng 3 lớp IoT tiêu chuẩn: \textbf{Edge -- Fog -- Cloud}.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.9\textwidth]{images/system_overview.png}
-    \textbf{[CHÈN SƠ ĐỒ CẤU TRÚC TỔNG QUAN HỆ THỐNG VÀO ĐÂY]}
+    \includegraphics[width=0.9\textwidth]{images/block_diagram.png}
     \caption{Cấu trúc tổng quan của hệ thống trạm quan trắc IoT}
     \label{fig:system_overview}
 \end{figure}
 
 Hệ thống bao gồm các thành phần chính sau:
 \begin{itemize}
-    \item \textbf{Khối thu thập dữ liệu (Embedded Node):} Vi điều khiển ESP32 tích hợp WiFi đọc đồng thời ba luồng dữ liệu từ cảm biến bụi mịn PMS5003 (UART), cảm biến vi khí hậu BME680 (I2C) và cảm biến khí độc MQ-135 (ADC). Dữ liệu được lọc số, tính chỉ số AQI rồi đóng gói JSON và đẩy lên broker MQTT.
-    \item \textbf{Khối truyền dẫn (MQTT Broker):} Giao thức MQTT qua chuẩn mạng WiFi 802.11n giúp truyền tải dữ liệu nhẹ, ổn định qua Internet tới broker công cộng \texttt{broker.emqx.io}.
-    \item \textbf{Khối xử lý và lưu trữ (Backend Cloud):} Dịch vụ Node.js đăng ký (subscribe) topic MQTT, nhận gói tin và lưu vào cơ sở dữ liệu MongoDB Atlas trên đám mây.
-    \item \textbf{Khối hiển thị (Web Dashboard):} Ứng dụng web Next.js triển khai trên Vercel cung cấp giao diện giám sát theo thời gian thực, hiển thị biểu đồ lịch sử và bản đồ vị trí trạm. Người dùng có thể theo dõi từ xa thông qua trình duyệt trên điện thoại, máy tính.
+    \item \textbf{Tầng biên (Edge)}: Vi điều khiển kết nối trực tiếp với các cảm biến để thu thập dữ liệu môi trường, thực hiện lọc nhiễu và tính toán chỉ số chất lượng không khí ngay tại thiết bị đầu cuối.
+    \item \textbf{Tầng trung gian (Fog)}: Lớp trung chuyển đảm nhận việc định tuyến, chuẩn hóa dữ liệu và bổ sung nhãn thời gian thông qua giao thức truyền thông nhẹ và dịch vụ xử lý trung gian.
+    \item \textbf{Tầng đám mây (Cloud)}: Cơ sở dữ liệu lưu trữ dữ liệu lịch sử lâu dài, kết hợp giao diện web hiển thị biểu đồ trực quan và cảnh báo cho người dùng.
 \end{itemize}
 
 \subsection{Nguyên lý hoạt động}
@@ -423,39 +402,6 @@ Hệ thống hoạt động theo chu trình liên tục, khép kín qua 4 bướ
 
 \subsubsection{Cảm biến bụi mịn}
 Cảm biến bụi mịn là thành phần quan trọng nhất của trạm đo chất lượng không khí:
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{7.5cm}|}
-\hline
- & \centering\arraybackslash\includegraphics[width=0.28	extwidth]{images/esp32.png} \\ 
-        \hline
-MCU & Xtensa@ Dual-Core 32-bit LX6 600 DMIPS \\ 
-        \hline
-Điện áp nguồn & 5V DC \\ 
-        \hline
-Đầu vào/ra điện áp & 3.3V DC \\ 
-        \hline
-Băng tần & 80 - 240 MHz \\ 
-        \hline
-Giao thức WiFi & 802.11B/g/n/E/I (802.11N @ 2.4 GHz lên đến 150 Mbit/s) \\ 
-        \hline
-Tần số WiFi & 2.4 -- 2.5 GHz \\ 
-        \hline
-Bluetooth & V4.2 - BLE \\ 
-        \hline
-Bộ nhớ & 448 Kbyte ROM, 520 Kbyte SRAM, 6 Kbyte SRAM trên RTC và QSPI Hỗ trợ đèn flash / SRAM chip \\ 
-        \hline
-Chip USB-Serial & CP2102 \\ 
-        \hline
-Anten không dây & PCB \\ 
-        \hline
-Giá thành & 200.000VNĐ \\ 
-        \hline\end{tabular}
-\caption{So sánh các dòng cảm biến bụi mịn}
-    \label{tab:ss_pm}
-    \vspace{0.2cm}
-    
-\end{table}
 
 Qua bảng so sánh, nhóm quyết định lựa chọn \textbf{PMS5003} vì độ chính xác vượt trội, khả năng phân tách chi tiết các dải kích thước bụi và tín hiệu đầu ra số tin cậy, hoàn toàn xứng đáng với giá thành đầu tư cho một trạm quan trắc.
 
@@ -539,10 +485,37 @@ Dưới đây là chi tiết thông số kỹ thuật của các linh kiện đ�
 Vi điều khiển trung tâm ESP32 (phiên bản mô đun DOIT DevKit V1) đóng vai trò bộ não điều khiển toàn bộ hệ thống trạm đo chất lượng không khí, chịu trách nhiệm đọc dữ liệu từ các cảm biến, lọc và xử lý tín hiệu, tính toán chỉ số AQI và truyền dữ liệu lên cloud qua giao thức MQTT.
 
 \begin{table}[H]
-\centering\small
-\caption{Thông số của mô đun ESP32 DOIT DevKit V1}
-\label{tab:esp32_specs}
-
+    \centering
+    \begin{tabular}{|>{\raggedright\arraybackslash}p{4.0cm}|>{\raggedright\arraybackslash}p{7.5cm}|}
+\hline
+ & \centering\arraybackslash\includegraphics[width=0.28]{images/esp32.png} \\ 
+        \hline
+MCU & Xtensa@ Dual-Core 32-bit LX6 600 DMIPS \\ 
+        \hline
+Điện áp nguồn & 5V DC \\ 
+        \hline
+Đầu vào/ra điện áp & 3.3V DC \\ 
+        \hline
+Băng tần & 80 - 240 MHz \\ 
+        \hline
+Giao thức WiFi & 802.11B/g/n/E/I (802.11N @ 2.4 GHz lên đến 150 Mbit/s) \\ 
+        \hline
+Tần số WiFi & 2.4 -- 2.5 GHz \\ 
+        \hline
+Bluetooth & V4.2 - BLE \\ 
+        \hline
+Bộ nhớ & 448 Kbyte ROM, 520 Kbyte SRAM, 6 Kbyte SRAM trên RTC và QSPI Hỗ trợ đèn flash / SRAM chip \\ 
+        \hline
+Chip USB-Serial & CP2102 \\ 
+        \hline
+Anten không dây & PCB \\ 
+        \hline
+Giá thành & 200.000VNĐ \\ 
+        \hline\end{tabular}
+\caption{Thông số ESP32 DOIT DevKit V1}
+    \label{tab:ss_pm}
+    \vspace{0.2cm}
+    
 \end{table}
 
 \subsubsection{Giới thiệu về cảm biến bụi PMS5003}
@@ -556,23 +529,6 @@ Một hạt bụi (Particulate Matter -- PM) là hỗn hợp của chất rắn 
 
 \noindent\textbf{Nguyên lý hoạt động}\\[6pt]
 Cảm biến PMS5003 hoạt động dựa trên nguyên lý tán xạ ánh sáng laser chủ động. Khi các hạt bụi lơ lửng trong không khí được hút vào buồng đo thông qua quạt tích hợp, chúng đi qua chùm tia laser. Ánh sáng tán xạ từ hạt bụi được cảm biến quang học thu nhận và chuyển đổi thành tín hiệu điện. Vi điều khiển tích hợp trên cảm biến sử dụng thuật toán dựa trên lý thuyết Mie để tính toán đường kính tương đương của các hạt bụi và số lượng hạt trên một đơn vị thể tích, từ đó đưa ra nồng độ khối lượng PM1.0, PM2.5, PM10 chuẩn xác.
-
-\noindent\textbf{Giao thức truyền dữ liệu UART}\\[6pt]
-UART (Universal Asynchronous Receiver-Transmitter) là giao thức truyền thông phần cứng nối tiếp không đồng bộ. Trong giao tiếp UART, hai thiết bị kết nối trực tiếp với nhau thông qua hai đường truyền chéo: chân truyền (Tx) nối với chân nhận (Rx) và ngược lại. Dữ liệu dạng song song từ vi điều khiển được chuyển đổi thành khung dữ liệu nối tiếp (kèm bit start, bit stop) để truyền đi. Phía nhận sẽ đọc từng bit và chuyển đổi ngược lại thành dữ liệu song song. Nhờ tính đơn giản và linh hoạt, UART là chuẩn giao tiếp rất phổ biến trong công nghiệp để kết nối các module hoặc cảm biến.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uart_connection.png}
-    \caption{Kết nối trực tiếp Tx-Rx giữa hai thiết bị UART}
-    \label{fig:uart_conn}
-\end{figure}
- 
- \begin{figure}[H]
-     \centering
-     \includegraphics[width=0.75\textwidth]{images/uart_parallel_serial.png}
-     \caption{Cơ chế chuyển đổi dữ liệu song song sang nối tiếp của UART}
-     \label{fig:uart_parallel_serial}
- \end{figure}
 
 \vspace{12pt}
 \noindent\begin{minipage}{\textwidth}
@@ -649,41 +605,33 @@ UART (Universal Asynchronous Receiver-Transmitter) là giao thức truyền thô
  \label{tab:pms5003_pins}
  
  \end{table}
- 
-\vspace{12pt}
-\noindent\begin{minipage}{\textwidth}
-\noindent\textbf{Sơ đồ kết nối với ESP32}\\[6pt]
- Do PMS5003 cần điện áp nuôi là 5V nên chân VCC của cảm biến được nối trực tiếp với chân VIN hoặc chân 5V của vi điều khiển ESP32 (lấy từ nguồn USB hoặc adapter). Tuy điện áp nuôi là 5V, nhưng mức điện áp logic trên chân truyền thông TX/RX của PMS5003 lại tương thích với mức 3.3V, do đó có thể đấu trực tiếp vào các chân GPIO của ESP32 (vốn hoạt động ở mức 3.3V) mà không cần qua mạch chuyển mức điện áp (Level Shifter).
- 
- 
-\begin{table}[H]
- \centering
- \begin{tabular}{|c|c|l|}
- \hline
- \textbf{Chân PMS5003} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\ 
-        \hline
- VCC (Pin 1) & 5V / VIN & Cấp nguồn 5V cho quạt hút \\ 
-        \hline
- GND (Pin 2) & GND & Nối chung cực âm \\ 
-        \hline
- TX (Pin 5) & GPIO 16 (RX2) & Gửi dữ liệu từ cảm biến sang ESP32 \\ 
-        \hline
- RX (Pin 4) & GPIO 17 (TX2) & (Tùy chọn) Gửi lệnh từ ESP32 sang cảm biến \\ 
-        \hline
- \end{tabular}
-\caption{Cấu hình kết nối chân PMS5003 với ESP32}
- \label{tab:pms5003_wiring}
- 
- \end{table}
-\end{minipage}
-\vspace{12pt}
 
 \noindent\textbf{Thuật toán đọc cảm biến PMS5003}\\[6pt]
 Về mặt phần cứng, giao tiếp UART của lõi ESP32 tự động sao chép các byte nhận được vào một vùng đệm. Ở phần mềm ứng dụng, vi điều khiển sẽ định kỳ kiểm tra vùng đệm này để lấy dữ liệu. Vì cảm biến PMS5003 gửi dữ liệu liên tục thành từng gói 32-byte mà không có ký tự ngắt rõ ràng, phần mềm cần một thuật toán để dò tìm đúng 2 byte bắt đầu (0x42 và 0x4D), sau đó mới đọc tiếp đủ 30 byte còn lại. Thuật toán thu thập và giải mã dữ liệu này được mô tả trực quan qua lưu đồ dưới đây:
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{images/flowchart_uart_parsing.png}
+\begin{tikzpicture}[node distance=0.6cm and 1.2cm,
+  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3cm, align=center, minimum height=0.9cm, font=\small},
+  decision/.style={diamond, draw, fill=orange!15, text width=2.2cm, align=center, aspect=1.6, font=\small},
+  arrow/.style={->, >=stealth, thick}]
+  \node[block] (wait) {Chờ dữ liệu\\(Tìm byte\\bắt đầu)};
+  \node[decision, below=0.7cm of wait] (chk42) {Byte nhận\\= 0x42?};
+  \node[decision, right=1.8cm of chk42] (chk4D) {Byte tiếp theo\\= 0x4D?};
+  \node[block, below=0.7cm of chk4D] (read32) {Thu thập đủ\\32 byte khung};
+  \node[decision, below=0.7cm of read32] (chksum) {Checksum\\hợp lệ?};
+  \node[block, right=1.8cm of chksum] (discard) {Loại bỏ gói lỗi\\quay lại từ đầu};
+  \node[block, below=0.7cm of chksum] (decode) {Giải mã trường\\PM1.0,\\PM2.5, PM10};
+  \draw[arrow] (wait) -- (chk42);
+  \draw[arrow] (chk42) -- node[above, font=\scriptsize]{Có} (chk4D);
+  \draw[arrow] (chk42.west) -- +(-0.7,0) |- node[left, font=\scriptsize, pos=0.25]{Không} (wait.west);
+  \draw[arrow] (chk4D) -- node[right, font=\scriptsize]{Có} (read32);
+  \draw[arrow] (chk4D.north) -- +(0,0.5) -| node[above right, font=\scriptsize, pos=0.1]{Không} (wait.north);
+  \draw[arrow] (read32) -- (chksum);
+  \draw[arrow] (chksum) -- node[above, font=\scriptsize]{Không} (discard);
+  \draw[arrow] (discard.north) |- (wait.east);
+  \draw[arrow] (chksum) -- node[right, font=\scriptsize]{Có} (decode);
+\end{tikzpicture}
 \caption{Lưu đồ thuật toán đọc dữ liệu PMS5003}
 \label{fig:pms_fsm}
 \end{figure}
@@ -695,29 +643,6 @@ Cơ chế kiểm tra lỗi (Checksum) đóng vai trò rất quan trọng để p
 
 \noindent\textbf{Nguyên lý hoạt động}\\[6pt]
 BME680 sử dụng công nghệ MEMS (Hệ thống vi cơ điện tử) cho phép tích hợp 4 cảm biến vào cùng một package nhỏ. Nhiệt độ và độ ẩm đóng vai trò tham chiếu quan trọng để bù sai số (nhiệt-ẩm bù trừ) cho các cảm biến hóa học nhạy khí vốn dễ bị trôi giá trị đo khi môi trường thay đổi.
-
-\noindent\textbf{Giao thức truyền dữ liệu I2C}\\[6pt]
-Giao tiếp I2C, hay I2C, là viết tắt của chữ Inter-Integrated Circuit. Đây là một chuẩn giao tiếp cho phép nhiều thiết bị Tớ (Slave) kết nối với một hoặc nhiều thiết bị Chủ (Master). 
-I2C sử dụng hai đường truyền tín hiệu:
-\begin{itemize}
-    \item \textbf{SCL (Serial Clock)}: Đường xung nhịp đồng hồ, do thiết bị Master phát ra để đồng bộ hóa việc truyền dữ liệu.
-    \item \textbf{SDA (Serial Data)}: Đường dữ liệu hai chiều, dùng để truyền và nhận dữ liệu giữa Master và Slave.
-\end{itemize}
-Khi thiết bị Master muốn giao tiếp với Slave, nó sẽ gửi địa chỉ của Slave cùng với bit yêu cầu đọc/ghi. Slave nào có địa chỉ khớp sẽ phản hồi (ACK), từ đó bắt đầu quá trình truyền dữ liệu.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/i2c_waveform.png}
-    \caption{Giản đồ xung của một chu kỳ giao tiếp I2C cơ bản}
-    \label{fig:i2c_waveform}
-\end{figure}
-
-\noindent\textbf{Giải thích hoạt động một vài cơ chế của quá trình giao tiếp}\\[6pt]
-\begin{itemize}
-    \item \textbf{Tín hiệu Start}: Để bắt đầu quá trình giao tiếp, thiết bị Master chuyển trạng thái đường SDA từ High xuống Low trong khi đường SCL đang giữ ở mức High, sau đó tiếp tục kéo SCL xuống Low.
-    \item \textbf{Tín hiệu Stop}: Sau khi hoàn thành truyền thông, SCL được kéo lên trạng thái High trước, sau đó tiếp tục kéo SDA từ mức Low lên High.
-    \item \textbf{Bit ACK (ACK bit)}: Sau mỗi 1 byte dữ liệu được truyền, một bit thứ 9 được thêm vào để xác nhận quá trình giao tiếp thành công, gọi là ACK bit. Trạng thái ACK bit ở mức Low xác nhận quá trình giao tiếp thành công, ngược lại nếu ACK bit ở mức High (NACK), quá trình giao tiếp thất bại hoặc thiết bị bận.
-\end{itemize}
 
 \vspace{12pt}
 \noindent\begin{minipage}{\textwidth}
@@ -759,32 +684,6 @@ Kích thước & $3.0 \times 3.0 \times 0.93$\,mm \\
      \label{fig:bme680_pinout}
  \end{figure}
 
-\vspace{12pt}
-\noindent\begin{minipage}{\textwidth}
-\noindent\textbf{Sơ đồ kết nối với ESP32}\\[6pt]
- 
-\begin{table}[H]
- \centering
- \begin{tabular}{|c|c|l|l|}
- \hline
- \textbf{Chân cảm biến} & \textbf{Ký hiệu} & \textbf{Chức năng} & \textbf{Chân kết nối ESP32} \\ 
-        \hline
- 1 & VCC & Cấp nguồn cảm biến (3.3V) & 3V3 \\ 
-        \hline
- 2 & GND & Nối đất & GND \\ 
-        \hline
- 3 & SCL & Xung nhịp I2C Clock & GPIO 22 \\ 
-        \hline
- 4 & SDA & Dữ liệu I2C Data & GPIO 21 \\ 
-        \hline
- \end{tabular}
-\caption{Cấu hình kết nối chân BME680 với ESP32}
- \label{tab:bme680_pins}
- 
- \end{table}
-\end{minipage}
-\vspace{12pt}
-
 \noindent\textbf{Thuật toán đọc cảm biến BME680}\\[6pt]
 Vi điều khiển ESP32 đóng vai trò là I2C Master, định kỳ giao tiếp với BME680 ở địa chỉ `0x76` hoặc `0x77`. Phần mềm sẽ gửi tín hiệu Start kèm thanh ghi cần đọc. Cảm biến sau đó tính toán nhiệt độ, độ ẩm, áp suất và khí VOC rồi lưu vào thanh ghi. Sau khi vi điều khiển đọc dữ liệu, các thuật toán nội suy và lọc số (như lọc trung bình trượt lũy thừa - EMA) được áp dụng ở tầng ứng dụng để giảm thiểu độ trôi của giá trị đo trước khi đóng gói gửi đi.
 
@@ -793,9 +692,6 @@ Vi điều khiển ESP32 đóng vai trò là I2C Master, định kỳ giao tiế
 
 \noindent\textbf{Nguyên lý hoạt động}\\[6pt]
 Cảm biến MQ-135 thuộc họ cảm biến khí bán dẫn (Semiconductor Gas Sensor) sử dụng vật liệu SnO$_2$ (Thiếc đioxit) làm màng nhạy khí. Khi hoạt động trong không khí sạch, màng SnO$_2$ có độ dẫn điện thấp. Khi tồn tại các khí ô nhiễm hoặc khí độc hại như Amoniac (NH$_3$), Benzen, Cồn, Khói, hay Carbon Dioxide (CO$_2$) trong môi trường, độ dẫn điện của cảm biến sẽ tăng lên tỷ lệ thuận với nồng độ khí.
-
-\noindent\textbf{Giao tiếp chuyển đổi tín hiệu ADC}\\[6pt]
-Bằng cách sử dụng một mạch phân áp đơn giản trên module, sự thay đổi độ dẫn điện (hay điện trở) này được chuyển đổi thành sự thay đổi điện áp đầu ra analog, cho phép vi điều khiển như ESP32 đọc thông qua bộ ADC (Analog-to-Digital Converter).
 
 \vspace{12pt}
 \noindent\begin{minipage}{\textwidth}
@@ -836,32 +732,6 @@ Thời gian làm nóng & --- & Trên 48 giờ \\
      \caption{Module cảm biến khí MQ-135 và kích thước cơ học}
      \label{fig:mq135_module}
  \end{figure}
-
-\vspace{12pt}
-\noindent\begin{minipage}{\textwidth}
-\noindent\textbf{Sơ đồ kết nối với ESP32}\\[6pt]
- 
-\begin{table}[H]
- \centering
- \begin{tabular}{|c|c|l|}
- \hline
- \textbf{Chân MQ-135} & \textbf{Chân ESP32} & \textbf{Ghi chú} \\ 
-        \hline
- Vcc (Pin 1) & 5V (hoặc VIN) & Cần cấp nguồn 5V ổn định \\ 
-        \hline
- GND (Pin 2) & GND & Nối đất chung \\ 
-        \hline
- DO (Pin 3) & Không kết nối & Chân tín hiệu số phụ, không sử dụng \\ 
-        \hline
- AO (Pin 4) & GPIO34 (ADC1\_CH6) & Xuất điện áp tương tự tới chân ADC \\ 
-        \hline
- \end{tabular}
-\caption{Cấu hình kết nối chân MQ-135 với ESP32}
- \label{tab:mq135_wiring_esp}
- 
-\end{table}
-\end{minipage}
-\vspace{12pt}
 
 \noindent\textbf{Thuật toán đọc cảm biến MQ-135}\\[6pt]
 Khí cảm nhận được MQ-135 chuyển đổi thành mức điện áp đầu ra analog trên chân AO. Chân này được kết nối với một kênh ADC (Analog-to-Digital Converter) của vi điều khiển ESP32 (ở độ phân giải 12-bit). Để hạn chế nhiễu điện áp và dao động đọc lường, hệ thống sẽ đọc đa mẫu (multi-sampling) và áp dụng bộ lọc trung vị (Median Filter) để loại trừ các giá trị dị thường trước khi đưa ra kết quả điện áp đại diện cuối cùng.
@@ -954,17 +824,6 @@ Toàn bộ sơ đồ mạch nguyên lý của hệ thống được minh họa d
     \label{fig:schematic_diagram}
 \end{figure}
 
-\subsubsection{Sơ đồ khối phần cứng hệ thống}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/hardware_block_diagram.png}
-    \caption{Sơ đồ khối kết nối phần cứng hệ thống}
-    \label{fig:hardware_blocks}
-\end{figure}
-
-Sơ đồ khối chức năng của phần cứng hệ thống được chia thành 2 khối chính là Khối gateway và Khối sensor, mỗi khối đảm nhận một nhiệm vụ rõ ràng trong toàn bộ luồng xử lý dữ liệu.
-
 \subsubsection{Phân tích công suất}
 Việc tính toán và phân tích công suất tiêu thụ của hệ thống giúp thiết kế nguồn cấp DC phù hợp và ổn định cho trạm quan trắc hoạt động lâu dài:
 
@@ -1001,71 +860,6 @@ Với công suất tổng khoảng $2.1\,\text{W}$, hệ thống yêu cầu mộ
 
 \subsubsection{Kết nối vi xử lý ESP32 với các module}
 Toàn bộ các cảm biến của trạm quan trắc được kết nối trực tiếp với vi điều khiển trung tâm ESP32 thông qua ba chuẩn giao tiếp khác nhau (UART, I2C, ADC tương tự). Phần dưới đây trình bày chi tiết bảng kết nối chân của từng module.
-
-\paragraph{Bảng kết nối chân từng module}\mbox{}\\
-
-\subparagraph{PMS5003}\mbox{}\\
-Cảm biến PMS5003 giao tiếp qua UART2 (9600\,baud, 8N1). Chân TX (chân 5) của cảm biến nối tới GPIO16 (RX2) của ESP32, chân RX (chân 4) nối tới GPIO17 (TX2); nguồn 5V lấy trực tiếp từ chân VIN của ESP32 để đủ dòng chạy quạt hút bụi tích hợp (chi tiết đầy đủ tại Bảng~\ref{tab:pms5003_wiring}).
-
-\subparagraph{BME680}\mbox{}\\
-Cảm biến BME680 giao tiếp qua I2C (tự động quét địa chỉ 0x76/0x77). Chân SDA nối GPIO21, chân SCL nối GPIO22 của ESP32; nguồn cấp lấy từ đường 3.3V (chi tiết đầy đủ tại Bảng~\ref{tab:bme680_pins}).
-
-\subparagraph{MQ-135}\mbox{}\\
-Cảm biến MQ-135 xuất tín hiệu tương tự qua cầu phân áp hạ điện áp từ 5V xuống 3.3V trước khi đưa vào chân ADC1\_CH6 (GPIO34) của ESP32; nguồn cấp 5V lấy từ chân VIN (chi tiết đầy đủ tại Bảng~\ref{tab:mq135_wiring_esp}).
-
-Bảng tổng hợp định tuyến GPIO của toàn bộ ngoại vi trên vi điều khiển trung tâm ESP32 được chuẩn hóa như sau:
-\begin{table}[H]
-\centering
-\caption{Bảng sơ đồ chân giao tiếp ngoại vi của ESP32}
-\label{tab:gpio}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{GPIO} & \textbf{Chức năng} & \textbf{Ngoại vi} \\ 
-\hline
-GPIO 21 (SDA) & I2C Data  & BME680 \\ 
-\hline
-GPIO 22 (SCL) & I2C Clock & BME680 \\ 
-\hline
-GPIO 16 (RX2) & UART2 RX  & PMS5003 TX \\ 
-\hline
-GPIO 17 (TX2) & UART2 TX  & PMS5003 RX \\ 
-\hline
-GPIO 34       & ADC1\_CH6 & MQ-135 AOUT \\ 
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-    \centering
-    \begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2.2cm}|>{\raggedright\arraybackslash}p{7.6cm}|}
-\hline
-\textbf{Vùng nhớ} & \textbf{Dung lượng} & \textbf{Vai trò và đặc tính} \\ 
-        \hline
-IRAM (Instruction RAM) & 128\,KB & Vùng nhớ tốc độ cao lưu mã lệnh thực thi trực tiếp (không qua cache), thường chứa các hàm xử lý ngắt (ISR) cần thời gian phản hồi tối thiểu như ISR nhận UART của PMS5003. \\ 
-        \hline
-DRAM (Data RAM) & 320\,KB & Vùng nhớ dữ liệu tĩnh và động (heap/stack), là nơi cấp phát Stack Memory cho từng Task FreeRTOS (\texttt{taskPMS}, \texttt{taskSensors}, \texttt{taskNetwork}) cũng như biến toàn cục \texttt{SharedData}. \\ 
-        \hline
-RTC FAST/SLOW Memory & 8\,KB & Vùng nhớ tồn tại xuyên suốt các chu kỳ ngủ sâu, được đề xuất sử dụng trong hướng phát triển tương lai để lưu trạng thái hệ thống trước khi vào chế độ tiết kiệm năng lượng. \\ 
-        \hline
-Flash ngoài (qua SPI) & 4\,MB (module dùng) & Lưu trữ mã chương trình cố định. Một phần Flash được ánh xạ (memory-mapped) vào không gian địa chỉ CPU thông qua bộ nhớ đệm Cache MMU 64\,KB (dung lượng bố trí 32\,KB cho lệnh và 32\,KB cho dữ liệu), giúp CPU truy xuất mã chương trình từ Flash với tốc độ gần như SRAM nội bộ. \\ 
-        \hline\end{tabular}
-\caption{Cấu hình GPIO ESP32}
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{GPIO} & \textbf{Chức năng} & \textbf{Ngoại vi} \\ 
-        \hline
-        GPIO 21 (SDA) & I2C Data  & BME680 \\ 
-        \hline
-        GPIO 22 (SCL) & I2C Clock & BME680 \\ 
-        \hline
-        GPIO 16 (RX2) & UART2 RX  & PMS5003 TX \\ 
-        \hline
-        GPIO 17 (TX2) & UART2 TX  & PMS5003 RX \\ 
-        \hline
-        GPIO 34       & ADC1\_CH6 & MQ-135 AOUT \\ 
-        \hline
-    \end{tabular}
-\end{table}
 
 \subsection{Công nghệ và phần mềm nhúng}
 
@@ -1205,7 +999,29 @@ Sơ đồ dưới đây minh họa trực quan việc phân bổ tác vụ lên 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{images/block_dual_core.png}
+\begin{tikzpicture}[node distance=0.55cm and 1.5cm,
+  block/.style={rectangle, draw, rounded corners=3pt, fill=gray!15, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
+  coreblock/.style={rectangle, draw, rounded corners=3pt, fill=blue!20, text width=2.8cm, align=center, minimum height=0.85cm, font=\small\bfseries},
+  shared/.style={rectangle, draw, rounded corners=3pt, fill=green!15, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
+  arrow/.style={->, >=stealth, thick},
+  dasharrow/.style={->, >=stealth, thick, dashed}]
+  % Core 1
+  \node[coreblock] (core1) {CORE 1\\Xử lý cảm biến};
+  \node[block, below=0.6cm of core1] (taskPMS) {taskPMS\\Ưu tiên 3\\(ngắt UART2)};
+  \node[block, below=0.6cm of taskPMS] (taskSensors) {taskSensors\\Ưu tiên 2\\(I2C + ADC, 10s)};
+  % Core 0
+  \node[coreblock, right=3.0cm of core1] (core0) {CORE 0\\Xử lý mạng};
+  \node[block, below=0.6cm of core0] (taskNetwork) {taskNetwork\\Ưu tiên 1};
+  % Shared
+  \node[shared, below=0.6cm of taskSensors, xshift=2.2cm] (shared) {SharedData\\(bảo vệ bởi\\Mutex)};
+  % Arrows
+  \draw[arrow] (core1) -- (taskPMS);
+  \draw[arrow] (taskPMS) -- (taskSensors);
+  \draw[arrow] (core0) -- (taskNetwork);
+  \draw[arrow] (taskPMS.east) -- ++(0.4,0) |- (taskNetwork.west);
+  \draw[arrow] (taskSensors.east) -- ++(0.4,0) -- (shared.west);
+  \draw[dasharrow] (shared.east) -- ++(0.4,0) |- node[right, font=\scriptsize]{Event Group\\BIT\_MQTT\_READY} (taskNetwork.south);
+\end{tikzpicture}
 \caption{Lưu đồ phân bổ tác vụ Dual-Core}
 \label{fig:dualcore_flow}
 \end{figure}
@@ -1231,7 +1047,26 @@ Lưu đồ dưới đây minh họa cơ chế giám sát Watchdog Timer song son
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{images/flowchart_wdt.png}
+\begin{tikzpicture}[node distance=0.6cm and 1.5cm,
+  block/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=3cm, align=center, minimum height=0.9cm, font=\small},
+  decision/.style={diamond, draw, fill=orange!15, text width=2.4cm, align=center, aspect=1.6, font=\small},
+  alarm/.style={rectangle, draw, rounded corners=4pt, fill=red!20, text width=3cm, align=center, minimum height=0.9cm, font=\small},
+  action/.style={rectangle, draw, rounded corners=4pt, fill=purple!15, text width=3cm, align=center, minimum height=0.9cm, font=\small},
+  arrow/.style={->, >=stealth, thick}]
+  \node[block] (loop) {Vòng lặp\\giám sát\\(mỗi Task)};
+  \node[decision, below=0.8cm of loop] (ok) {Task hoàn\\thành chu kỳ\\đúng hạn?};
+  \node[action, below=0.7cm of ok] (reset) {Gọi\\\texttt{esp\_task\_wdt\_reset()}\\(nạp lại bộ\\đếm WDT)};
+  \node[block, right=2.0cm of ok] (hang) {Task bị treo};
+  \node[decision, below=0.8cm of hang] (timeout) {Quá 30 giây\\không nạp\\lại WDT?};
+  \node[alarm, below=0.7cm of timeout] (reboot) {Kích hoạt\\Hardware Reset\\Khởi động\\lại ESP32};
+  \draw[arrow] (loop) -- (ok);
+  \draw[arrow] (ok) -- node[right, font=\scriptsize]{Có} (reset);
+  \draw[arrow] (reset.north) -- ++(0,0.3) -| (loop.south);
+  \draw[arrow] (ok) -- node[above, font=\scriptsize]{Không} (hang);
+  \draw[arrow] (hang) -- (timeout);
+  \draw[arrow] (timeout) -- node[right, font=\scriptsize]{Có} (reboot);
+  \draw[arrow] (timeout.east) -- ++(0.7,0) |- node[right, font=\scriptsize, pos=0.25]{Chưa} (hang.east);
+\end{tikzpicture}
 \caption{Lưu đồ hoạt động Watchdog Timer}
 \label{fig:wdt_flowchart}
 \end{figure}
@@ -1263,7 +1098,28 @@ ESP32 dành riêng một phân vùng bộ nhớ Flash gọi là NVS để lưu t
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{images/flowchart_wifi.png}
+\begin{tikzpicture}[node distance=0.55cm and 1.8cm,
+  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
+  decision/.style={diamond, draw, fill=orange!15, text width=2.5cm, align=center, aspect=1.7, font=\small},
+  success/.style={rectangle, draw, rounded corners=4pt, fill=green!20, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
+  portal/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
+  arrow/.style={->, >=stealth, thick}]
+  \node[block] (boot) {Khởi động};
+  \node[decision, below=0.7cm of boot] (nvs) {Kết nối bằng\\thông tin NVS\\thành công?};
+  \node[success, below=0.7cm of nvs] (ready) {Sẵn sàng\\hoạt động\\(chuyển sang\\WIFI\_STA)};
+  \node[decision, right=2.2cm of nvs] (hard) {Kết nối bằng\\thông tin\\Hardcode\\thành công?};
+  \node[portal, below=0.7cm of hard] (ap) {Bật Access Point\\+ WebServer\\+ DNS Server\\(Captive Portal)};
+  \node[portal, below=0.7cm of ap] (wait) {Chờ người dùng\\chọn mạng và\\nhập mật khẩu\\qua trình duyệt};
+  \node[portal, below=0.7cm of wait] (save) {Lưu SSID/Mật\\khẩu xuống\\phân vùng NVS};
+  \draw[arrow] (boot) -- (nvs);
+  \draw[arrow] (nvs) -- node[right, font=\scriptsize]{Có} (ready);
+  \draw[arrow] (nvs) -- node[above, font=\scriptsize]{Không} (hard);
+  \draw[arrow] (hard.south) -- node[right, font=\scriptsize]{Không} (ap);
+  \draw[arrow] (hard.west) -- node[above, font=\scriptsize, pos=0.3]{Có} (ready.east);
+  \draw[arrow] (ap) -- (wait);
+  \draw[arrow] (wait) -- (save);
+  \draw[arrow] (save.west) -- ++(-0.6,0) |- (ready.west);
+\end{tikzpicture}
 \caption{Lưu đồ kết nối WiFi 3 tầng}
 \label{fig:wifi_flowchart}
 \end{figure}
@@ -1312,7 +1168,35 @@ Nguyên lý hoạt động tổng thể của hệ thống được thể hiện
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/flowchart_main.png}
+\begin{tikzpicture}[node distance=0.5cm,
+  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.5cm, align=center, minimum height=0.85cm, font=\small},
+  decision/.style={diamond, draw, fill=orange!15, text width=2.6cm, align=center, aspect=1.8, font=\small},
+  wait/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=2.5cm, align=center, minimum height=0.85cm, font=\small},
+  arrow/.style={->, >=stealth, thick}]
+  \node[block] (boot) {Khởi động ESP32 / Boot};
+  \node[block, below=0.5cm of boot] (init) {Khởi tạo ngoại vi};
+  \node[decision, below=0.7cm of init] (wifi) {Kết nối\\WiFi/MQTT\\thành công?};
+  \node[wait, right=1.6cm of wifi] (retry) {Chờ 5 giây\\Thử kết nối lại};
+  \node[block, below=0.7cm of wifi] (read) {Đọc dữ liệu song song};
+  \node[block, below=0.5cm of read] (filter) {Áp dụng bộ lọc số};
+  \node[block, below=0.5cm of filter] (aqi) {Tính chỉ số AQI\\theo breakpoint US EPA};
+  \node[block, below=0.5cm of aqi] (json) {Đóng gói JSON\\(SharedData $\to$ payload)};
+  \node[block, below=0.5cm of json] (pub) {Publish MQTT\\tới aqistation/data};
+  \node[block, below=0.5cm of pub] (wdt) {Reset Watchdog Timer};
+  \node[decision, below=0.7cm of wdt] (alive) {Còn hoạt\\động?};
+  \draw[arrow] (boot) -- (init);
+  \draw[arrow] (init) -- (wifi);
+  \draw[arrow] (wifi) -- node[above, font=\scriptsize]{Không} (retry);
+  \draw[arrow] (retry.north) |- (wifi.east);
+  \draw[arrow] (wifi) -- node[right, font=\scriptsize]{Có} (read);
+  \draw[arrow] (read) -- (filter);
+  \draw[arrow] (filter) -- (aqi);
+  \draw[arrow] (aqi) -- (json);
+  \draw[arrow] (json) -- (pub);
+  \draw[arrow] (pub) -- (wdt);
+  \draw[arrow] (wdt) -- (alive);
+  \draw[arrow] (alive.east) -- ++(0.8,0) |- node[right, font=\scriptsize, pos=0.25]{Có} (read.east);
+\end{tikzpicture}
 \caption{Lưu đồ thuật toán chính firmware}
 \label{fig:main_flowchart}
 \end{figure}
@@ -1372,48 +1256,46 @@ Render Dashboard   & Next.js + Chart.js       & $< 200$\,ms \\
 
 \end{table}
 
-\subsubsection{Quy trình thiết kế và phát triển Web Dashboard}
-Nhằm đảm bảo giao diện giám sát (Web Dashboard) đáp ứng đầy đủ các tiêu chí: trực quan, thời gian thực, có khả năng mở rộng và mang lại trải nghiệm người dùng tối ưu, quy trình thiết kế và phát triển phần mềm giao diện đã được tuân thủ nghiêm ngặt theo mô hình linh hoạt kết hợp với các bước kỹ nghệ phần mềm tiêu chuẩn. Quá trình này được chia thành 5 bước cụ thể và chi tiết như sau:
+\subsubsection{Quy trình thiết kế và xây dựng dashboard}
+Nhằm đảm bảo giao diện giám sát đáp ứng đầy đủ các tiêu chí: trực quan, thời gian thực, có khả năng mở rộng và mang lại trải nghiệm người dùng tối ưu, quy trình thiết kế và phát triển phần mềm giao diện đã được tuân thủ nghiêm ngặt theo mô hình linh hoạt kết hợp với các bước kỹ nghệ phần mềm tiêu chuẩn. Quá trình này được chia thành 5 bước cụ thể và chi tiết như sau:
 
-\paragraph{Bước 1: Phân tích yêu cầu và Lên ý tưởng (Ideation \& Requirements)}\mbox{}\\
+\noindent\textbf{Bước 1: Phân tích yêu cầu và lên ý tưởng}\mbox{}\\
 Trong giai đoạn đầu tiên, nhóm phát triển tiến hành thu thập và phân tích các yêu cầu chức năng cốt lõi mà một hệ thống trạm quan trắc IoT hiện đại cần phải có. 
 \begin{itemize}
     \item \textbf{Yêu cầu chức năng:} Người dùng cần xem được ngay lập tức chỉ số AQI tổng hợp và các thông số môi trường (Bụi mịn PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất, Nồng độ khí gas). Hệ thống cũng cần có khả năng vẽ biểu đồ theo thời gian để người dùng dễ dàng theo dõi xu hướng, cùng với bản đồ hiển thị vị trí thực tế của trạm đo. Tính năng xác thực tài khoản đăng nhập cũng là một yêu cầu bắt buộc để bảo mật thông tin nội bộ.
-    \item \textbf{Yêu cầu phi chức năng:} Độ trễ cập nhật dữ liệu phải thấp (dưới 10 giây). Giao diện phải hoạt động mượt mà trên cả trình duyệt máy tính lẫn thiết bị di động (Responsive Design).
+    \item \textbf{Yêu cầu phi chức năng:} Độ trễ cập nhật dữ liệu phải thấp (dưới 10 giây). Giao diện phải hoạt động mượt mà trên cả trình duyệt máy tính lẫn thiết bị di động.
 \end{itemize}
 
-\paragraph{Bước 2: Lựa chọn công nghệ (Tech Stack Selection)}\mbox{}\\
+\noindent\textbf{Bước 2: Lựa chọn công nghệ}\mbox{}\\
 Sau khi xác định yêu cầu, nhóm tiến hành đánh giá và lựa chọn các công nghệ phù hợp:
 \begin{itemize}
-    \item \textbf{Frontend Framework:} Next.js (dựa trên React) được lựa chọn nhờ khả năng kết hợp hoàn hảo giữa Server-Side Rendering (SSR) và Client-Side Rendering (CSR), giúp tăng tốc độ tải trang ban đầu và tối ưu hóa hệ thống.
-    \item \textbf{Styling:} Tailwind CSS được sử dụng để xây dựng giao diện. Hệ thống lớp tiện ích (utility-first) của Tailwind cho phép tùy biến linh hoạt, đồng nhất về thiết kế (Design System) và hỗ trợ Mobile-first dễ dàng mà không cần phải viết các tập tin CSS cồng kềnh.
-    \item \textbf{Quản lý trạng thái và Biểu đồ:} React Hooks (\texttt{useState}, \texttt{useEffect}) được dùng để quản lý trạng thái dữ liệu thay đổi liên tục. Thư viện \texttt{Chart.js} kết hợp \texttt{react-chartjs-2} được sử dụng để trực quan hóa dữ liệu lịch sử thành các đồ thị đường (Line Chart).
+    \item \textbf{Frontend Framework:} Next.js được lựa chọn nhờ khả năng kết hợp hoàn hảo giữa Server-Side Rendering (SSR) và Client-Side Rendering (CSR), giúp tăng tốc độ tải trang ban đầu và tối ưu hóa hệ thống.
+    \item \textbf{Styling:} Tailwind CSS được sử dụng để xây dựng giao diện. Hệ thống lớp tiện ích của Tailwind cho phép tùy biến linh hoạt, đồng nhất về thiết kế  và hỗ trợ Mobile-first dễ dàng mà không cần phải viết các tập tin CSS cồng kềnh.
+    \item \textbf{Quản lý trạng thái và Biểu đồ:} React Hooks được dùng để quản lý trạng thái dữ liệu thay đổi liên tục. Thư viện \texttt{Chart.js} kết hợp \texttt{react-chartjs-2} được sử dụng để trực quan hóa dữ liệu lịch sử thành các đồ thị đường .
     \item \textbf{Bản đồ:} Thư viện \texttt{Leaflet} kết hợp với Tile Layer của Google Maps để tạo nên bản đồ tương tác hiển thị tọa độ trạm mà không cần các khóa API bảo mật phức tạp.
     \item \textbf{Cơ sở dữ liệu và Xác thực:} MongoDB Atlas được chọn làm cơ sở dữ liệu đám mây (NoSQL) nhờ khả năng lưu trữ linh hoạt luồng dữ liệu IoT dạng chuỗi thời gian. Tính năng phân quyền được giao cho thư viện NextAuth.js xử lý kết hợp mã hóa Bcrypt.
 \end{itemize}
 
-\paragraph{Bước 3: Thiết kế UI/UX và Kiến trúc hệ thống}\mbox{}\\
-Giao diện được thiết kế theo trường phái tối giản (Minimalism) và dạng thẻ (Card-based Layout).
+\noindent\textbf{Bước 3: Thiết kế UI/UX và kiến trúc hệ thống}.
 \begin{itemize}
-    \item \textbf{Bố cục trang tổng quan (Dashboard):} Chia thành hai phần chính. Phần đầu ở trên cùng chứa tên trạm, trạng thái kết nối và khối tính toán AQI chính, tích hợp thanh trượt màu sắc theo chuẩn US EPA. Phần dưới hiển thị các thông số phụ chia theo dạng lưới (Grid 2 cột trên điện thoại, 4 cột trên máy tính bàn).
-    \item \textbf{Thanh điều hướng (Sidebar):} Hệ thống sử dụng một Sidebar gắn lề trái màn hình, hỗ trợ thu gọn hoặc bung rộng, giúp người dùng dễ dàng chuyển đổi giữa các module: Dashboard, Lịch sử (History), Bản đồ (Map) và Cài đặt (Settings).
-    \item \textbf{Thiết kế luồng dữ liệu (Data Flow):} Trình duyệt định kỳ mỗi 5 giây gửi một HTTP GET Request tới REST API \texttt{/api/data/latest} của Next.js Route Handler để lấy dữ liệu từ MongoDB, sau đó cập nhật trực tiếp vào State của React để kích hoạt quá trình Re-render giao diện tự động (Auto-Refresh).
+    \item \textbf{Bố cục trang tổng quan:} Chia thành hai phần chính. Phần đầu ở trên cùng chứa tên trạm, trạng thái kết nối và khối tính toán AQI chính, tích hợp thanh trượt màu sắc theo chuẩn US EPA. Phần dưới hiển thị các thông số phụ chia theo dạng lưới (Grid 2 cột trên điện thoại, 4 cột trên máy tính bàn).
+    \item \textbf{Thanh điều hướng:} Hệ thống sử dụng một Sidebar gắn lề trái màn hình, hỗ trợ thu gọn hoặc bung rộng, giúp người dùng dễ dàng chuyển đổi giữa các module: Dashboard, Lịch sử (History), Bản đồ (Map) và Cài đặt (Settings).
+    \item \textbf{Thiết kế luồng dữ liệu:} Trình duyệt định kỳ mỗi 10 giây gửi một HTTP GET Request tới REST API \texttt{/api/data/latest} của Next.js Route Handler để lấy dữ liệu từ MongoDB, sau đó cập nhật trực tiếp vào State của React để kích hoạt quá trình Re-render giao diện tự động.
 \end{itemize}
 
-\paragraph{Bước 4: Triển khai lập trình phần mềm (Implementation)}\mbox{}\\
-Quá trình lập trình được chia nhỏ thành các thành phần độc lập (Component-driven):
+\noindent\textbf{Bước 4: Triển khai lập trình phần mềm}\mbox{}\\
+Quá trình lập trình được chia nhỏ thành các thành phần độc lập:
 \begin{itemize}
-    \item \textbf{Xây dựng các Component dùng chung:} Lập trình các nút bấm, thẻ dữ liệu (Card), và khối biểu đồ để tái sử dụng xuyên suốt mã nguồn.
-    \item \textbf{Lập trình Trang Đăng nhập/Đăng ký:} Tích hợp thư viện \texttt{bcryptjs} ở Backend để băm mật khẩu người dùng trước khi ghi vào cơ sở dữ liệu. Thiết lập cảnh báo và ràng buộc các thông báo lỗi trên Form (ví dụ: Mật khẩu quá ngắn, yêu cầu ít nhất 6 ký tự) bằng công cụ HTML5 Validation để bảo vệ an toàn cho dữ liệu đầu vào.
-    \item \textbf{Tích hợp API và Vẽ biểu đồ:} Thiết kế thuật toán chuyển đổi mảng dữ liệu. Chuyển đổi nhãn thời gian từ định dạng ISO thành dạng ``giờ:phút'' cục bộ để nạp vào mảng tọa độ trục X của Chart.js.
-    \item \textbf{Tích hợp Bản đồ Leaflet:} Xử lý vấn đề đóng gói CSS của Leaflet trong môi trường Next.js. Để vượt qua lỗi Render phía máy chủ (SSR) của React đối với các API liên quan đến \texttt{window}, nhóm đã sử dụng tính năng \texttt{next/dynamic} để chỉ nạp bản đồ phía Client, đồng thời tiêm trực tiếp link CDN của Leaflet vào thẻ \texttt{<head>}, đảm bảo bản đồ hiển thị rõ ràng, mượt mà khi đưa lên máy chủ.
+    \item \textbf{Xây dựng các component dùng chung:} Lập trình các nút bấm, thẻ dữ liệu, và khối biểu đồ để tái sử dụng xuyên suốt mã nguồn.
+    \item \textbf{Trang Đăng nhập/Đăng ký:} Băm mật khẩu người dùng trước khi ghi vào cơ sở dữ liệu. Thiết lập cảnh báo và ràng buộc các thông báo lỗi trên form (ví dụ: Mật khẩu quá ngắn, yêu cầu ít nhất 6 ký tự) để bảo vệ an toàn cho dữ liệu đầu vào.
+    \item \textbf{Tích hợp API và vẽ biểu đồ:} Thiết kế thuật toán chuyển đổi mảng dữ liệu. Chuyển đổi nhãn thời gian từ định dạng ISO thành dạng ``giờ:phút'' để hiển thị. 
 \end{itemize}
 
-\paragraph{Bước 5: Kiểm thử và Triển khai Đám mây (Testing \& Deployment)}\mbox{}\\
+\noindent\textbf{Bước 5: Kiểm thử và triển khai đám mây}
 \begin{itemize}
-    \item \textbf{Kiểm thử cục bộ (Local Testing):} Chạy hệ thống ở môi trường phát triển (\texttt{localhost}), giả lập luồng gói tin MQTT liên tục gửi từ ESP32 để đánh giá tốc độ cập nhật giao diện người dùng và kiểm tra tính đúng đắn của các biểu tượng màu sắc đánh giá AQI.
-    \item \textbf{Tối ưu hóa hiệu năng (Optimization):} Giảm thiểu tối đa độ trễ bằng cách tách các module nặng (như biểu đồ và bản đồ) ra khỏi chu kỳ làm mới nếu không có sự thay đổi. Các cờ tải (loading flag) được bổ sung để hiển thị hiệu ứng chờ trực quan trong quá trình truy xuất từ cơ sở dữ liệu.
-    \item \textbf{Triển khai Tự động hóa (Cloud Deployment):} Toàn bộ mã nguồn giao diện frontend và các API phụ trợ được lưu trữ tại GitHub. Nền tảng Vercel được liên kết trực tiếp để cấu hình quy trình triển khai liên tục (CI/CD). Mỗi khi có cập nhật, Vercel tự động biên dịch ứng dụng bằng Turbopack và phân phối lên các nút mạng Edge toàn cầu, đảm bảo hệ thống có khả năng mở rộng tự động (auto-scaling) và phục vụ 24/7 mà không cần đến máy chủ vật lý truyền thống.
+    \item \textbf{Kiểm thử cục bộ:} Chạy hệ thống ở môi trường phát triển (\texttt{localhost}), giả lập luồng gói tin MQTT liên tục gửi từ ESP32 để đánh giá tốc độ cập nhật giao diện người dùng và kiểm tra tính đúng đắn của các biểu tượng màu sắc đánh giá AQI.
+    \item \textbf{Tối ưu hóa hiệu năng:} Giảm thiểu tối đa độ trễ bằng cách tách các module nặng (như biểu đồ và bản đồ) ra khỏi chu kỳ làm mới nếu không có sự thay đổi. Các cờ tải (loading flag) được bổ sung để hiển thị hiệu ứng chờ trực quan trong quá trình truy xuất từ cơ sở dữ liệu.
+    \item \textbf{Triển khai tự động hóa:} Toàn bộ mã nguồn giao diện frontend và các API phụ trợ được lưu trữ tại GitHub. Nền tảng Vercel được liên kết trực tiếp để cấu hình quy trình triển khai liên tục (CI/CD). Mỗi khi có cập nhật, Vercel tự động biên dịch  và phân phối lên Internet toàn cầu, đảm bảo hệ thống có khả năng mở rộng tự động và phục vụ 24/7 mà không cần đến máy chủ vật lý truyền thống.
 \end{itemize}
 
 \newpage
@@ -1512,7 +1394,29 @@ Thay vì trình bày đoạn mã tính toán, thuật toán tra cứu breakpoint
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.45\textwidth]{images/flowchart_aqi.png}
+\begin{tikzpicture}[node distance=0.5cm,
+  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.8cm, align=center, minimum height=0.85cm, font=\small},
+  decision/.style={diamond, draw, fill=orange!15, text width=2.8cm, align=center, aspect=1.8, font=\small},
+  clamp/.style={rectangle, draw, rounded corners=4pt, fill=red!10, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
+  arrow/.style={->, >=stealth, thick}]
+  \node[block] (input) {Nồng độ $C_p$ sau lọc\\(PM2.5 hoặc PM10)};
+  \node[block, below=0.5cm of input] (scan) {Duyệt bảng breakpoint US EPA\\tìm khoảng $[C_{Lo}, C_{Hi}]$\\chứa $C_p$};
+  \node[decision, below=0.7cm of scan] (found) {Tìm thấy\\khoảng\\phù hợp?};
+  \node[clamp, right=1.5cm of found] (clamp) {Giới hạn (Clamp)\\về khoảng\\biên gần nhất};
+  \node[block, below=0.7cm of found] (interp) {
+    Nội suy tuyến tính:\\[4pt]
+    $I_p = \dfrac{I_{Hi}-I_{Lo}}{C_{Hi}-C_{Lo}}(C_p - C_{Lo}) + I_{Lo}$
+  };
+  \node[block, below=0.5cm of interp] (round) {Làm tròn $I_p$\\về số nguyên gần nhất};
+  \node[block, below=0.5cm of round] (out) {Trả về chỉ số AQI\\thành phần $I_p$};
+  \draw[arrow] (input) -- (scan);
+  \draw[arrow] (scan) -- (found);
+  \draw[arrow] (found) -- node[above, font=\scriptsize]{Không (ngoài dải)} (clamp);
+  \draw[arrow] (clamp.south) -- ++(0,-0.4) -| (interp.east);
+  \draw[arrow] (found) -- node[right, font=\scriptsize]{Có} (interp);
+  \draw[arrow] (interp) -- (round);
+  \draw[arrow] (round) -- (out);
+\end{tikzpicture}
 \caption{Lưu đồ thuật toán tra bảng breakpoint và nội suy tính chỉ số AQI thành phần}
 \label{fig:aqi_flowchart}
 \end{figure}
@@ -1530,11 +1434,11 @@ Thuật toán tra bảng breakpoint và nội suy nêu trên được thực thi
 \setcounter{section}{5}
 \setcounter{subsection}{0}
 
-Sau quá trình thiết kế, thi công và lập trình, trạm quan trắc chất lượng không khí đã được hoàn thiện cả về phần cứng nhúng biên và ứng dụng giám sát đám mây.
+Sau quá trình thiết kế và lập trình, trạm quan trắc chất lượng không khí đã được hoàn thiện cả về phần cứng và ứng dụng giám sát đám mây.
 
 \subsection{Kết quả phần cứng thực tế}
 
-Thiết bị phần cứng hoàn chỉnh được gia công trên mạch in PCB hai lớp chống nhiễu, bao bọc trong hộp bảo vệ nhựa ABS có khe thông gió tự nhiên để đảm bảo luồng không khí lưu thông tối ưu qua các cảm biến.
+Thiết bị phần cứng hoàn chỉnh được gia công trên mạch in PCB 1 lớp chống nhiễu, bao bọc trong hộp bảo vệ nhựa ABS có khe thông gió tự nhiên để đảm bảo luồng không khí lưu thông tối ưu qua các cảm biến.
 
 \begin{figure}[H]
     \centering
@@ -1668,7 +1572,123 @@ curl -X GET "https://aqistation.vercel.app/api/data?limit=2"
 \end{itemize}
 
 \subsection{Kết quả hiển thị Web Dashboard}
+Để người dùng có thể dễ dàng theo dõi và tương tác với dữ liệu từ hệ thống, nhóm đã xây dựng một Web Dashboard trực quan sử dụng framework Next.js kết hợp với Chart.js và Tailwind CSS. Giao diện được triển khai trên nền tảng Vercel, đảm bảo khả năng truy cập linh hoạt từ mọi thiết bị có trình duyệt (máy tính, điện thoại, máy tính bảng) mọi lúc, mọi nơi.
 
+\subsubsection{Hiển thị chỉ số AQI và cảnh báo màu sắc}
+Trung tâm của trang Dashboard là bảng hiển thị chỉ số AQI tổng hợp theo thời gian thực. Giá trị AQI được hiển thị nổi bật kèm nhãn phân loại tự động và thanh trượt dải màu tuyến tính theo chuẩn US EPA. Card AQI có màu nền động thay đổi theo mức độ cảnh báo, giúp người dùng dễ dàng nhận diện các thông số bất thường chỉ bằng một cái nhìn:
+
+\begin{table}[H]
+\centering
+\caption{Thang phân loại AQI và màu cảnh báo theo chuẩn US EPA}
+\label{tab:aqi_levels}
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{Dải AQI} & \textbf{Phân loại} & \textbf{Màu hiển thị} \\
+\hline
+0 -- 50   & Tốt                          & Xanh lá  \\
+\hline
+51 -- 100  & Trung bình                   & Vàng     \\
+\hline
+101 -- 150 & Không tốt cho nhóm nhạy cảm & Cam      \\
+\hline
+151 -- 200 & Không tốt                    & Đỏ       \\
+\hline
+201 -- 300 & Rất xấu                      & Tím      \\
+\hline
+301 -- 500 & Nguy hại                     & Nâu đỏ   \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1.0\textwidth]{images/dashboard_home.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh giao diện trang Tổng quan Dashboard -- bổ sung sau]}\vspace{2cm}}}
+    \caption{Giao diện trang Tổng quan với chỉ số AQI, thanh màu US EPA và thẻ thông số}
+    \label{fig:dashboard_top}
+\end{figure}
+
+\subsubsection{Hiển thị các thông số môi trường chi tiết}
+
+Dashboard hiển thị 4 thẻ thông số (card) cốt lõi với icon trực quan ngay bên dưới bảng AQI:
+\begin{itemize}
+    \item Nhiệt độ (°C) -- Icon nhiệt kế
+    \item Độ ẩm (\%) -- Icon giọt nước
+    \item Mức Gas (ppm) -- Icon khí độc
+    \item Mật độ bụi ($\mu$g/m\textsuperscript{3}) -- Icon bụi mịn
+\end{itemize}
+
+Mỗi thẻ được thiết kế tối giản, tập trung làm nổi bật giá trị số đo kèm đơn vị. Thanh trạng thái hệ thống ở góc trên cùng hiển thị tên trạm, thời điểm cập nhật gần nhất và chỉ báo \textbf{Trực tuyến/Ngoại tuyến} sử dụng hiệu ứng nhấp nháy (pulse).
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1.0\textwidth]{images/dashboard_cards.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh các thẻ thông số môi trường -- bổ sung sau]}\vspace{2cm}}}
+    \caption{Các thông số môi trường hiển thị dạng card với icon trực quan}
+    \label{fig:dashboard_cards}
+\end{figure}
+
+\subsubsection{Biểu đồ lịch sử AQI theo thời gian}
+
+Hệ thống sử dụng Chart.js để vẽ các biểu đồ tương tác. Hệ thống vẽ đồng thời 6 biểu đồ đường (Line Chart) diễn biến theo thời gian thực cho toàn bộ các thông số: PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất và Gas VOC. Menu thả xuống cho phép người dùng tùy chọn khung thời gian xem linh hoạt (1 phút, 5 phút, 1 giờ, 24 giờ).
+
+Tính năng này cho phép người dùng:
+\begin{itemize}
+    \item Theo dõi xu hướng thay đổi của chất lượng không khí trong 24 giờ qua
+    \item Xác định các thời điểm ô nhiễm cao điểm trong ngày
+    \item Phân tích mối liên hệ giữa các yếu tố môi trường
+    \item Có cơ sở để lên kế hoạch và điều chỉnh các hoạt động cho phù hợp
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1.0\textwidth]{images/dashboard_charts.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh biểu đồ AQI và Nhiệt độ \& Độ ẩm theo thời gian -- bổ sung sau]}\vspace{2cm}}}
+    \caption{Biểu đồ lịch sử AQI và các thông số môi trường theo thời gian thực}
+    \label{fig:dashboard_charts}
+\end{figure}
+
+\subsubsection{Bảng dữ liệu chi tiết}
+
+Một bảng dữ liệu (Data Table) hiển thị 10 bản ghi gần nhất với đầy đủ thông tin:
+\begin{itemize}
+    \item Timestamp (Thời gian ghi nhận)
+    \item Tất cả các thông số cảm biến (Nhiệt độ, Độ ẩm, Gas, Bụi)
+    \item Chỉ số AQI với màu sắc phân loại
+\end{itemize}
+
+Bảng có khả năng cuộn ngang trên mobile, đảm bảo hiển thị tốt trên mọi kích thước màn hình. Trang Lịch sử cũng cung cấp khối thống kê tổng hợp: Tổng số bản ghi, AQI trung bình, AQI cao nhất và PM2.5 trung bình.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1.0\textwidth]{images/history_table.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh bảng dữ liệu gần đây -- bổ sung sau]}\vspace{2cm}}}
+    \caption{Bảng dữ liệu chi tiết các bản ghi đo theo thời gian}
+    \label{fig:history_table}
+\end{figure}
+
+\subsubsection{Cập nhật dữ liệu tự động}
+
+\textbf{Auto-refresh:} Dashboard tự động làm mới dữ liệu mỗi 5 giây để đảm bảo hiển thị thông tin mới nhất từ ESP32.
+
+\textbf{Real-time indicator:} Hiển thị thời gian cập nhật gần nhất và trạng thái kết nối thiết bị (dấu chấm xanh nhấp nháy khi trực tuyến, đỏ khi ngoại tuyến).
+
+\textbf{Kiến trúc REST API:} Hệ thống cung cấp các API endpoint chuẩn RESTful để giao tiếp:
+\begin{itemize}
+    \item \texttt{GET /api/data/latest} \quad -- Lấy bản ghi đo mới nhất
+    \item \texttt{GET /api/data/history} \quad -- Lấy lịch sử theo khoảng thời gian
+    \item \texttt{GET /api/data/stats} \quad\quad -- Thống kê trung bình theo giờ/ngày
+\end{itemize}
+
+\textbf{Hệ thống cảnh báo tùy chỉnh:} Trang Cài đặt cho phép người dùng cấu hình ngưỡng AQI kích hoạt cảnh báo, nhập địa chỉ email nhận thông báo và bật/tắt thông báo Push trực tiếp trên trình duyệt.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.95\textwidth]{images/settings_page.png}
+    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh giao diện Cài đặt cảnh báo -- bổ sung sau]}\vspace{2cm}}}
+    \caption{Giao diện Cài đặt cảnh báo với ngưỡng AQI tùy chỉnh}
+    \label{fig:settings_page}
+\end{figure}
 
 \subsection{Kết quả kiểm thử các kịch bản thực tế}
 Dưới đây là kết quả kiểm chứng chi tiết thông qua các bài test thực nghiệm tại hiện trường:
