@@ -231,7 +231,6 @@ export default function Navbar() {
           </div>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 mb-2.5">Điều hướng</p>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (

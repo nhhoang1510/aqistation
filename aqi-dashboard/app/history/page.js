@@ -161,7 +161,7 @@ export default function HistoryPage() {
   };
 
   const summaryStats = [
-    { label: "Tổng bản ghi",    value: total.toLocaleString("vi-VN"),     sub: "điểm đo" },
+    { label: "Tổng bản ghi",    value: total.toLocaleString("vi-VN"),     sub: "" },
     { label: "AQI trung bình",  value: stats?.avgAqi?.toFixed(1) ?? "—",  sub: getAQILabel(stats?.avgAqi) },
     { label: "AQI cao nhất",    value: stats?.maxAqi ?? "—",              sub: getAQILabel(stats?.maxAqi) },
     { label: "PM2.5 trung bình",value: stats?.avgPm25?.toFixed(1) ?? "—", sub: "µg/m³" },

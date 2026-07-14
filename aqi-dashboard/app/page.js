@@ -333,7 +333,6 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-3.5">
         <div>
           <h3 className="text-[15px] font-semibold text-gray-900 tracking-tight">Biểu đồ theo thời gian</h3>
-          <p className="text-[12px] text-gray-400 mt-0.5">Xu hướng các thông số quan trắc</p>
         </div>
         <div className="flex items-center gap-1.5 bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-[12.5px] text-gray-500 font-medium shadow-sm">
           {icons.clock}

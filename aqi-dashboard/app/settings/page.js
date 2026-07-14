@@ -221,7 +221,6 @@ export default function SettingsPage() {
           <div>
             <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
               Số điện thoại
-              <span className="ml-1.5 text-[10px] font-normal text-gray-300 normal-case">(Cần tích hợp SMS provider)</span>
             </label>
             <div className="flex items-center gap-2 px-3.5 py-2.5 border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-gray-300 focus-within:border-gray-400 transition-all bg-white">
               <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
