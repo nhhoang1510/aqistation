@@ -38,30 +38,10 @@ const DEFAULT_POSITION = [21.0045, 105.8412];
 export default function MapComponent() {
   const [latestData, setLatestData] = useState(null);
   const [stationPos, setStationPos] = useState(DEFAULT_POSITION);
-  const [geoStatus, setGeoStatus] = useState("idle"); // idle | loading | ok | denied
   const [icon, setIcon] = useState(null);
 
   // Fix Leaflet icons on mount
   useEffect(() => { fixLeafletIcons(); }, []);
-
-  // Get browser geolocation on mount
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoStatus("denied");
-      return;
-    }
-    setGeoStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setStationPos([pos.coords.latitude, pos.coords.longitude]);
-        setGeoStatus("ok");
-      },
-      () => {
-        setGeoStatus("denied");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  }, []);
 
   // Build custom icon (client-side only)
   useEffect(() => {
@@ -126,31 +106,6 @@ export default function MapComponent() {
 
   return (
     <div style={{ height: "100%", width: "100%", position: "relative", minHeight: "520px" }}>
-      {/* Geolocation status badge */}
-      {geoStatus === "loading" && (
-        <div style={{
-          position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)",
-          zIndex: 1000, background: "white", border: "1px solid #e5e7eb",
-          borderRadius: 10, padding: "6px 14px", fontSize: 12, color: "#6b7280",
-          display: "flex", alignItems: "center", gap: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
-        }}>
-          <div style={{
-            width: 12, height: 12, border: "2px solid #d1d5db",
-            borderTopColor: "#374151", borderRadius: "50%", animation: "spin 0.8s linear infinite"
-          }} />
-          Đang lấy vị trí...
-        </div>
-      )}
-      {geoStatus === "denied" && (
-        <div style={{
-          position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)",
-          zIndex: 1000, background: "white", border: "1px solid #fde68a",
-          borderRadius: 10, padding: "6px 14px", fontSize: 12, color: "#92400e",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
-        }}>
-          Không lấy được vị trí — hiển thị vị trí mặc định (HUST)
-        </div>
-      )}
 
       <MapContainer
         center={stationPos}
