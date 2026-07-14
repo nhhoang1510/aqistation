@@ -1407,6 +1407,50 @@ Render Dashboard   & Next.js + Chart.js       & $< 200$\,ms \\
 
 \end{table}
 
+\subsubsection{Quy trình thiết kế và phát triển Web Dashboard}
+Nhằm đảm bảo giao diện giám sát (Web Dashboard) đáp ứng đầy đủ các tiêu chí: trực quan, thời gian thực, có khả năng mở rộng và mang lại trải nghiệm người dùng tối ưu, quy trình thiết kế và phát triển phần mềm giao diện đã được tuân thủ nghiêm ngặt theo mô hình linh hoạt kết hợp với các bước kỹ nghệ phần mềm tiêu chuẩn. Quá trình này được chia thành 5 bước cụ thể và chi tiết như sau:
+
+\paragraph{Bước 1: Phân tích yêu cầu và Lên ý tưởng (Ideation \& Requirements)}\mbox{}\\
+Trong giai đoạn đầu tiên, nhóm phát triển tiến hành thu thập và phân tích các yêu cầu chức năng cốt lõi mà một hệ thống trạm quan trắc IoT hiện đại cần phải có. 
+\begin{itemize}
+    \item \textbf{Yêu cầu chức năng:} Người dùng cần xem được ngay lập tức chỉ số AQI tổng hợp và các thông số môi trường (Bụi mịn PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất, Nồng độ khí gas). Hệ thống cũng cần có khả năng vẽ biểu đồ theo thời gian để người dùng dễ dàng theo dõi xu hướng, cùng với bản đồ hiển thị vị trí thực tế của trạm đo. Tính năng xác thực tài khoản đăng nhập cũng là một yêu cầu bắt buộc để bảo mật thông tin nội bộ.
+    \item \textbf{Yêu cầu phi chức năng:} Độ trễ cập nhật dữ liệu phải thấp (dưới 10 giây). Giao diện phải hoạt động mượt mà trên cả trình duyệt máy tính lẫn thiết bị di động (Responsive Design).
+\end{itemize}
+
+\paragraph{Bước 2: Lựa chọn công nghệ (Tech Stack Selection)}\mbox{}\\
+Sau khi xác định yêu cầu, nhóm tiến hành đánh giá và lựa chọn các công nghệ phù hợp:
+\begin{itemize}
+    \item \textbf{Frontend Framework:} Next.js (dựa trên React) được lựa chọn nhờ khả năng kết hợp hoàn hảo giữa Server-Side Rendering (SSR) và Client-Side Rendering (CSR), giúp tăng tốc độ tải trang ban đầu và tối ưu hóa hệ thống.
+    \item \textbf{Styling:} Tailwind CSS được sử dụng để xây dựng giao diện. Hệ thống lớp tiện ích (utility-first) của Tailwind cho phép tùy biến linh hoạt, đồng nhất về thiết kế (Design System) và hỗ trợ Mobile-first dễ dàng mà không cần phải viết các tập tin CSS cồng kềnh.
+    \item \textbf{Quản lý trạng thái và Biểu đồ:} React Hooks (\texttt{useState}, \texttt{useEffect}) được dùng để quản lý trạng thái dữ liệu thay đổi liên tục. Thư viện \texttt{Chart.js} kết hợp \texttt{react-chartjs-2} được sử dụng để trực quan hóa dữ liệu lịch sử thành các đồ thị đường (Line Chart).
+    \item \textbf{Bản đồ:} Thư viện \texttt{Leaflet} kết hợp với Tile Layer của Google Maps để tạo nên bản đồ tương tác hiển thị tọa độ trạm mà không cần các khóa API bảo mật phức tạp.
+    \item \textbf{Cơ sở dữ liệu và Xác thực:} MongoDB Atlas được chọn làm cơ sở dữ liệu đám mây (NoSQL) nhờ khả năng lưu trữ linh hoạt luồng dữ liệu IoT dạng chuỗi thời gian. Tính năng phân quyền được giao cho thư viện NextAuth.js xử lý kết hợp mã hóa Bcrypt.
+\end{itemize}
+
+\paragraph{Bước 3: Thiết kế UI/UX và Kiến trúc hệ thống}\mbox{}\\
+Giao diện được thiết kế theo trường phái tối giản (Minimalism) và dạng thẻ (Card-based Layout).
+\begin{itemize}
+    \item \textbf{Bố cục trang tổng quan (Dashboard):} Chia thành hai phần chính. Phần đầu ở trên cùng chứa tên trạm, trạng thái kết nối và khối tính toán AQI chính, tích hợp thanh trượt màu sắc theo chuẩn US EPA. Phần dưới hiển thị các thông số phụ chia theo dạng lưới (Grid 2 cột trên điện thoại, 4 cột trên máy tính bàn).
+    \item \textbf{Thanh điều hướng (Sidebar):} Hệ thống sử dụng một Sidebar gắn lề trái màn hình, hỗ trợ thu gọn hoặc bung rộng, giúp người dùng dễ dàng chuyển đổi giữa các module: Dashboard, Lịch sử (History), Bản đồ (Map) và Cài đặt (Settings).
+    \item \textbf{Thiết kế luồng dữ liệu (Data Flow):} Trình duyệt định kỳ mỗi 5 giây gửi một HTTP GET Request tới REST API \texttt{/api/data/latest} của Next.js Route Handler để lấy dữ liệu từ MongoDB, sau đó cập nhật trực tiếp vào State của React để kích hoạt quá trình Re-render giao diện tự động (Auto-Refresh).
+\end{itemize}
+
+\paragraph{Bước 4: Triển khai lập trình phần mềm (Implementation)}\mbox{}\\
+Quá trình lập trình được chia nhỏ thành các thành phần độc lập (Component-driven):
+\begin{itemize}
+    \item \textbf{Xây dựng các Component dùng chung:} Lập trình các nút bấm, thẻ dữ liệu (Card), và khối biểu đồ để tái sử dụng xuyên suốt mã nguồn.
+    \item \textbf{Lập trình Trang Đăng nhập/Đăng ký:} Tích hợp thư viện \texttt{bcryptjs} ở Backend để băm mật khẩu người dùng trước khi ghi vào cơ sở dữ liệu. Thiết lập cảnh báo và ràng buộc các thông báo lỗi trên Form (ví dụ: Mật khẩu quá ngắn, yêu cầu ít nhất 6 ký tự) bằng công cụ HTML5 Validation để bảo vệ an toàn cho dữ liệu đầu vào.
+    \item \textbf{Tích hợp API và Vẽ biểu đồ:} Thiết kế thuật toán chuyển đổi mảng dữ liệu. Chuyển đổi nhãn thời gian từ định dạng ISO thành dạng ``giờ:phút'' cục bộ để nạp vào mảng tọa độ trục X của Chart.js.
+    \item \textbf{Tích hợp Bản đồ Leaflet:} Xử lý vấn đề đóng gói CSS của Leaflet trong môi trường Next.js. Để vượt qua lỗi Render phía máy chủ (SSR) của React đối với các API liên quan đến \texttt{window}, nhóm đã sử dụng tính năng \texttt{next/dynamic} để chỉ nạp bản đồ phía Client, đồng thời tiêm trực tiếp link CDN của Leaflet vào thẻ \texttt{<head>}, đảm bảo bản đồ hiển thị rõ ràng, mượt mà khi đưa lên máy chủ.
+\end{itemize}
+
+\paragraph{Bước 5: Kiểm thử và Triển khai Đám mây (Testing \& Deployment)}\mbox{}\\
+\begin{itemize}
+    \item \textbf{Kiểm thử cục bộ (Local Testing):} Chạy hệ thống ở môi trường phát triển (\texttt{localhost}), giả lập luồng gói tin MQTT liên tục gửi từ ESP32 để đánh giá tốc độ cập nhật giao diện người dùng và kiểm tra tính đúng đắn của các biểu tượng màu sắc đánh giá AQI.
+    \item \textbf{Tối ưu hóa hiệu năng (Optimization):} Giảm thiểu tối đa độ trễ bằng cách tách các module nặng (như biểu đồ và bản đồ) ra khỏi chu kỳ làm mới nếu không có sự thay đổi. Các cờ tải (loading flag) được bổ sung để hiển thị hiệu ứng chờ trực quan trong quá trình truy xuất từ cơ sở dữ liệu.
+    \item \textbf{Triển khai Tự động hóa (Cloud Deployment):} Toàn bộ mã nguồn giao diện frontend và các API phụ trợ được lưu trữ tại GitHub. Nền tảng Vercel được liên kết trực tiếp để cấu hình quy trình triển khai liên tục (CI/CD). Mỗi khi có cập nhật, Vercel tự động biên dịch ứng dụng bằng Turbopack và phân phối lên các nút mạng Edge toàn cầu, đảm bảo hệ thống có khả năng mở rộng tự động (auto-scaling) và phục vụ 24/7 mà không cần đến máy chủ vật lý truyền thống.
+\end{itemize}
+
 \newpage
 
 
