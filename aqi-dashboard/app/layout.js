@@ -16,11 +16,11 @@ export const metadata = {
   openGraph: {
     title: "Trạm quan trắc chất lượng không khí đa thông số",
     description: "Giám sát chất lượng không khí thời gian thực",
-    url: "https://aqi-dashboard.vercel.app", // Adjust with your actual domain
+    url: "https://aqi-dashboard.vercel.app",
     siteName: "AQI Station",
     images: [
       {
-        url: "/og-image.png", // Assuming an image will be added in public/
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "AQI Station Dashboard",
