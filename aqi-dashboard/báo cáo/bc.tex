@@ -1495,41 +1495,50 @@ Thuật toán tra bảng breakpoint và nội suy nêu trên được thực thi
 Sau quá trình thiết kế, thi công và lập trình, trạm quan trắc chất lượng không khí đã được hoàn thiện cả về phần cứng nhúng biên và ứng dụng giám sát đám mây.
 
 \subsection{Kết quả phần cứng thực tế}
-Thiết bị phần cứng hoàn chỉnh được gia công trên mạch in PCB hai lớp chống nhiễu, bao bọc trong hộp bảo vệ nhựa ABS có khe thông gió tự nhiên.
+
+Thiết bị phần cứng hoàn chỉnh được gia công trên mạch in PCB hai lớp chống nhiễu, bao bọc trong hộp bảo vệ nhựa ABS có khe thông gió tự nhiên để đảm bảo luồng không khí lưu thông tối ưu qua các cảm biến.
+
+\begin{figure}[H]
+    \centering
+    \textbf{[CHÈN HÌNH ẢNH THỰC TẾ TRẠM QUAN TRẮC VÀO ĐÂY]}
+    % \includegraphics[width=0.8\textwidth]{images/hardware_real.png}
+    \caption{Hình ảnh thực tế của trạm quan trắc chất lượng không khí}
+    \label{fig:hardware_real}
+\end{figure}
+
 Khối sensor bao gồm toàn bộ các thiết bị cảm biến vật lý có nhiệm vụ đo lường trực tiếp các thông số môi trường không khí. Đây là nguồn dữ liệu đầu vào duy nhất của hệ thống.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Endpoint} & \textbf{Method} & \textbf{Chức năng} \\ 
-        \hline
-\texttt{/api/data/latest}     & GET & Lấy bản ghi đo mới nhất \\ 
-        \hline
-\texttt{/api/data/history}    & GET & Lấy lịch sử theo khoảng thời gian \\ 
-        \hline
-\texttt{/api/data/stats}      & GET & Thống kê trung bình theo giờ/ngày \\ 
-        \hline\end{tabular}
 \caption{Danh sách cảm biến trong hệ thống và thông số đo}
 \label{tab:sensor_block}
 \begin{tabularx}{\textwidth}{|l|l|>{\raggedright\arraybackslash}X|}
 \hline
 \textbf{Cảm biến} & \textbf{Giao tiếp} & \textbf{Thông số đo} \\ 
-        \hline
+\hline
 BME680  & I2C (tự động quét 0x76/0x77) & Nhiệt độ ($-40 \div 85^\circ$C, đã bù trừ tự phát nhiệt), Độ ẩm (0--100\%RH), Áp suất (300--1100\,hPa), Điện trở khí VOC \\ 
-        \hline
+\hline
 PMS5003 & UART2, 9600 baud & PM1.0, PM2.5, PM10 (0--500\,$\mu$g/m$^3$); số hạt theo 6 dải kích thước \\ 
-        \hline
+\hline
 MQ-135  & ADC1 (GPIO34) & Tín hiệu tương tự 0--3.3\,V, chuyển đổi sang nồng độ ppm (NH$_3$, CO$_2$, VOC) \\ 
-        \hline\end{tabularx}
+\hline
+\end{tabularx}
 \end{table}
 
-Ba cảm biến bổ sung cho nhau để tạo ra bức tranh toàn diện về chất lượng không khí:
+Ba cảm biến này hoạt động song song và bổ sung cho nhau để tạo ra bức tranh toàn diện về chất lượng không khí:
 \begin{itemize}
     \item \textbf{BME680} cung cấp thông số vi khí hậu (nhiệt độ, độ ẩm, áp suất) -- vừa là dữ liệu đo trực tiếp, vừa làm tham chiếu để bù sai số nhiệt-ẩm cho MQ-135.
     \item \textbf{PMS5003} chuyên đo nồng độ hạt bụi lơ lửng với độ chính xác cao bằng công nghệ tán xạ laser -- đây là thông số quan trọng nhất trong tính toán AQI.
     \item \textbf{MQ-135} phản ánh tổng hợp chất lượng không khí qua điện trở bán dẫn $\text{SnO}_2$ -- nhạy cảm với các khí độc hại như NH$_3$, CO và các hợp chất hữu cơ bay hơi.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \textbf{[CHÈN HÌNH ẢNH THỰC TẾ CHI TIẾT CÁC CẢM BIẾN VÀO ĐÂY]}
+    % \includegraphics[width=0.8\textwidth]{images/sensors_real.png}
+    \caption{Các module cảm biến được tích hợp bên trong trạm đo}
+    \label{fig:sensors_real}
+\end{figure}
 
 \subsection{Kết quả phần mềm backend và cơ sở dữ liệu MongoDB}
 Hệ thống lưu trữ cơ sở dữ liệu MongoDB Atlas hoạt động ổn định. Khối server là tầng trung gian đảm nhận việc tiếp nhận, xử lý và lưu trữ dữ liệu từ ESP32, đồng thời cung cấp API cho giao diện web. Hệ thống sử dụng kiến trúc backend serverless trên nền tảng Vercel kết hợp cơ sở dữ liệu MongoDB Atlas.
