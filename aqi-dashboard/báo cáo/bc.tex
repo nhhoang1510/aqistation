@@ -611,27 +611,7 @@ Về mặt phần cứng, giao tiếp UART của lõi ESP32 tự động sao ch�
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.6cm and 1.2cm,
-  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3cm, align=center, minimum height=0.9cm, font=\small},
-  decision/.style={diamond, draw, fill=orange!15, text width=2.2cm, align=center, aspect=1.6, font=\small},
-  arrow/.style={->, >=stealth, thick}]
-  \node[block] (wait) {Chờ dữ liệu\\(Tìm byte\\bắt đầu)};
-  \node[decision, below=0.7cm of wait] (chk42) {Byte nhận\\= 0x42?};
-  \node[decision, right=1.8cm of chk42] (chk4D) {Byte tiếp theo\\= 0x4D?};
-  \node[block, below=0.7cm of chk4D] (read32) {Thu thập đủ\\32 byte khung};
-  \node[decision, below=0.7cm of read32] (chksum) {Checksum\\hợp lệ?};
-  \node[block, right=1.8cm of chksum] (discard) {Loại bỏ gói lỗi\\quay lại từ đầu};
-  \node[block, below=0.7cm of chksum] (decode) {Giải mã trường\\PM1.0,\\PM2.5, PM10};
-  \draw[arrow] (wait) -- (chk42);
-  \draw[arrow] (chk42) -- node[above, font=\scriptsize]{Có} (chk4D);
-  \draw[arrow] (chk42.west) -- +(-0.7,0) |- node[left, font=\scriptsize, pos=0.25]{Không} (wait.west);
-  \draw[arrow] (chk4D) -- node[right, font=\scriptsize]{Có} (read32);
-  \draw[arrow] (chk4D.north) -- +(0,0.5) -| node[above right, font=\scriptsize, pos=0.1]{Không} (wait.north);
-  \draw[arrow] (read32) -- (chksum);
-  \draw[arrow] (chksum) -- node[above, font=\scriptsize]{Không} (discard);
-  \draw[arrow] (discard.north) |- (wait.east);
-  \draw[arrow] (chksum) -- node[right, font=\scriptsize]{Có} (decode);
-\end{tikzpicture}
+\includegraphics[width=0.9\textwidth]{images/flowchart_uart_parsing.png}
 \caption{Lưu đồ thuật toán đọc dữ liệu PMS5003}
 \label{fig:pms_fsm}
 \end{figure}
@@ -999,29 +979,7 @@ Sơ đồ dưới đây minh họa trực quan việc phân bổ tác vụ lên 
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.55cm and 1.5cm,
-  block/.style={rectangle, draw, rounded corners=3pt, fill=gray!15, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
-  coreblock/.style={rectangle, draw, rounded corners=3pt, fill=blue!20, text width=2.8cm, align=center, minimum height=0.85cm, font=\small\bfseries},
-  shared/.style={rectangle, draw, rounded corners=3pt, fill=green!15, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
-  arrow/.style={->, >=stealth, thick},
-  dasharrow/.style={->, >=stealth, thick, dashed}]
-  % Core 1
-  \node[coreblock] (core1) {CORE 1\\Xử lý cảm biến};
-  \node[block, below=0.6cm of core1] (taskPMS) {taskPMS\\Ưu tiên 3\\(ngắt UART2)};
-  \node[block, below=0.6cm of taskPMS] (taskSensors) {taskSensors\\Ưu tiên 2\\(I2C + ADC, 10s)};
-  % Core 0
-  \node[coreblock, right=3.0cm of core1] (core0) {CORE 0\\Xử lý mạng};
-  \node[block, below=0.6cm of core0] (taskNetwork) {taskNetwork\\Ưu tiên 1};
-  % Shared
-  \node[shared, below=0.6cm of taskSensors, xshift=2.2cm] (shared) {SharedData\\(bảo vệ bởi\\Mutex)};
-  % Arrows
-  \draw[arrow] (core1) -- (taskPMS);
-  \draw[arrow] (taskPMS) -- (taskSensors);
-  \draw[arrow] (core0) -- (taskNetwork);
-  \draw[arrow] (taskPMS.east) -- ++(0.4,0) |- (taskNetwork.west);
-  \draw[arrow] (taskSensors.east) -- ++(0.4,0) -- (shared.west);
-  \draw[dasharrow] (shared.east) -- ++(0.4,0) |- node[right, font=\scriptsize]{Event Group\\BIT\_MQTT\_READY} (taskNetwork.south);
-\end{tikzpicture}
+\includegraphics[width=0.9\textwidth]{images/block_dual_core.png}
 \caption{Lưu đồ phân bổ tác vụ Dual-Core}
 \label{fig:dualcore_flow}
 \end{figure}
@@ -1047,26 +1005,7 @@ Lưu đồ dưới đây minh họa cơ chế giám sát Watchdog Timer song son
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.6cm and 1.5cm,
-  block/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=3cm, align=center, minimum height=0.9cm, font=\small},
-  decision/.style={diamond, draw, fill=orange!15, text width=2.4cm, align=center, aspect=1.6, font=\small},
-  alarm/.style={rectangle, draw, rounded corners=4pt, fill=red!20, text width=3cm, align=center, minimum height=0.9cm, font=\small},
-  action/.style={rectangle, draw, rounded corners=4pt, fill=purple!15, text width=3cm, align=center, minimum height=0.9cm, font=\small},
-  arrow/.style={->, >=stealth, thick}]
-  \node[block] (loop) {Vòng lặp\\giám sát\\(mỗi Task)};
-  \node[decision, below=0.8cm of loop] (ok) {Task hoàn\\thành chu kỳ\\đúng hạn?};
-  \node[action, below=0.7cm of ok] (reset) {Gọi\\\texttt{esp\_task\_wdt\_reset()}\\(nạp lại bộ\\đếm WDT)};
-  \node[block, right=2.0cm of ok] (hang) {Task bị treo};
-  \node[decision, below=0.8cm of hang] (timeout) {Quá 30 giây\\không nạp\\lại WDT?};
-  \node[alarm, below=0.7cm of timeout] (reboot) {Kích hoạt\\Hardware Reset\\Khởi động\\lại ESP32};
-  \draw[arrow] (loop) -- (ok);
-  \draw[arrow] (ok) -- node[right, font=\scriptsize]{Có} (reset);
-  \draw[arrow] (reset.north) -- ++(0,0.3) -| (loop.south);
-  \draw[arrow] (ok) -- node[above, font=\scriptsize]{Không} (hang);
-  \draw[arrow] (hang) -- (timeout);
-  \draw[arrow] (timeout) -- node[right, font=\scriptsize]{Có} (reboot);
-  \draw[arrow] (timeout.east) -- ++(0.7,0) |- node[right, font=\scriptsize, pos=0.25]{Chưa} (hang.east);
-\end{tikzpicture}
+\includegraphics[width=0.9\textwidth]{images/flowchart_wdt.png}
 \caption{Lưu đồ hoạt động Watchdog Timer}
 \label{fig:wdt_flowchart}
 \end{figure}
@@ -1098,28 +1037,7 @@ ESP32 dành riêng một phân vùng bộ nhớ Flash gọi là NVS để lưu t
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.55cm and 1.8cm,
-  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
-  decision/.style={diamond, draw, fill=orange!15, text width=2.5cm, align=center, aspect=1.7, font=\small},
-  success/.style={rectangle, draw, rounded corners=4pt, fill=green!20, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
-  portal/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=3.0cm, align=center, minimum height=0.85cm, font=\small},
-  arrow/.style={->, >=stealth, thick}]
-  \node[block] (boot) {Khởi động};
-  \node[decision, below=0.7cm of boot] (nvs) {Kết nối bằng\\thông tin NVS\\thành công?};
-  \node[success, below=0.7cm of nvs] (ready) {Sẵn sàng\\hoạt động\\(chuyển sang\\WIFI\_STA)};
-  \node[decision, right=2.2cm of nvs] (hard) {Kết nối bằng\\thông tin\\Hardcode\\thành công?};
-  \node[portal, below=0.7cm of hard] (ap) {Bật Access Point\\+ WebServer\\+ DNS Server\\(Captive Portal)};
-  \node[portal, below=0.7cm of ap] (wait) {Chờ người dùng\\chọn mạng và\\nhập mật khẩu\\qua trình duyệt};
-  \node[portal, below=0.7cm of wait] (save) {Lưu SSID/Mật\\khẩu xuống\\phân vùng NVS};
-  \draw[arrow] (boot) -- (nvs);
-  \draw[arrow] (nvs) -- node[right, font=\scriptsize]{Có} (ready);
-  \draw[arrow] (nvs) -- node[above, font=\scriptsize]{Không} (hard);
-  \draw[arrow] (hard.south) -- node[right, font=\scriptsize]{Không} (ap);
-  \draw[arrow] (hard.west) -- node[above, font=\scriptsize, pos=0.3]{Có} (ready.east);
-  \draw[arrow] (ap) -- (wait);
-  \draw[arrow] (wait) -- (save);
-  \draw[arrow] (save.west) -- ++(-0.6,0) |- (ready.west);
-\end{tikzpicture}
+\includegraphics[width=0.85\textwidth]{images/flowchart_wifi.png}
 \caption{Lưu đồ kết nối WiFi 3 tầng}
 \label{fig:wifi_flowchart}
 \end{figure}
@@ -1168,35 +1086,7 @@ Nguyên lý hoạt động tổng thể của hệ thống được thể hiện
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.5cm,
-  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.5cm, align=center, minimum height=0.85cm, font=\small},
-  decision/.style={diamond, draw, fill=orange!15, text width=2.6cm, align=center, aspect=1.8, font=\small},
-  wait/.style={rectangle, draw, rounded corners=4pt, fill=gray!15, text width=2.5cm, align=center, minimum height=0.85cm, font=\small},
-  arrow/.style={->, >=stealth, thick}]
-  \node[block] (boot) {Khởi động ESP32 / Boot};
-  \node[block, below=0.5cm of boot] (init) {Khởi tạo ngoại vi};
-  \node[decision, below=0.7cm of init] (wifi) {Kết nối\\WiFi/MQTT\\thành công?};
-  \node[wait, right=1.6cm of wifi] (retry) {Chờ 5 giây\\Thử kết nối lại};
-  \node[block, below=0.7cm of wifi] (read) {Đọc dữ liệu song song};
-  \node[block, below=0.5cm of read] (filter) {Áp dụng bộ lọc số};
-  \node[block, below=0.5cm of filter] (aqi) {Tính chỉ số AQI\\theo breakpoint US EPA};
-  \node[block, below=0.5cm of aqi] (json) {Đóng gói JSON\\(SharedData $\to$ payload)};
-  \node[block, below=0.5cm of json] (pub) {Publish MQTT\\tới aqistation/data};
-  \node[block, below=0.5cm of pub] (wdt) {Reset Watchdog Timer};
-  \node[decision, below=0.7cm of wdt] (alive) {Còn hoạt\\động?};
-  \draw[arrow] (boot) -- (init);
-  \draw[arrow] (init) -- (wifi);
-  \draw[arrow] (wifi) -- node[above, font=\scriptsize]{Không} (retry);
-  \draw[arrow] (retry.north) |- (wifi.east);
-  \draw[arrow] (wifi) -- node[right, font=\scriptsize]{Có} (read);
-  \draw[arrow] (read) -- (filter);
-  \draw[arrow] (filter) -- (aqi);
-  \draw[arrow] (aqi) -- (json);
-  \draw[arrow] (json) -- (pub);
-  \draw[arrow] (pub) -- (wdt);
-  \draw[arrow] (wdt) -- (alive);
-  \draw[arrow] (alive.east) -- ++(0.8,0) |- node[right, font=\scriptsize, pos=0.25]{Có} (read.east);
-\end{tikzpicture}
+\includegraphics[width=0.55\textwidth]{images/flowchart_main.png}
 \caption{Lưu đồ thuật toán chính firmware}
 \label{fig:main_flowchart}
 \end{figure}
@@ -1394,29 +1284,7 @@ Thay vì trình bày đoạn mã tính toán, thuật toán tra cứu breakpoint
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=0.5cm,
-  block/.style={rectangle, draw, rounded corners=4pt, fill=blue!10, text width=3.8cm, align=center, minimum height=0.85cm, font=\small},
-  decision/.style={diamond, draw, fill=orange!15, text width=2.8cm, align=center, aspect=1.8, font=\small},
-  clamp/.style={rectangle, draw, rounded corners=4pt, fill=red!10, text width=2.8cm, align=center, minimum height=0.85cm, font=\small},
-  arrow/.style={->, >=stealth, thick}]
-  \node[block] (input) {Nồng độ $C_p$ sau lọc\\(PM2.5 hoặc PM10)};
-  \node[block, below=0.5cm of input] (scan) {Duyệt bảng breakpoint US EPA\\tìm khoảng $[C_{Lo}, C_{Hi}]$\\chứa $C_p$};
-  \node[decision, below=0.7cm of scan] (found) {Tìm thấy\\khoảng\\phù hợp?};
-  \node[clamp, right=1.5cm of found] (clamp) {Giới hạn (Clamp)\\về khoảng\\biên gần nhất};
-  \node[block, below=0.7cm of found] (interp) {
-    Nội suy tuyến tính:\\[4pt]
-    $I_p = \dfrac{I_{Hi}-I_{Lo}}{C_{Hi}-C_{Lo}}(C_p - C_{Lo}) + I_{Lo}$
-  };
-  \node[block, below=0.5cm of interp] (round) {Làm tròn $I_p$\\về số nguyên gần nhất};
-  \node[block, below=0.5cm of round] (out) {Trả về chỉ số AQI\\thành phần $I_p$};
-  \draw[arrow] (input) -- (scan);
-  \draw[arrow] (scan) -- (found);
-  \draw[arrow] (found) -- node[above, font=\scriptsize]{Không (ngoài dải)} (clamp);
-  \draw[arrow] (clamp.south) -- ++(0,-0.4) -| (interp.east);
-  \draw[arrow] (found) -- node[right, font=\scriptsize]{Có} (interp);
-  \draw[arrow] (interp) -- (round);
-  \draw[arrow] (round) -- (out);
-\end{tikzpicture}
+\includegraphics[width=0.45\textwidth]{images/flowchart_aqi.png}
 \caption{Lưu đồ thuật toán tra bảng breakpoint và nội suy tính chỉ số AQI thành phần}
 \label{fig:aqi_flowchart}
 \end{figure}
@@ -1572,123 +1440,7 @@ curl -X GET "https://aqistation.vercel.app/api/data?limit=2"
 \end{itemize}
 
 \subsection{Kết quả hiển thị Web Dashboard}
-Để người dùng có thể dễ dàng theo dõi và tương tác với dữ liệu từ hệ thống, nhóm đã xây dựng một Web Dashboard trực quan sử dụng framework Next.js kết hợp với Chart.js và Tailwind CSS. Giao diện được triển khai trên nền tảng Vercel, đảm bảo khả năng truy cập linh hoạt từ mọi thiết bị có trình duyệt (máy tính, điện thoại, máy tính bảng) mọi lúc, mọi nơi.
 
-\subsubsection{Hiển thị chỉ số AQI và cảnh báo màu sắc}
-Trung tâm của trang Dashboard là bảng hiển thị chỉ số AQI tổng hợp theo thời gian thực. Giá trị AQI được hiển thị nổi bật kèm nhãn phân loại tự động và thanh trượt dải màu tuyến tính theo chuẩn US EPA. Card AQI có màu nền động thay đổi theo mức độ cảnh báo, giúp người dùng dễ dàng nhận diện các thông số bất thường chỉ bằng một cái nhìn:
-
-\begin{table}[H]
-\centering
-\caption{Thang phân loại AQI và màu cảnh báo theo chuẩn US EPA}
-\label{tab:aqi_levels}
-\begin{tabular}{|c|l|l|}
-\hline
-\textbf{Dải AQI} & \textbf{Phân loại} & \textbf{Màu hiển thị} \\
-\hline
-0 -- 50   & Tốt                          & Xanh lá  \\
-\hline
-51 -- 100  & Trung bình                   & Vàng     \\
-\hline
-101 -- 150 & Không tốt cho nhóm nhạy cảm & Cam      \\
-\hline
-151 -- 200 & Không tốt                    & Đỏ       \\
-\hline
-201 -- 300 & Rất xấu                      & Tím      \\
-\hline
-301 -- 500 & Nguy hại                     & Nâu đỏ   \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=1.0\textwidth]{images/dashboard_home.png}
-    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh giao diện trang Tổng quan Dashboard -- bổ sung sau]}\vspace{2cm}}}
-    \caption{Giao diện trang Tổng quan với chỉ số AQI, thanh màu US EPA và thẻ thông số}
-    \label{fig:dashboard_top}
-\end{figure}
-
-\subsubsection{Hiển thị các thông số môi trường chi tiết}
-
-Dashboard hiển thị 4 thẻ thông số (card) cốt lõi với icon trực quan ngay bên dưới bảng AQI:
-\begin{itemize}
-    \item Nhiệt độ (°C) -- Icon nhiệt kế
-    \item Độ ẩm (\%) -- Icon giọt nước
-    \item Mức Gas (ppm) -- Icon khí độc
-    \item Mật độ bụi ($\mu$g/m\textsuperscript{3}) -- Icon bụi mịn
-\end{itemize}
-
-Mỗi thẻ được thiết kế tối giản, tập trung làm nổi bật giá trị số đo kèm đơn vị. Thanh trạng thái hệ thống ở góc trên cùng hiển thị tên trạm, thời điểm cập nhật gần nhất và chỉ báo \textbf{Trực tuyến/Ngoại tuyến} sử dụng hiệu ứng nhấp nháy (pulse).
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=1.0\textwidth]{images/dashboard_cards.png}
-    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh các thẻ thông số môi trường -- bổ sung sau]}\vspace{2cm}}}
-    \caption{Các thông số môi trường hiển thị dạng card với icon trực quan}
-    \label{fig:dashboard_cards}
-\end{figure}
-
-\subsubsection{Biểu đồ lịch sử AQI theo thời gian}
-
-Hệ thống sử dụng Chart.js để vẽ các biểu đồ tương tác. Hệ thống vẽ đồng thời 6 biểu đồ đường (Line Chart) diễn biến theo thời gian thực cho toàn bộ các thông số: PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất và Gas VOC. Menu thả xuống cho phép người dùng tùy chọn khung thời gian xem linh hoạt (1 phút, 5 phút, 1 giờ, 24 giờ).
-
-Tính năng này cho phép người dùng:
-\begin{itemize}
-    \item Theo dõi xu hướng thay đổi của chất lượng không khí trong 24 giờ qua
-    \item Xác định các thời điểm ô nhiễm cao điểm trong ngày
-    \item Phân tích mối liên hệ giữa các yếu tố môi trường
-    \item Có cơ sở để lên kế hoạch và điều chỉnh các hoạt động cho phù hợp
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=1.0\textwidth]{images/dashboard_charts.png}
-    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh biểu đồ AQI và Nhiệt độ \& Độ ẩm theo thời gian -- bổ sung sau]}\vspace{2cm}}}
-    \caption{Biểu đồ lịch sử AQI và các thông số môi trường theo thời gian thực}
-    \label{fig:dashboard_charts}
-\end{figure}
-
-\subsubsection{Bảng dữ liệu chi tiết}
-
-Một bảng dữ liệu (Data Table) hiển thị 10 bản ghi gần nhất với đầy đủ thông tin:
-\begin{itemize}
-    \item Timestamp (Thời gian ghi nhận)
-    \item Tất cả các thông số cảm biến (Nhiệt độ, Độ ẩm, Gas, Bụi)
-    \item Chỉ số AQI với màu sắc phân loại
-\end{itemize}
-
-Bảng có khả năng cuộn ngang trên mobile, đảm bảo hiển thị tốt trên mọi kích thước màn hình. Trang Lịch sử cũng cung cấp khối thống kê tổng hợp: Tổng số bản ghi, AQI trung bình, AQI cao nhất và PM2.5 trung bình.
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=1.0\textwidth]{images/history_table.png}
-    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh bảng dữ liệu gần đây -- bổ sung sau]}\vspace{2cm}}}
-    \caption{Bảng dữ liệu chi tiết các bản ghi đo theo thời gian}
-    \label{fig:history_table}
-\end{figure}
-
-\subsubsection{Cập nhật dữ liệu tự động}
-
-\textbf{Auto-refresh:} Dashboard tự động làm mới dữ liệu mỗi 5 giây để đảm bảo hiển thị thông tin mới nhất từ ESP32.
-
-\textbf{Real-time indicator:} Hiển thị thời gian cập nhật gần nhất và trạng thái kết nối thiết bị (dấu chấm xanh nhấp nháy khi trực tuyến, đỏ khi ngoại tuyến).
-
-\textbf{Kiến trúc REST API:} Hệ thống cung cấp các API endpoint chuẩn RESTful để giao tiếp:
-\begin{itemize}
-    \item \texttt{GET /api/data/latest} \quad -- Lấy bản ghi đo mới nhất
-    \item \texttt{GET /api/data/history} \quad -- Lấy lịch sử theo khoảng thời gian
-    \item \texttt{GET /api/data/stats} \quad\quad -- Thống kê trung bình theo giờ/ngày
-\end{itemize}
-
-\textbf{Hệ thống cảnh báo tùy chỉnh:} Trang Cài đặt cho phép người dùng cấu hình ngưỡng AQI kích hoạt cảnh báo, nhập địa chỉ email nhận thông báo và bật/tắt thông báo Push trực tiếp trên trình duyệt.
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.95\textwidth]{images/settings_page.png}
-    \fbox{\parbox{0.95\textwidth}{\centering\vspace{2cm}\textit{[Hình ảnh giao diện Cài đặt cảnh báo -- bổ sung sau]}\vspace{2cm}}}
-    \caption{Giao diện Cài đặt cảnh báo với ngưỡng AQI tùy chỉnh}
-    \label{fig:settings_page}
-\end{figure}
 
 \subsection{Kết quả kiểm thử các kịch bản thực tế}
 Dưới đây là kết quả kiểm chứng chi tiết thông qua các bài test thực nghiệm tại hiện trường:
