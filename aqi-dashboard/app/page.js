@@ -23,12 +23,11 @@ function getAQIConfig(aqi) {
 function getMarkerPosition(aqi) {
   if (aqi == null) return 0;
   let p = 0;
-  if (aqi <= 50) p = (aqi / 50) * 16.66;
-  else if (aqi <= 100) p = 16.66 + ((aqi - 50) / 50) * 16.66;
-  else if (aqi <= 150) p = 33.33 + ((aqi - 100) / 50) * 16.66;
-  else if (aqi <= 200) p = 50 + ((aqi - 150) / 50) * 16.66;
-  else if (aqi <= 300) p = 66.66 + ((aqi - 200) / 100) * 16.66;
-  else p = 83.33 + (Math.min(aqi - 300, 100) / 100) * 16.66;
+  if (aqi <= 50) p = (aqi / 50) * 20;
+  else if (aqi <= 100) p = 20 + ((aqi - 50) / 50) * 20;
+  else if (aqi <= 150) p = 40 + ((aqi - 100) / 50) * 20;
+  else if (aqi <= 200) p = 60 + ((aqi - 150) / 50) * 20;
+  else p = 80 + (Math.min(aqi - 200, 100) / 100) * 20;
   return Math.max(0, Math.min(100, p));
 }
 
@@ -278,106 +277,55 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex flex-col lg:flex-row relative p-6 md:p-10 transition-colors duration-500" style={{ backgroundColor: `${aqiConfig.bg}` }}>
-          
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
-
-          {/* Left Column: AQI Info */}
-          <div className="flex-1 z-10 flex flex-col justify-center mb-8 lg:mb-0">
-            <div className="flex items-center gap-2 mb-3 md:mb-1">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: aqiConfig.color }} />
-              <span className="text-[12px] font-bold uppercase tracking-widest text-[#0f172a]/70">
-                CHỈ SỐ AQI HIỆN TẠI
-              </span>
-            </div>
-            
-            <div className="flex flex-col md:flex-row md:items-baseline gap-4 md:gap-6 mb-8">
-              <div className="text-[120px] md:text-[140px] font-black leading-none tracking-tighter" style={{ color: aqiConfig.color, textShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-                {latest?.aqi ?? "—"}
-              </div>
-              <div className="flex flex-col items-start mt-[-20px] md:mt-0">
-                <span className="text-[14px] md:text-[15px] font-medium text-[#0f172a]/60 mb-2">Chất lượng không khí</span>
-                <span className="px-5 py-2 bg-white rounded-xl text-[18px] font-bold border border-white/50 shadow-sm" style={{ color: aqiConfig.color }}>
-                  {aqiConfig.label}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6 mb-10">
-              <div className="text-[18px] font-bold text-[#0f172a]">PM2.5 : <span className="font-semibold text-[#0f172a]/60 ml-1">{latest?.pm2_5 ?? "--"} <span className="text-[14px] font-medium">µg/m³</span></span></div>
-              <div className="text-[18px] font-bold text-[#0f172a]">PM10 : <span className="font-semibold text-[#0f172a]/60 ml-1">{latest?.pm10 ?? "--"} <span className="text-[14px] font-medium">µg/m³</span></span></div>
-            </div>
-
-            {/* Scale Bar */}
-            <div className="w-full max-w-[480px]">
-              <div className="flex justify-between text-[11px] md:text-[12px] font-semibold text-[#0f172a]/60 mb-2 px-1">
-                <span className="flex-1">Tốt</span>
-                <span className="flex-1 text-center">TB</span>
-                <span className="flex-1 text-center">Kém</span>
-                <span className="flex-1 text-center">Xấu</span>
-                <span className="flex-1 text-center">Rất xấu</span>
-                <span className="flex-1 text-right">Nguy hại</span>
-              </div>
-              <div className="relative h-2.5 rounded-full overflow-hidden flex gap-0.5 bg-white p-0.5 shadow-sm border border-white/50">
-                {["#059669","#d97706","#ea580c","#dc2626","#7c3aed","#9f1239"].map((c, i) => (
-                  <div key={i} className={`flex-1 ${i===0?'rounded-l-full':''} ${i===5?'rounded-r-full':''}`} style={{ backgroundColor: c }} />
-                ))}
-                {/* Marker Overlay */}
-                <div className="absolute top-0 bottom-0 left-0 right-0 pointer-events-none">
-                  <div className="h-full w-[2px] bg-[#0f172a] absolute transition-all duration-500 ease-out z-20 shadow-[0_0_4px_rgba(255,255,255,1)]" style={{ left: `calc(${getMarkerPosition(latest?.aqi)}% - 1px)` }} />
-                  <div className="absolute -top-[3px] w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-[#0f172a] transition-all duration-500 ease-out z-20 drop-shadow-sm" style={{ left: `calc(${getMarkerPosition(latest?.aqi)}% - 5px)` }} />
-                </div>
-              </div>
-              <div className="flex justify-between text-[11px] text-[#0f172a]/40 mt-1.5 px-1 font-semibold">
-                <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300</span><span>301+</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column: Smiley Face */}
-          <div className="flex-1 z-10 flex items-center justify-center py-10 lg:py-0">
-            {getFaceIcon(latest?.aqi)}
-          </div>
-
-          {/* Right Column: Floating Stats Card */}
-          <div className="flex-1 z-10 flex items-center justify-start lg:justify-end mt-8 lg:mt-0">
-            <div className="bg-white/95 backdrop-blur-xl rounded-[24px] shadow-[0_12px_40px_rgb(0,0,0,0.06)] border border-white p-7 w-full max-w-[360px] mx-auto lg:mx-0">
-              {/* Main Temp */}
-              <div className="flex flex-col items-center justify-center mb-6 pb-6 border-b border-gray-100">
-                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mb-1">Nhiệt độ</span>
-                <div className="text-[48px] md:text-[56px] font-bold tracking-tight text-[#0f172a]">
-                  {latest?.temperature?.toFixed(1) ?? "--"}<span className="text-[20px] font-medium text-gray-400 ml-1">°C</span>
-                </div>
-              </div>
-
-              {/* Bottom 3 Stats */}
-              <div className="flex justify-between items-center px-2">
-                <div className="flex flex-col items-center">
-                  <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                    Độ ẩm
-                  </div>
-                  <div className="text-[16px] font-bold text-[#0f172a]">{latest?.humidity?.toFixed(1) ?? "--"}<span className="text-[12px] font-medium text-gray-500 ml-0.5">%</span></div>
-                </div>
-                <div className="w-px h-8 bg-gray-200" />
-                <div className="flex flex-col items-center">
-                  <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                    Áp suất
-                  </div>
-                  <div className="text-[16px] font-bold text-[#0f172a]">{latest?.pressure?.toFixed(0) ?? "--"}<span className="text-[12px] font-medium text-gray-500 ml-0.5">hPa</span></div>
-                </div>
-                <div className="w-px h-8 bg-gray-200" />
-                <div className="flex flex-col items-center">
-                  <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                    Khí VOC
-                  </div>
-                  <div className="text-[16px] font-bold text-[#0f172a]">{latest?.gas_resistance?.toFixed(0) ?? "--"}<span className="text-[12px] font-medium text-gray-500 ml-0.5">kΩ</span></div>
-                </div>
-              </div>
-            </div>
+        {/* Main Content Area (AQI Card) */}
+        <div className="p-6 md:p-8 bg-white">
+          <div className="mb-2">
+            <span className="text-[14px] md:text-[15px] font-medium text-gray-600">
+              Chỉ số AQI hiện tại
+            </span>
           </div>
           
+          <div className="flex items-center gap-4 mb-6">
+            <div className="text-[72px] md:text-[84px] font-normal leading-none tracking-tight text-gray-900">
+              {latest?.aqi ?? "—"}
+            </div>
+            <div className="px-4 py-1.5 rounded-xl text-[14px] font-medium border border-black/5" style={{ backgroundColor: aqiConfig.bg, color: aqiConfig.textColor }}>
+              {aqiConfig.label}
+            </div>
+          </div>
+
+          {/* Scale Bar */}
+          <div className="w-full mt-8 md:mt-10">
+            <div className="relative h-3.5 md:h-4 rounded-full w-full mb-3" style={{ background: 'linear-gradient(to right, #65a30d 0%, #ca8a04 20%, #ea580c 40%, #dc2626 60%, #9f1239 80%, #78350f 100%)' }}>
+              {/* Marker Overlay */}
+              <div className="absolute top-0 bottom-0 left-0 right-0 pointer-events-none">
+                <div className="h-[180%] w-[3px] bg-gray-900 absolute top-[-40%] transition-all duration-500 ease-out z-20" style={{ left: `calc(${getMarkerPosition(latest?.aqi)}% - 1.5px)` }} />
+              </div>
+            </div>
+            <div className="flex justify-between text-[12px] md:text-[13px] text-gray-500 font-medium px-1">
+              <span>0</span><span>50</span><span>100</span><span>150</span><span>200</span><span>300+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5 md:p-6">
+          <div className="text-[14px] font-medium text-gray-600 mb-1.5">PM2.5</div>
+          <div className="text-[28px] md:text-[32px] font-medium text-gray-900">{latest?.pm2_5 ?? "--"} <span className="text-[14px] text-gray-500 ml-0.5">µg/m³</span></div>
+        </div>
+        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5 md:p-6">
+          <div className="text-[14px] font-medium text-gray-600 mb-1.5">PM10</div>
+          <div className="text-[28px] md:text-[32px] font-medium text-gray-900">{latest?.pm10 ?? "--"} <span className="text-[14px] text-gray-500 ml-0.5">µg/m³</span></div>
+        </div>
+        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5 md:p-6">
+          <div className="text-[14px] font-medium text-gray-600 mb-1.5">Nhiệt độ</div>
+          <div className="text-[28px] md:text-[32px] font-medium text-gray-900">{latest?.temperature?.toFixed(0) ?? "--"}°C</div>
+        </div>
+        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5 md:p-6">
+          <div className="text-[14px] font-medium text-gray-600 mb-1.5">Độ ẩm</div>
+          <div className="text-[28px] md:text-[32px] font-medium text-gray-900">{latest?.humidity?.toFixed(0) ?? "--"}%</div>
         </div>
       </div>
 
