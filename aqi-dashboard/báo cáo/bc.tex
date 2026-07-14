@@ -380,8 +380,46 @@ Hệ thống được xây dựng dựa trên kiến trúc phân tầng 3 lớp 
 \setcounter{section}{3}
 \setcounter{subsection}{0}
 
+\subsection{Tổng quan hệ thống}
+Hệ thống trạm quan trắc chất lượng không khí đa thông số được xây dựng theo mô hình IoT ba tầng: tầng nhận thức (Perception Layer), tầng truyền dẫn (Network Layer) và tầng ứng dụng (Application Layer). Kiến trúc tổng quan của hệ thống được minh họa như sau:
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{images/system_overview.png}
+    \textbf{[CHÈN SƠ ĐỒ CẤU TRÚC TỔNG QUAN HỆ THỐNG VÀO ĐÂY]}
+    \caption{Cấu trúc tổng quan của hệ thống trạm quan trắc IoT}
+    \label{fig:system_overview}
+\end{figure}
+
+Hệ thống bao gồm các thành phần chính sau:
+\begin{itemize}
+    \item \textbf{Khối thu thập dữ liệu (Embedded Node):} Vi điều khiển ESP32 tích hợp WiFi đọc đồng thời ba luồng dữ liệu từ cảm biến bụi mịn PMS5003 (UART), cảm biến vi khí hậu BME680 (I2C) và cảm biến khí độc MQ-135 (ADC). Dữ liệu được lọc số, tính chỉ số AQI rồi đóng gói JSON và đẩy lên broker MQTT.
+    \item \textbf{Khối truyền dẫn (MQTT Broker):} Giao thức MQTT qua chuẩn mạng WiFi 802.11n giúp truyền tải dữ liệu nhẹ, ổn định qua Internet tới broker công cộng \texttt{broker.emqx.io}.
+    \item \textbf{Khối xử lý và lưu trữ (Backend Cloud):} Dịch vụ Node.js đăng ký (subscribe) topic MQTT, nhận gói tin và lưu vào cơ sở dữ liệu MongoDB Atlas trên đám mây.
+    \item \textbf{Khối hiển thị (Web Dashboard):} Ứng dụng web Next.js triển khai trên Vercel cung cấp giao diện giám sát theo thời gian thực, hiển thị biểu đồ lịch sử và bản đồ vị trí trạm. Người dùng có thể theo dõi từ xa thông qua trình duyệt trên điện thoại, máy tính.
+\end{itemize}
+
+\subsection{Nguyên lý hoạt động}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.9\textwidth]{images/system_flow.png}
+    \textbf{[CHÈN SƠ ĐỒ NGUYÊN LÝ HOẠT ĐỘNG VÀO ĐÂY]}
+    \caption{Sơ đồ nguyên lý hoạt động của hệ thống}
+    \label{fig:system_flow}
+\end{figure}
+
+Hệ thống hoạt động theo chu trình liên tục, khép kín qua 4 bước chính:
+\begin{enumerate}
+    \item \textbf{Thu thập \& Xử lý tại biên (Edge Processing):} Mỗi 10 giây, ESP32 thực hiện đọc song song dữ liệu thô từ ba cảm biến. Dữ liệu được lọc số qua bộ lọc Trung vị, Trung bình động và EMA để khử nhiễu và làm mượt trước khi đưa vào tính toán.
+    \item \textbf{Truyền tải IoT (MQTT Publish):} ESP32 đóng gói dữ liệu đã xử lý thành gói tin JSON, bổ sung siêu dữ liệu (metadata) và publish lên topic \texttt{aqistation/data} trên broker MQTT qua kết nối WiFi.
+    \item \textbf{Lưu trữ đám mây (Cloud Storage):} Dịch vụ backend Node.js (chạy liên tục trên Vercel) subscribe topic \texttt{aqistation/data}, nhận gói tin, bổ sung nhãn thời gian phía server (Server-side Timestamping) và ghi bản ghi vào MongoDB Atlas.
+    \item \textbf{Hiển thị \& Cảnh báo (Web Dashboard):} Ứng dụng Next.js tự động làm mới giao diện mỗi 5 giây bằng cách gọi REST API nội bộ để lấy dữ liệu mới nhất từ MongoDB và cập nhật biểu đồ, chỉ số AQI, trạng thái cảnh báo lên màn hình người dùng.
+\end{enumerate}
+
 \subsection{So sánh và lựa chọn linh kiện}
 Để tối ưu hóa chi phí và đảm bảo độ chính xác kỹ thuật, nhóm đã thực hiện so sánh chi tiết giữa các giải pháp linh kiện trên thị trường:
+
 
 \subsubsection{Cảm biến bụi mịn}
 Cảm biến bụi mịn là thành phần quan trọng nhất của trạm đo chất lượng không khí:
