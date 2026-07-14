@@ -1671,12 +1671,19 @@ Khối hiển thị là tầng giao tiếp với người dùng cuối, bao gồ
 
 \paragraph{Kiến trúc giao diện}\mbox{}\\
 
-Web Dashboard được thiết kế theo mô hình Single Page Application (SPA) với các thành phần chính:
+Web Dashboard được thiết kế theo mô hình Single Page Application (SPA) kết hợp thanh điều hướng bên (Sidebar Navigation) mượt mà, bao gồm các trang chức năng và thành phần chính sau:
+
 \begin{itemize}
-    \item \textbf{Bảng chỉ số AQI tổng hợp}: Hiển thị chỉ số AQI hiện tại với màu sắc tương ứng theo chuẩn US EPA, kèm theo phân loại và khuyến cáo sức khỏe.
-    \item \textbf{Thẻ thông số đo}: Hiển thị từng giá trị cảm biến (PM2.5, PM10, nhiệt độ, độ ẩm, áp suất, chỉ số khí) theo dạng card với icon trực quan.
-    \item \textbf{Biểu đồ lịch sử}: Vẽ đồ thị đường (Line Chart) diễn biến PM2.5, nhiệt độ và AQI theo thời gian bằng thư viện Chart.js.
-    \item \textbf{Banner cảnh báo}: Hiển thị thông báo nổi bật (Alert Banner) khi chỉ số AQI vượt ngưỡng nguy hiểm.
+    \item \textbf{Trang Tổng quan (Dashboard):} Hiển thị toàn cảnh dữ liệu thời gian thực.
+    \begin{itemize}
+        \item \textit{Thanh trạng thái hệ thống}: Hiển thị thông tin tên trạm (Trạm 01), thời điểm cập nhật dữ liệu gần nhất, cường độ tín hiệu mạng WiFi (RSSI) và thời gian hoạt động liên tục (Uptime) của thiết bị nhúng. Hệ thống sử dụng hiệu ứng chớp tắt (pulse) kết hợp chỉ báo Trực tuyến/Ngoại tuyến để thông báo tình trạng kết nối.
+        \item \textit{Bảng chỉ số AQI trung tâm}: Cung cấp giá trị AQI tổng hợp nổi bật kèm thanh trượt dải màu tuyến tính. Điểm đánh dấu (marker) trên thanh trượt chỉ định chính xác vị trí của mức AQI hiện tại theo thang chuẩn US EPA, kèm theo nhãn phân loại tự động (Tốt, Trung bình, Kém, Xấu, Rất xấu, Nguy hại).
+        \item \textit{Khối thẻ thông số phụ}: Bốn thẻ số liệu nổi bật hiển thị các thông số cốt lõi (PM2.5, PM10, Nhiệt độ, Độ ẩm) dưới dạng khối thẻ bo góc tối giản, tập trung vào con số trực quan nhằm tránh gây rối mắt.
+    \end{itemize}
+    \item \textbf{Trang Bản đồ trực quan (Map):} Tích hợp bản đồ số thông qua thư viện Leaflet. Nhằm nâng cao trải nghiệm người dùng, hệ thống sử dụng lớp nền bản đồ đường phố của Google Maps (Google Maps Tile Layer). Việc sử dụng trực tiếp tile layer tĩnh giúp hệ thống có được giao diện quen thuộc, độ chi tiết cao từ Google mà không vướng mắc giới hạn hay cấu hình phức tạp của Google Cloud API Key. Trạm đo được ghim vị trí cố định (mặc định tại Đại học Bách Khoa Hà Nội), cho phép người dùng nhấp vào điểm ghim để xem Popup dữ liệu quan trắc tức thời.
+    \item \textbf{Phân tích Biểu đồ thời gian (History):} Tích hợp trên trang Dashboard và History, hệ thống vẽ đồ thị đường (Line Chart) diễn biến cho 6 thông số: PM2.5, PM10, Nhiệt độ, Độ ẩm, Áp suất và Gas VOC. Biểu đồ sử dụng thư viện Chart.js kết hợp menu thả xuống cho phép tùy chọn khung thời gian xem linh hoạt (từ 1 phút, 5 phút, 1 giờ cho tới 24 giờ).
+    \item \textbf{Hệ thống xác thực và Quản lý tài khoản (NextAuth):} Cung cấp cơ chế phân quyền truy cập thông qua Đăng ký/Đăng nhập an toàn. Thông tin người dùng được mã hóa bằng Bcrypt và lưu trên cơ sở dữ liệu MongoDB Atlas (collection \texttt{users}). Biểu mẫu đăng ký được trang bị bộ kiểm tra tính toàn vẹn (Custom HTML5 Validation) nhằm hiển thị các cảnh báo tức thời, thân thiện khi mật khẩu quá ngắn hoặc không đạt độ an toàn cần thiết.
+    \item \textbf{Giao diện đáp ứng (Responsive Design):} Toàn bộ ứng dụng web được xây dựng dựa trên framework Tailwind CSS theo chuẩn Mobile-first. Bố cục dạng lưới (grid system) đảm bảo các khối thẻ dữ liệu và biểu đồ tự động co giãn, tự sắp xếp lại một cách mượt mà trên mọi kích thước thiết bị, từ điện thoại di động đến màn hình lớn.
 \end{itemize}
 
 \paragraph{Cơ chế cập nhật dữ liệu}\mbox{}\\
