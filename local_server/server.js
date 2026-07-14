@@ -85,7 +85,15 @@ async function main() {
       const csvLine = `${timestamp},${data.pm2_5},${data.pm10},${data.temperature},${data.humidity},${data.pressure},${data.gas_resistance},${data.mq135},${data.aqi}\n`;
       const dailyFile = getDailyCsvFile();
       fs.appendFileSync(dailyFile, csvLine);
-      console.log(`📝 Đã lưu cục bộ vào file ${path.basename(dailyFile)}`);
+
+      // Ghi vào database.csv tổng hợp
+      const dbFile = path.join(__dirname, 'database.csv');
+      if (!fs.existsSync(dbFile)) {
+        fs.writeFileSync(dbFile, "timestamp,pm2_5,pm10,temperature,humidity,pressure,gas_resistance,mq135,aqi\n");
+      }
+      fs.appendFileSync(dbFile, csvLine);
+
+      console.log(`📝 Đã lưu cục bộ vào file ${path.basename(dailyFile)} và database.csv`);
 
       // Lưu lên MongoDB
       if (mongoose.connection.readyState === 1) {
