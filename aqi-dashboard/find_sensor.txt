@@ -1,3 +1,0 @@
-650: \noindent\textbf{Thuật toán đọc của sensor đó}\\[6pt]
-764: \noindent\textbf{Thuật toán đọc của sensor đó}\\[6pt]
-845: \noindent\textbf{Thuật toán đọc của sensor đó}\\[6pt]

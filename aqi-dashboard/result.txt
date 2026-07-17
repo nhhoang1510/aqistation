@@ -1,4 +1,0 @@
-1155: Trạm gateway được xây dựng trên mô đun ESP32 DOIT DevKit V1. Đây là bộ não trung tâm của toàn bộ trạm quan trắc, do đó nhóm tiến hành phân tích sâu về vi kiến trúc của chip nhằm khai thác tối đa hiệu năng phần cứng và đưa ra các quyết định thiết kế phần mềm phù hợp.
-1165: Việc hiểu rõ tổ chức bộ nhớ của ESP32 là yếu tố quyết định để thiết kế phần mềm nhúng hiệu quả, tránh hiện tượng tràn ngăn xếp khi chạy đồng thời nhiều Task FreeRTOS. ESP32 tổ chức không gian địa chỉ theo mô hình phân vùng như sau:
-1468: \subsection{Giải thuật tính toán chỉ số AQI}
-1528: \subsection{Giải thuật và lưu đồ hoạt động phần mềm}
