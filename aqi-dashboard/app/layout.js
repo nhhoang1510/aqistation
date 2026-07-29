@@ -1,7 +1,6 @@
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "./components/AuthProvider";
-import Navbar from "./components/Navbar";
+import AuthProvider from "@/components/AuthProvider";
 
 const beVietnamPro = Be_Vietnam_Pro({
   variable: "--font-be-vietnam",
@@ -43,11 +42,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
       >
         <AuthProvider>
-          <Navbar />
-          {/* top-[60px] = header height, md:ml-[240px] = sidebar width */}
-          <main className="pt-[60px] md:ml-[240px] min-h-screen transition-all duration-300">
-            {children}
-          </main>
+          {children}
         </AuthProvider>
       </body>
     </html>

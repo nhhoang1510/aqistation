@@ -134,13 +134,24 @@ export default function SettingsPage() {
   const hasContact = settings.email || settings.phone || isSubscribed;
 
   const subscribePush = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       showToast("Trình duyệt không hỗ trợ Web Push.", true);
       return;
     }
     try {
+      // Yêu cầu quyền thông báo từ người dùng
+      let permission = Notification.permission;
+      if (permission === 'default') {
+        permission = await Notification.requestPermission();
+      }
+
+      if (permission !== 'granted') {
+        showToast("Bạn đã chặn quyền thông báo trên trình duyệt. Hãy cho phép ở thanh địa chỉ!", true);
+        return;
+      }
+
       const reg = await navigator.serviceWorker.ready;
-      const publicKey = "BH5_fzF0HLX-9qjYr26OHl307AyNGFPoYPbimW1SJKrkr_EgtlqHF0LbMUeCrdOD75zfOJFgOIe5IXvT0xXyIPU";
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BH5_fzF0HLX-9qjYr26OHl307AyNGFPoYPbimW1SJKrkr_EgtlqHF0LbMUeCrdOD75zfOJFgOIe5IXvT0xXyIPU";
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicKey)
@@ -158,8 +169,8 @@ export default function SettingsPage() {
         showToast("Đăng ký thất bại trên server.", true);
       }
     } catch (e) {
-      console.error(e);
-      showToast("Lỗi khi cấp quyền thông báo.", true);
+      console.error("Push subscribe error:", e);
+      showToast(`Lỗi cấp quyền: ${e.message || "Không thể bật thông báo."}`, true);
     }
   };
 

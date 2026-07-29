@@ -31,7 +31,7 @@ echo   He thong da khoi dong thanh cung!
 echo.
 echo   Local Server : http://localhost:5000
 echo   Dashboard    : http://localhost:3001
-echo   (Grafana chiem port 3000, AQI dung port 3001)
+echo
 echo  ============================================
 echo.
 echo  (Dong cua so nay khong anh huong den server)
