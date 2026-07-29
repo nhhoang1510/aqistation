@@ -51,7 +51,7 @@ export async function PUT(request) {
     if (typeof aqiThreshold === 'number' && aqiThreshold >= 10 && aqiThreshold <= 500) {
       updateData.aqiThreshold = aqiThreshold;
     }
-    if (typeof alertCooldown === 'number' && [15, 30, 60, 180].includes(alertCooldown)) {
+    if (typeof alertCooldown === 'number' && [5, 15, 30, 60, 180].includes(alertCooldown)) {
       updateData.alertCooldown = alertCooldown;
     }
 

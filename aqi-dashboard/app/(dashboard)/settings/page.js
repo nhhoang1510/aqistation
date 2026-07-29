@@ -362,10 +362,10 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm p-5 mb-5">
         <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Thời gian chờ</p>
         <p className="text-[12px] text-gray-400 mb-4">Khoảng cách tối thiểu giữa hai lần gửi cảnh báo</p>
-        <div className="grid grid-cols-4 gap-2">
-          {[{v:15,l:"15 phút"},{v:30,l:"30 phút"},{v:60,l:"1 giờ"},{v:180,l:"3 giờ"}].map((o) => (
+        <div className="grid grid-cols-5 gap-2">
+          {[{v:5,l:"5 phút"},{v:15,l:"15 phút"},{v:30,l:"30 phút"},{v:60,l:"1 giờ"},{v:180,l:"3 giờ"}].map((o) => (
             <button key={o.v} onClick={() => set("alertCooldown", o.v)}
-              className={`px-3 py-2.5 rounded-lg text-[12.5px] font-medium border-2 transition-all cursor-pointer ${
+              className={`px-2 py-2.5 rounded-lg text-[12px] font-medium border-2 transition-all cursor-pointer ${
                 settings.alertCooldown === o.v ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
               }`}>{o.l}</button>
           ))}

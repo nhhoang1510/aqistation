@@ -32,11 +32,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Thiếu thông số AQI' }, { status: 400 });
     }
 
-    // Kiểm tra trùng lặp trong 15 phút gần nhất để tránh spam log
-    const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
+    // Kiểm tra trùng lặp trong 5 phút gần nhất để tránh ghi lặp log quá dày
+    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
     const existing = await AlertLog.findOne({
       aqi,
-      timestamp: { $gte: fifteenMinsAgo }
+      timestamp: { $gte: fiveMinsAgo }
     });
 
     if (existing) {
