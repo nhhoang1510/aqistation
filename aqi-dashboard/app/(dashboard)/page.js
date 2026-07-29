@@ -242,6 +242,8 @@ export default function Dashboard() {
     { label: "Gas VOC",  key: "gas_resistance",color: "#059669" },
   ];
 
+  return (
+    <div className="p-5 md:p-8">
       {/* In-App Alert Banner (Trang web tự cảnh báo) */}
       {latest?.aqi >= 100 && (
         <div className="mb-6 bg-gradient-to-r from-red-600 via-rose-600 to-purple-600 text-white rounded-2xl p-4 md:p-5 shadow-xl shadow-red-500/15 border border-red-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
