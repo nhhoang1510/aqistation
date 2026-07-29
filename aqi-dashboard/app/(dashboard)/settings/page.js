@@ -195,9 +195,6 @@ export default function SettingsPage() {
         <h1 className="text-[20px] md:text-[22px] font-bold text-gray-900 tracking-tight uppercase">
           CÀI ĐẶT THÔNG BÁO & CẢNH BÁO
         </h1>
-        <p className="text-[13px] text-gray-500 mt-1">
-          Thiết lập độc lập các kênh nhận cảnh báo (Email & Web Push) và tùy chỉnh ngưỡng kích hoạt AQI.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -208,16 +205,8 @@ export default function SettingsPage() {
           {/* KÊNH 1: EMAIL NOTIFICATIONS */}
           <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-bold text-gray-900">1. Cảnh Báo Qua Email</h3>
-                  <p className="text-[12px] text-gray-400">Gửi mail tự động khi AQI vượt ngưỡng</p>
-                </div>
+              <div>
+                <h3 className="text-[15px] font-bold text-gray-900">1. Cảnh Báo Qua Email</h3>
               </div>
 
               {/* Email Toggle */}
@@ -235,10 +224,7 @@ export default function SettingsPage() {
                   <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
                     Địa chỉ Email Nhận Cảnh Báo
                   </label>
-                  <div className="flex items-center gap-2 px-3.5 py-2.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-gray-50/50">
-                    <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                    </svg>
+                  <div className="flex items-center px-3.5 py-2.5 border border-gray-200 rounded-xl focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500 transition-all bg-gray-50/50">
                     <input
                       type="email"
                       placeholder="example@gmail.com"
@@ -258,9 +244,9 @@ export default function SettingsPage() {
                   <button
                     onClick={testEmailAlert}
                     disabled={testingEmail || !settings.email}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-[12.5px] font-semibold rounded-xl transition-all cursor-pointer shadow-sm shadow-blue-500/20"
+                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-[13px] font-bold rounded-xl transition-all cursor-pointer shadow-sm shadow-blue-500/20"
                   >
-                    {testingEmail ? "Đang gửi..." : "✉️ Gửi thử Email"}
+                    {testingEmail ? "Đang xử lý..." : "Xác nhận"}
                   </button>
                 </div>
               </div>
@@ -272,16 +258,8 @@ export default function SettingsPage() {
           {/* KÊNH 2: WEB PUSH NOTIFICATIONS */}
           <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm p-6 space-y-5">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-bold text-gray-900">2. Thông Báo Đẩy Trình Duyệt (Web Push)</h3>
-                  <p className="text-[12px] text-gray-400">Hiển thị thông báo góc màn hình máy tính/điện thoại</p>
-                </div>
+              <div>
+                <h3 className="text-[15px] font-bold text-gray-900">2. Thông Báo Đẩy Trình Duyệt (Web Push)</h3>
               </div>
 
               <span className={`px-2.5 py-1 text-[11px] font-bold rounded-full ${isSubscribed ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-400"}`}>
@@ -289,11 +267,7 @@ export default function SettingsPage() {
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-1">
-              <p className="text-[12.5px] text-gray-500 leading-relaxed max-w-sm">
-                Tính năng này đẩy pop-up thông báo trực tiếp qua Chrome/Edge mà không cần mở tab Dashboard.
-              </p>
-
+            <div className="flex justify-end pt-1">
               <button
                 onClick={subscribePush}
                 disabled={isSubscribed}
@@ -303,7 +277,7 @@ export default function SettingsPage() {
                     : "bg-purple-600 hover:bg-purple-700 text-white shadow-purple-500/20"
                 }`}
               >
-                {isSubscribed ? "✓ Đã Đăng Ký Push" : "🔔 Bật Web Push"}
+                {isSubscribed ? "Đã Đăng Ký Push" : "Bật Web Push"}
               </button>
             </div>
           </div>
@@ -349,8 +323,7 @@ export default function SettingsPage() {
 
           {/* COOLDOWN */}
           <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm p-6">
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">THỜI GIAN GIÃN CÁCH GIỮA CÁC LẦN GỬI</p>
-            <p className="text-[12px] text-gray-400 mb-4">Khoảng nghỉ tối thiểu trước khi phát đợt thông báo kế tiếp</p>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">THỜI GIAN GIÃN CÁCH GIỮA CÁC LẦN GỬI</p>
             
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {[{v:5,l:"5p"},{v:15,l:"15p"},{v:30,l:"30p"},{v:60,l:"1h"},{v:180,l:"3h"}].map((o) => (
@@ -374,7 +347,7 @@ export default function SettingsPage() {
             disabled={saving}
             className="w-full py-3.5 bg-gray-900 hover:bg-gray-800 text-white text-[14px] font-bold rounded-2xl transition-all shadow-lg shadow-gray-900/15 disabled:opacity-50 cursor-pointer"
           >
-            {saving ? "Đang lưu cấu hình..." : "💾 Lưu Cấu Hình Cảnh Báo"}
+            {saving ? "Đang lưu cấu hình..." : "Xác nhận"}
           </button>
 
         </div>
