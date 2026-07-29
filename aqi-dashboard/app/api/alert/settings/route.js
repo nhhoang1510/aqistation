@@ -34,17 +34,20 @@ export async function GET() {
 export async function PUT(request) {
   try {
     const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
-    const { alertEnabled, aqiThreshold, alertCooldown } = body;
+    const { email, alertEnabled, aqiThreshold, alertCooldown } = body;
+
+    const targetEmail = session?.user?.email || email;
+    if (!targetEmail) {
+      return NextResponse.json({ error: 'Vui lòng cung cấp địa chỉ Email' }, { status: 400 });
+    }
 
     await connectToDatabase();
 
-    const updateData = {};
-    if (typeof alertEnabled === 'boolean') updateData.alertEnabled = alertEnabled;
+    const updateData = {
+      alertEnabled: typeof alertEnabled === 'boolean' ? alertEnabled : true,
+    };
+    
     if (typeof aqiThreshold === 'number' && aqiThreshold >= 10 && aqiThreshold <= 500) {
       updateData.aqiThreshold = aqiThreshold;
     }
@@ -52,18 +55,20 @@ export async function PUT(request) {
       updateData.alertCooldown = alertCooldown;
     }
 
-    const user = await User.findOneAndUpdate(
-      { email: session.user.email },
-      { $set: updateData },
-      { new: true }
-    ).lean();
+    const name = session?.user?.name || targetEmail.split('@')[0];
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
+    const user = await User.findOneAndUpdate(
+      { email: targetEmail },
+      { 
+        $set: updateData,
+        $setOnInsert: { name, email: targetEmail, createdAt: new Date() }
+      },
+      { upsert: true, new: true }
+    ).lean();
 
     return NextResponse.json({
       success: true,
+      email: user.email,
       alertEnabled: user.alertEnabled,
       aqiThreshold: user.aqiThreshold,
       alertCooldown: user.alertCooldown,

@@ -70,15 +70,36 @@ export default function SettingsPage() {
     }
   }, []);
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
+    if (settings.alertEnabled && !settings.email) {
+      showToast("Vui lòng nhập Địa chỉ Email để nhận cảnh báo.", true);
+      return;
+    }
     setSaving(true);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-      showToast("Đã lưu cài đặt.");
-    } catch {
-      showToast("Lỗi khi lưu.", true);
+      
+      const res = await fetch("/api/alert/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: settings.email,
+          alertEnabled: settings.alertEnabled,
+          aqiThreshold: settings.aqiThreshold,
+          alertCooldown: settings.alertCooldown,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast("Đã lưu cài đặt & kích hoạt cảnh báo tự động!");
+      } else {
+        showToast(data.error || "Lỗi khi đồng bộ với server.", true);
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Lỗi khi lưu cài đặt.", true);
     } finally {
-      setTimeout(() => setSaving(false), 500);
+      setSaving(false);
     }
   };
 
