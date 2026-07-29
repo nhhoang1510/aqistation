@@ -242,28 +242,39 @@ export default function Dashboard() {
     { label: "Gas VOC",  key: "gas_resistance",color: "#059669" },
   ];
 
+  const [dismissAlert, setDismissAlert] = useState(false);
+
   return (
     <div className="p-5 md:p-8">
-      {/* In-App Alert Banner (Trang web tự cảnh báo) */}
-      {latest?.aqi >= 100 && (
-        <div className="mb-6 bg-gradient-to-r from-red-600 via-rose-600 to-purple-600 text-white rounded-2xl p-4 md:p-5 shadow-xl shadow-red-500/15 border border-red-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="flex items-center gap-3.5 z-10">
-            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-2xl shadow-inner">
+      {/* Floating In-App Alert Toast (Trượt từ rìa bên phải) */}
+      {latest?.aqi >= 100 && !dismissAlert && (
+        <div 
+          className="fixed top-20 right-5 z-50 max-w-sm sm:max-w-md bg-gradient-to-r from-red-600 via-rose-600 to-purple-600 text-white p-4.5 rounded-2xl shadow-2xl border border-white/20 flex items-start justify-between gap-3 overflow-hidden backdrop-blur-md"
+          style={{ animation: "slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-xl font-bold">
               ⚠️
             </div>
             <div>
-              <div className="flex items-center gap-2 font-bold text-[14px] md:text-[15.5px]">
-                <span className="tracking-tight uppercase">CẢNH BÁO CHẤT LƯỢNG KHÔNG KHÍ (AQI: {latest.aqi})</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white/25 text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-sm">
+              <div className="flex items-center gap-2 font-bold text-[14px]">
+                <span className="tracking-tight uppercase">CẢNH BÁO AQI: {latest.aqi}</span>
+                <span className="px-2 py-0.5 rounded-md bg-white/25 text-[10.5px] font-extrabold uppercase">
                   {aqiConfig.label}
                 </span>
               </div>
-              <p className="text-[12.5px] text-white/95 mt-1 font-medium leading-snug">
-                Bụi mịn PM2.5: <strong className="text-white">{latest.pm2_5} µg/m³</strong> · PM10: <strong className="text-white">{latest.pm10} µg/m³</strong>. Không khí đang ở ngưỡng nguy hại, hãy đeo khẩu trang N95 khi ra ngoài!
+              <p className="text-[12px] text-white/95 mt-1 font-medium leading-snug">
+                PM2.5: <strong>{latest.pm2_5} µg/m³</strong> · PM10: <strong>{latest.pm10} µg/m³</strong>. Không khí đang ở ngưỡng nguy hại!
               </p>
             </div>
           </div>
+          <button 
+            onClick={() => setDismissAlert(true)}
+            className="text-white/70 hover:text-white text-lg font-bold p-1 leading-none shrink-0 cursor-pointer"
+            title="Đóng thông báo"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -414,6 +425,9 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <style jsx>{`
+        @keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+      `}</style>
     </div>
   );
 }

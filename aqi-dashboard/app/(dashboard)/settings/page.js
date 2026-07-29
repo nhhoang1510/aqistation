@@ -349,17 +349,17 @@ export default function SettingsPage() {
 
       </div>
 
-      {/* Toast */}
+      {/* Toast (Trượt từ rìa bên phải) */}
       {toast && (
         <div className={`fixed bottom-6 right-6 max-w-sm px-5 py-3.5 rounded-2xl shadow-2xl text-[13px] font-bold z-50 ${
           toast.err ? "bg-red-600 text-white" : "bg-gray-900 text-white"
-        }`} style={{ animation: "fadeUp 0.2s ease-out" }}>
+        }`} style={{ animation: "slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}>
           {toast.msg}
         </div>
       )}
 
       <style jsx>{`
-        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
           background:white; border:2.5px solid #1e293b; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer;
