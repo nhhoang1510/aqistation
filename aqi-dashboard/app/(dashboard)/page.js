@@ -187,24 +187,24 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Outlier-style Hero Header Section */}
+      {/* Outlier-style Hero Header Section (Đã khôi phục nội dung tiếng Việt của bạn) */}
       <div className="space-y-3">
         {/* Back breadcrumb */}
         <Link href="/" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-orange-600 hover:text-orange-700 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Back
+          Quay lại
         </Link>
 
         {/* Main Station Title */}
         <h1 className="text-[32px] sm:text-[40px] font-extrabold text-gray-900 tracking-tight leading-tight">
-          Aether
+          Trạm Quan Trắc Chất Lượng Không Khí
         </h1>
 
         {/* Description Paragraph */}
         <p className="text-[14px] sm:text-[15px] text-gray-600 leading-relaxed max-w-4xl font-normal">
-          Aether is built for contributors who like quick, simple tasks. Can you look at a picture and describe it? Spot differences between two things? Follow straight-forward instructions? Then you're already ahead. The tasks are short, chunkable, and easy to squeeze between errands, chores, classes — or whatever else you're avoiding. It's a low-lift way to stay sharp and pick up small bursts of work whenever you want to stay active.
+          Hệ thống quan trắc chất lượng không khí IoT thông minh theo thời gian thực. Theo dõi liên tục chỉ số AQI, bụi mịn PM2.5, PM10, nhiệt độ, độ ẩm và áp suất khí quyển. Cung cấp dữ liệu trực quan giúp bạn bảo vệ sức khỏe gia đình và cộng đồng.
         </p>
 
         {/* Status Badge & Subline */}
@@ -214,16 +214,16 @@ export default function Dashboard() {
             Đang Hoạt Động
           </span>
           <span className="text-[13px] text-gray-500 font-medium">
-            This project is 1st in your queue &gt;
+            Trạm quan trắc tự động kết nối dữ liệu live &gt;
           </span>
         </div>
       </div>
 
-      {/* Outlier-style Horizontal Stat Container (Row of 3 cards in wide dark panel) */}
+      {/* Outlier-style Horizontal Stat Container (Bảng chứa 3 thẻ thống kê nằm ngang) */}
       <div className="bg-gray-900 rounded-3xl p-6 sm:p-8 shadow-xl text-white border border-gray-800">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-800">
           
-          {/* Card 1: Total Earned / AQI */}
+          {/* Cột 1: Chỉ số AQI */}
           <div className="flex items-center gap-4 pt-4 md:pt-0 first:pt-0">
             <div className="w-12 h-12 rounded-2xl bg-gray-800 border border-gray-700/80 flex items-center justify-center shrink-0 text-gray-300">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -232,17 +232,17 @@ export default function Dashboard() {
               </svg>
             </div>
             <div>
-              <p className="text-[12.5px] font-semibold text-gray-400">Total Earned / AQI</p>
+              <p className="text-[12.5px] font-semibold text-gray-400">Chỉ số AQI hiện tại</p>
               <div className="text-[32px] sm:text-[36px] font-black tracking-tight leading-none mt-1" style={{ color: aqiConfig.color }}>
                 {latest?.aqi ?? "—"}
               </div>
               <p className="text-[12px] font-medium text-gray-400 mt-1">
-                Completed 7 tasks · <span className="font-bold text-white">{aqiConfig.label}</span>
+                Phân loại: <span className="font-bold text-white">{aqiConfig.label}</span>
               </p>
             </div>
           </div>
 
-          {/* Card 2: Task Completion Time */}
+          {/* Cột 2: Thời gian cập nhật */}
           <div className="flex items-center gap-4 pt-6 md:pt-0 md:pl-8">
             <div className="w-12 h-12 rounded-2xl bg-gray-800 border border-gray-700/80 flex items-center justify-center shrink-0 text-gray-300">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -250,7 +250,7 @@ export default function Dashboard() {
               </svg>
             </div>
             <div>
-              <p className="text-[12.5px] font-semibold text-gray-400">Task Completion Time</p>
+              <p className="text-[12.5px] font-semibold text-gray-400">Thời gian cập nhật</p>
               <div className="text-[28px] sm:text-[32px] font-black tracking-tight leading-none text-white mt-1">
                 {lastUpdated}
               </div>
@@ -261,7 +261,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Card 3: Avg. Feedback Score / PM2.5 */}
+          {/* Cột 3: Bụi mịn PM2.5 */}
           <div className="flex items-center gap-4 pt-6 md:pt-0 md:pl-8">
             <div className="w-12 h-12 rounded-2xl bg-gray-800 border border-gray-700/80 flex items-center justify-center shrink-0 text-gray-300">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -269,12 +269,12 @@ export default function Dashboard() {
               </svg>
             </div>
             <div>
-              <p className="text-[12.5px] font-semibold text-gray-400">Avg. Feedback Score / PM2.5</p>
+              <p className="text-[12.5px] font-semibold text-gray-400">Nồng độ Bụi mịn PM2.5</p>
               <div className="text-[32px] sm:text-[36px] font-black tracking-tight leading-none text-white mt-1">
                 {latest?.pm2_5 ?? "—"} <span className="text-[16px] font-bold text-gray-400">µg/m³</span>
               </div>
               <p className="text-[12px] font-medium text-gray-400 mt-1">
-                Tiêu chuẩn: &lt; 50 µg/m³
+                Tiêu chuẩn khuyến nghị: &lt; 50 µg/m³
               </p>
             </div>
           </div>
@@ -282,14 +282,14 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Project Overview Section */}
+      {/* Tổng quan cảm biến & biểu đồ (Project Overview Section) */}
       <div className="bg-white rounded-3xl border border-gray-200/90 shadow-sm p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <h2 className="text-[18px] sm:text-[20px] font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Project Overview
+            Tổng Quan Cảm Biến Trạm (Project Overview)
           </h2>
           
           <div className="flex items-center gap-2">
