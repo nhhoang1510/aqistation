@@ -149,7 +149,19 @@ export default function Dashboard() {
         const currentLatest = data[data.length - 1];
         setLatest(currentLatest);
         setIsLive(Date.now() - new Date(currentLatest.timestamp).getTime() < 30000);
-        try { localStorage.setItem("aqi_dashboard_latest", JSON.stringify(currentLatest)); } catch {}
+        if (currentLatest.aqi >= 100) {
+          fetch("/api/alert/history", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              aqi: currentLatest.aqi,
+              level: getAQIConfig(currentLatest.aqi).label,
+              pm2_5: currentLatest.pm2_5,
+              pm10: currentLatest.pm10,
+              message: `Cảnh báo AQI = ${currentLatest.aqi} (${getAQIConfig(currentLatest.aqi).label})`,
+            })
+          }).catch(() => {});
+        }
       } else {
         setIsLive(false);
       }
@@ -230,8 +242,28 @@ export default function Dashboard() {
     { label: "Gas VOC",  key: "gas_resistance",color: "#059669" },
   ];
 
-  return (
-    <div className="p-5 md:p-8">
+      {/* In-App Alert Banner (Trang web tự cảnh báo) */}
+      {latest?.aqi >= 100 && (
+        <div className="mb-6 bg-gradient-to-r from-red-600 via-rose-600 to-purple-600 text-white rounded-2xl p-4 md:p-5 shadow-xl shadow-red-500/15 border border-red-400/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="flex items-center gap-3.5 z-10">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-2xl shadow-inner">
+              ⚠️
+            </div>
+            <div>
+              <div className="flex items-center gap-2 font-bold text-[14px] md:text-[15.5px]">
+                <span className="tracking-tight uppercase">CẢNH BÁO CHẤT LƯỢNG KHÔNG KHÍ (AQI: {latest.aqi})</span>
+                <span className="px-2.5 py-0.5 rounded-full bg-white/25 text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-sm">
+                  {aqiConfig.label}
+                </span>
+              </div>
+              <p className="text-[12.5px] text-white/95 mt-1 font-medium leading-snug">
+                Bụi mịn PM2.5: <strong className="text-white">{latest.pm2_5} µg/m³</strong> · PM10: <strong className="text-white">{latest.pm10} µg/m³</strong>. Không khí đang ở ngưỡng nguy hại, hãy đeo khẩu trang N95 khi ra ngoài!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Redesign */}
       <div className="bg-white rounded-[24px] shadow-sm mb-6 flex flex-col overflow-hidden border border-gray-100">

@@ -65,8 +65,30 @@ export async function POST() {
           { _id: user._id },
           { $set: { lastAlertSent: now } }
         );
+
+        // Lưu bản ghi vào Lịch sử cảnh báo AlertLog
+        const AlertLog = (await import('@/models/AlertLog')).default;
+        const getAQILabel = (aqi) => {
+          if (aqi <= 50) return 'Tốt';
+          if (aqi <= 100) return 'Trung bình';
+          if (aqi <= 150) return 'Kém';
+          if (aqi <= 200) return 'Xấu';
+          if (aqi <= 300) return 'Rất xấu';
+          return 'Nguy hại';
+        };
+
+        await AlertLog.create({
+          email: user.email,
+          aqi: latestData.aqi,
+          level: getAQILabel(latestData.aqi),
+          pm2_5: latestData.pm2_5,
+          pm10: latestData.pm10,
+          message: `AQI = ${latestData.aqi} vượt ngưỡng cảnh báo ${user.aqiThreshold}`,
+          timestamp: now,
+        });
+
         alerts.push({ email: user.email, aqi: latestData.aqi });
-        console.log(`[Alert] Email sent to ${user.email} (AQI: ${latestData.aqi})`);
+        console.log(`[Alert] Email sent & logged to ${user.email} (AQI: ${latestData.aqi})`);
       } catch (emailError) {
         console.error(`[Alert] Failed to send email to ${user.email}:`, emailError.message);
       }

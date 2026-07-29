@@ -162,6 +162,108 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen]   = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authModal, setAuthModal]     = useState(false);
+  const [alertOpen, setAlertOpen]     = useState(false);
+  const [alertLogs, setAlertLogs]     = useState([]);
+
+  // Fetch alert logs
+  const fetchAlertLogs = async () => {
+    try {
+      const res = await fetch("/api/alert/history?limit=20");
+      if (res.ok) {
+        const data = await res.json();
+        setAlertLogs(data.logs || []);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchAlertLogs();
+    const interval = setInterval(fetchAlertLogs, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const NotificationBell = () => {
+    const hasUnread = alertLogs.length > 0;
+    return (
+      <div className="relative mr-3">
+        <button
+          onClick={() => setAlertOpen(!alertOpen)}
+          className="relative p-2 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer flex items-center justify-center"
+          title="Lịch sử các lần cảnh báo"
+        >
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          {hasUnread && (
+            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
+          )}
+        </button>
+
+        {alertOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setAlertOpen(false)} />
+            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-[13.5px] font-bold text-gray-900">LỊCH SỬ CẢNH BÁO</span>
+                  <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 text-red-600 rounded-full">
+                    {alertLogs.length}
+                  </span>
+                </div>
+                <button
+                  onClick={() => fetchAlertLogs()}
+                  className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  Làm mới
+                </button>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                {alertLogs.length > 0 ? (
+                  alertLogs.map((log, index) => {
+                    const timeStr = new Date(log.timestamp).toLocaleString("vi-VN", {
+                      hour: "2-digit", minute: "2-digit", second: "2-digit",
+                      day: "2-digit", month: "2-digit", year: "numeric"
+                    });
+                    const isHigh = log.aqi > 150;
+                    return (
+                      <div key={log._id || index} className="p-3.5 hover:bg-gray-50/80 transition-colors">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${isHigh ? 'bg-red-500 animate-ping' : 'bg-amber-500'}`} />
+                            <span className="text-[13px] font-bold text-gray-900">AQI: {log.aqi}</span>
+                            <span className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md ${
+                              log.aqi > 200 ? 'bg-purple-100 text-purple-700' :
+                              log.aqi > 150 ? 'bg-red-100 text-red-700' :
+                              log.aqi > 100 ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {log.level}
+                            </span>
+                          </div>
+                          <span className="text-[10.5px] text-gray-400 font-medium">{timeStr}</span>
+                        </div>
+                        <p className="text-[12px] text-gray-600 leading-snug">{log.message}</p>
+                        {(log.pm2_5 > 0 || log.pm10 > 0) && (
+                          <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-400">
+                            <span>PM2.5: <strong className="text-gray-700">{log.pm2_5} µg/m³</strong></span>
+                            <span>PM10: <strong className="text-gray-700">{log.pm10} µg/m³</strong></span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-8 text-center text-[12.5px] text-gray-400 font-medium">
+                    Chưa có lịch sử cảnh báo nào
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
   const UserSection = () => {
     if (status === "loading") return <div className="w-7 h-7 rounded-full bg-gray-200 animate-pulse" />;
@@ -223,6 +325,7 @@ export default function Navbar() {
         </button>
         <span className="md:hidden text-[13px] font-semibold text-gray-800 mr-auto">AQI Station</span>
         <div className="hidden md:block flex-1" />
+        <NotificationBell />
         <UserSection />
       </header>
 
